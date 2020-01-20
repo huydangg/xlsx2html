@@ -18,14 +18,16 @@
 #endif 
 #define PARSE_BUFFER_SIZE 256 
 
+int process_zip_file(zip_t *zip, const char *zip_file_name, void *callbackdata);
+
 struct SheetData {
-   const XML_Char *name;
-   const XML_Char *sheet_id;
+   XML_Char *name;
+   XML_Char *sheet_id;
    int is_hidden;
    char *path_name;
    int index_sheet;
 };
-int count_sheet = 0;
+
 static void XMLCALL
 startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
   int i;
@@ -42,33 +44,23 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
       }
     }
   }
-  printf("Size of : %lu", sizeof(sheets_data));
   if (strcmp(name, "sheet") == 0){
-    count_sheet++;
-    if (count_sheet != 1){
-      sheets_data = realloc(sheets_data, count_sheet * sizeof(struct SheetData));
-    }
-    printf("count_sheet: %d", count_sheet);
     for(i = 0; attrs[i]; i += 2){
       if (strcmp(attrs[i], "name") == 0){
-        printf(" %s = '%s'\n", attrs[i], attrs[i + 1]);
-	sheets_data[count_sheet - 1].name = malloc(sizeof(attrs[i + 1]));
-	strcpy(sheets_data[count_sheet - 1].name, attrs[i + 1]);
+	sheets_data->name = malloc(sizeof(attrs[i + 1]));
+	memcpy(sheets_data->name, attrs[i + 1], sizeof(attrs[i + 1]));
       }
       if (strcmp(attrs[i], "sheetId") == 0){
-        printf(" %s = '%s'\n", attrs[i], attrs[i + 1]);
-	sheets_data[count_sheet - 1].sheet_id = malloc(sizeof(attrs[i + 1]));
-	strcpy(sheets_data[count_sheet - 1].sheet_id, attrs[i + 1]);
-	
+	sheets_data->sheet_id = malloc(sizeof(attrs[i + 1]));
+	memcpy(sheets_data->sheet_id, attrs[i + 1], sizeof(attrs[i + 1]));
       }
       if (strcmp(attrs[i], "state") == 0){
-	printf(" %s = '%s'\n", attrs[i], attrs[i + 1]);      
-	sheets_data[count_sheet - 1].is_hidden = strcmp(attrs[i + 1], "hidden") == 0 ? 1 : 0;
+	sheets_data->is_hidden = strcmp(attrs[i + 1], "hidden") == 0 ? 1 : 0;
       }
     } 
   }
   
-  printf("%" XML_FMT_STR "\n", name);
+  /*printf("%" XML_FMT_STR "\n", name);*/
 }
 
 static void XMLCALL
@@ -85,10 +77,11 @@ void content_handler(void *userData, const XML_Char *s, int len){
   strncpy(value, s, len);
 }
 
-int load_contenttype(zip_t *zip){
+/*int load_contenttype(zip_t *zip){
   const char *zip_file_name = "[Content_Types].xml";
-  return process_zip_file(zip, zip_file_name);
-}
+  int status = process_zip_file(zip, zip_file_name);
+  return status;
+}*/
 
 zip_t *open_zip(const char *file_name){
   return zip_open(file_name, ZIP_RDONLY, NULL);
@@ -96,16 +89,11 @@ zip_t *open_zip(const char *file_name){
 
 int load_workbook(zip_t *zip){
   const char *zip_file_name = "xl/workbook.xml";
-  struct SheetData *sheets_data = malloc(1 * sizeof *sheets_data);
-  int status = process_zip_file(zip, zip_file_name, sheets_data);
-  int length_sheets = (int)(sizeof(sheets_data) / sizeof(struct SheetData));
-  printf("%d", length_sheets);
-  for(int i = 0; i < length_sheets; i++){
-    printf("Name %s", sheets_data[i].name);
-    printf("sheetID: %s", sheets_data[i].sheet_id);
-    printf("is hidden? %d", sheets_data[i].is_hidden);
-  }
-  free(sheets_data);
+  struct SheetData sheets_data;
+  int status = process_zip_file(zip, zip_file_name, &sheets_data);
+  printf("Name %s\n", sheets_data.name);
+  printf("sheetID: %s\n", sheets_data.sheet_id);
+  printf("is hidden? %d\n", sheets_data.is_hidden);
   return status;
 }
 
@@ -142,8 +130,12 @@ int process_zip_file(zip_t *zip, const char *zip_file_name, void *callbackdata){
 }
 
 int main(void){
-  const char *file_name = "/Volumes/PUBLIC/excelsample/report__codestringers.xlsx";
+  const char *file_name = "/home/huydang/Downloads/excelsample/report__codestringers.xlsx";
   zip_t *zip = open_zip(file_name);
+  if (zip == NULL){
+    fprintf(stderr, "File not found");
+    return 0;
+  }
   int status_workbook = load_workbook(zip);
 
   zip_close(zip);
