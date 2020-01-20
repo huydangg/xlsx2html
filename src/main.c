@@ -23,7 +23,6 @@ int process_zip_file(zip_t *zip, const char *zip_file_name, void *callbackdata);
 struct SheetData {
    XML_Char *name;
    XML_Char *sheet_id;
-   int is_hidden;
    char *path_name;
    int index_sheet;
 };
@@ -52,6 +51,10 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "sheet") == 0){
     count_sheet++;
     for(i = 0; attrs[i]; i += 2){
+      if(strcmp(attrs[i], "state") == 0 && strcmp(attrs[i + 1], "hidden") == 0){
+	count_sheet--;
+	return;
+      }
       if (strcmp(attrs[i], "name") == 0){
 	sheet_data->name = malloc(strlen(attrs[i + 1]));
 	memcpy(sheet_data->name, attrs[i + 1], strlen(attrs[i + 1]));
@@ -72,9 +75,7 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
         free(_tmp_sheet_id);
 	memcpy(sheet_data->sheet_id, attrs[i + 1], strlen(attrs[i + 1]));
       }
-      if (strcmp(attrs[i], "state") == 0){
-	sheet_data->is_hidden = strcmp(attrs[i + 1], "hidden") == 0 ? 1 : 0;
-      }
+
     } 
     sheets_data[count_sheet - 1] = *sheet_data;
   }
@@ -113,7 +114,6 @@ int load_workbook(zip_t *zip){
   for(int i = 0; i < count_sheet; i++){
     printf("Name %" XML_FMT_STR "\n", sheets_data[i].name);
     printf("sheetID: %s\n", sheets_data[i].sheet_id);
-    printf("is hidden? %d\n", sheets_data[i].is_hidden);
     printf("Path name: %s\n", sheets_data[i].path_name);
   }
   return status;
