@@ -24,9 +24,8 @@ struct SheetData {
    XML_Char *name;
    XML_Char *sheet_id;
    char *path_name;
-   int index_sheet;
 };
-struct SheetData sheets_data[100];
+struct SheetData sheets_data[50];
 int count_sheet = 0;
 
 char *insert_substr_to_str_at_pos(char *des, char *substr, int pos){
@@ -36,11 +35,8 @@ static void XMLCALL
 startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
   int i;
   (void)attrs;
-  struct SheetData *sheet_data = userData;
+  struct SheetData *sheets_data = userData;
 
-  /*for (i = 0; i < *depthPtr; i++)
-    putchar('\t');
-  */
   if (strcmp(name, "Override") == 0){
     for(i = 0; attrs[i]; i += 2){
       if(strcmp(attrs[i], "PartName") == 0){
@@ -56,28 +52,27 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
 	return;
       }
       if (strcmp(attrs[i], "name") == 0){
-	sheet_data->name = malloc(strlen(attrs[i + 1]));
-	memcpy(sheet_data->name, attrs[i + 1], strlen(attrs[i + 1]));
+	sheets_data[count_sheet - 1].name = malloc(strlen(attrs[i + 1]));
+	memcpy(sheets_data[count_sheet - 1].name, attrs[i + 1], strlen(attrs[i + 1]));
       }
       if (strcmp(attrs[i], "sheetId") == 0){
-	sheet_data->sheet_id = malloc(strlen(attrs[i + 1]));
+	sheets_data[count_sheet - 1].sheet_id = malloc(strlen(attrs[i + 1]));
 
 	char *pattern_name = "xl/worksheets/sheet.xml";
 	char *_tmp_sheet_id = malloc(strlen(attrs[i + 1]));
 	int pos = 19; 
 	strcpy(_tmp_sheet_id, attrs[i + 1]);
-	sheet_data->path_name = malloc(strlen(_tmp_sheet_id) + strlen(pattern_name) + 1);
-	strncpy(sheet_data->path_name, pattern_name, pos);
-	sheet_data->path_name[pos] = '\0';
-	strcat(sheet_data->path_name, _tmp_sheet_id);
-	strcat(sheet_data->path_name, pattern_name + pos);
+	sheets_data[count_sheet - 1].path_name = malloc(strlen(_tmp_sheet_id) + strlen(pattern_name) + 1);
+	strncpy(sheets_data[count_sheet - 1].path_name, pattern_name, pos);
+	sheets_data[count_sheet - 1].path_name[pos] = '\0';
+	strcat(sheets_data[count_sheet - 1].path_name, _tmp_sheet_id);
+	strcat(sheets_data[count_sheet - 1].path_name, pattern_name + pos);
 
         free(_tmp_sheet_id);
-	memcpy(sheet_data->sheet_id, attrs[i + 1], strlen(attrs[i + 1]));
+	memcpy(sheets_data[count_sheet - 1].sheet_id, attrs[i + 1], strlen(attrs[i + 1]));
       }
 
     } 
-    sheets_data[count_sheet - 1] = *sheet_data;
   }
   
   /*printf("%" XML_FMT_STR "\n", name);*/
@@ -109,8 +104,7 @@ zip_t *open_zip(const char *file_name){
 
 int load_workbook(zip_t *zip){
   const char *zip_file_name = "xl/workbook.xml";
-  struct SheetData sheet_data;
-  int status = process_zip_file(zip, zip_file_name, &sheet_data);
+  int status = process_zip_file(zip, zip_file_name, &sheets_data);
   for(int i = 0; i < count_sheet; i++){
     printf("Name %" XML_FMT_STR "\n", sheets_data[i].name);
     printf("sheetID: %s\n", sheets_data[i].sheet_id);
@@ -155,7 +149,7 @@ int process_zip_file(zip_t *zip, const char *zip_file_name, void *callbackdata){
 }
 
 int main(void){
-  const char *file_name = "/home/huydang/Downloads/excelsample/report__codestringers.xlsx";
+  const char *file_name = "/Volumes/PUBLIC/excelsample/report__codestringers.xlsx";
   zip_t *zip = open_zip(file_name);
   if (zip == NULL){
     fprintf(stderr, "File not found");
