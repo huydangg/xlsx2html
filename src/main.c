@@ -27,12 +27,17 @@ struct SheetData {
    char *path_name;
    int index_sheet;
 };
+struct SheetData sheets_data[100];
+int count_sheet = 0;
 
+char *insert_substr_to_str_at_pos(char *des, char *substr, int pos){
+
+}
 static void XMLCALL
 startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
   int i;
   (void)attrs;
-  struct SheetData *sheets_data = userData;
+  struct SheetData *sheet_data = userData;
 
   /*for (i = 0; i < *depthPtr; i++)
     putchar('\t');
@@ -45,19 +50,33 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
     }
   }
   if (strcmp(name, "sheet") == 0){
+    count_sheet++;
     for(i = 0; attrs[i]; i += 2){
       if (strcmp(attrs[i], "name") == 0){
-	sheets_data->name = malloc(sizeof(attrs[i + 1]));
-	memcpy(sheets_data->name, attrs[i + 1], sizeof(attrs[i + 1]));
+	sheet_data->name = malloc(strlen(attrs[i + 1]));
+	memcpy(sheet_data->name, attrs[i + 1], strlen(attrs[i + 1]));
       }
       if (strcmp(attrs[i], "sheetId") == 0){
-	sheets_data->sheet_id = malloc(sizeof(attrs[i + 1]));
-	memcpy(sheets_data->sheet_id, attrs[i + 1], sizeof(attrs[i + 1]));
+	sheet_data->sheet_id = malloc(strlen(attrs[i + 1]));
+
+	char *pattern_name = "xl/worksheets/sheet.xml";
+	char *_tmp_sheet_id = malloc(strlen(attrs[i + 1]));
+	int pos = 19; 
+	strcpy(_tmp_sheet_id, attrs[i + 1]);
+	sheet_data->path_name = malloc(strlen(_tmp_sheet_id) + strlen(pattern_name) + 1);
+	strncpy(sheet_data->path_name, pattern_name, pos);
+	sheet_data->path_name[pos] = '\0';
+	strcat(sheet_data->path_name, _tmp_sheet_id);
+	strcat(sheet_data->path_name, pattern_name + pos);
+
+        free(_tmp_sheet_id);
+	memcpy(sheet_data->sheet_id, attrs[i + 1], strlen(attrs[i + 1]));
       }
       if (strcmp(attrs[i], "state") == 0){
-	sheets_data->is_hidden = strcmp(attrs[i + 1], "hidden") == 0 ? 1 : 0;
+	sheet_data->is_hidden = strcmp(attrs[i + 1], "hidden") == 0 ? 1 : 0;
       }
     } 
+    sheets_data[count_sheet - 1] = *sheet_data;
   }
   
   /*printf("%" XML_FMT_STR "\n", name);*/
@@ -89,12 +108,18 @@ zip_t *open_zip(const char *file_name){
 
 int load_workbook(zip_t *zip){
   const char *zip_file_name = "xl/workbook.xml";
-  struct SheetData sheets_data;
-  int status = process_zip_file(zip, zip_file_name, &sheets_data);
-  printf("Name %s\n", sheets_data.name);
-  printf("sheetID: %s\n", sheets_data.sheet_id);
-  printf("is hidden? %d\n", sheets_data.is_hidden);
+  struct SheetData sheet_data;
+  int status = process_zip_file(zip, zip_file_name, &sheet_data);
+  for(int i = 0; i < count_sheet; i++){
+    printf("Name %" XML_FMT_STR "\n", sheets_data[i].name);
+    printf("sheetID: %s\n", sheets_data[i].sheet_id);
+    printf("is hidden? %d\n", sheets_data[i].is_hidden);
+    printf("Path name: %s\n", sheets_data[i].path_name);
+  }
   return status;
+}
+int load_sheet(zip_t *zip, const char *sheet_file_name){
+  return 1;
 }
 
 int process_zip_file(zip_t *zip, const char *zip_file_name, void *callbackdata){
