@@ -18,7 +18,8 @@
 #endif 
 #define PARSE_BUFFER_SIZE 256 
 
-int process_zip_file(zip_t *zip, const char *zip_file_name, void *callbackdata);
+int process_zip_file(zip_file_t *archive, void *callbackdata);
+XML_Parser *xmlparser;
 
 struct SheetData {
    XML_Char *name;
@@ -165,9 +166,14 @@ zip_t *open_zip(const char *file_name){
   return zip_open(file_name, ZIP_RDONLY, NULL);
 }
 
+zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name){
+  return zip_fopen(zip, zip_file_name, ZIP_FL_UNCHANGED);
+}
+
 int load_workbook(zip_t *zip){
   const char *zip_file_name = "xl/workbook.xml";
-  int status = process_zip_file(zip, zip_file_name, &sheets_data);
+  zip_file_t *archive = open_zip_file(zip, zip_file_name);
+  int status = process_zip_file(archive, &sheets_data);
   for(int i = 0; i < count_sheet; i++){
     printf("Name %" XML_FMT_STR "\n", sheets_data[i].name);
     printf("sheetID: %s\n", sheets_data[i].sheet_id);
@@ -178,8 +184,9 @@ int load_workbook(zip_t *zip){
 
 int load_styles(zip_t *zip){
   const char *zip_file_name = "xl/styles.xml";
+  zip_file_t *archive = open_zip_file(zip, zip_file_name);
   // Load NumFMT first
-  int status = process_zip_file(zip, zip_file_name, &numfmts);
+  int status = process_zip_file(archive, &numfmts);
   for (int i = 0; i < count_numFmt; i++){
     printf("Format code: %s\n", numfmts[i].format_code);
     printf("Format id: %s\n", numfmts[i].format_id);
@@ -191,8 +198,7 @@ int load_sheet(zip_t *zip, const char *sheet_file_name){
   return 1;
 }
 
-int process_zip_file(zip_t *zip, const char *zip_file_name, void *callbackdata){
-  zip_file_t *archive = zip_fopen(zip, zip_file_name, ZIP_FL_UNCHANGED);
+int process_zip_file(zip_file_t *archive, void *callbackdata){
   void *buf;
   zip_int64_t buflen;
   XML_Parser parser = XML_ParserCreate(NULL);
