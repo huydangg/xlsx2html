@@ -155,13 +155,14 @@ endElement(void *userData, const XML_Char *name) {
 static void XMLCALL font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "font") == 0){
     count_font++; 
-    XML_SetElementHandler(xmlparser, font_item_start_element, endElement);
+    printf("count_font: %d", count_font);
+    XML_SetElementHandler(xmlparser, font_item_start_element, NULL);
   }
 }
 
 static void XMLCALL font_main_end_element(void *userData, const XML_Char *name) {
   if (strcmp(name, "font") == 0){
-   XML_SetElementHandler(xmlparser, font_main_start_element, font_main_end_element);
+   XML_SetElementHandler(xmlparser, font_main_start_element, endElement);
   }
 }
 
@@ -169,10 +170,9 @@ static void XMLCALL font_item_start_element(void *userData, const XML_Char *name
   struct Font *fonts_callbackdata = userData;
   int i;
   if (strcmp(name, "sz") == 0) {
-    printf("count_font: %d", count_font);
     for (i = 0; attrs[i]; i += 2) {
       if(strcmp(attrs[i], "val") == 0){
-	fonts_callbackdata[count_font - 1].size = (int)attrs[i + 1];
+	fonts_callbackdata[count_font - 1].size = (int)strtol((char *)attrs[i + 1], NULL, 10);
       }
     }
   } else if (strcmp(name, "name") == 0) {
@@ -198,7 +198,7 @@ static void XMLCALL font_item_start_element(void *userData, const XML_Char *name
     for (i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "val") == 0) {
 	fonts_callbackdata[count_font - 1].underline = malloc(strlen(attrs[i + 1]));
-	fonts_callbackdata[count_font - 1].underline = attrs[i + 1];
+	memcpy(fonts_callbackdata[count_font - 1].underline, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
   } else if (strcmp(name, "color") == 0) {
@@ -262,13 +262,20 @@ int load_styles(zip_t *zip) {
   for (int i = 0; i < count_numFmt; i++) {
     printf("Format code: %s\n", numfmts[i].format_code);
     printf("Format id: %s\n", numfmts[i].format_id);
+    free(numfmts[i].format_code);
+    free(numfmts[i].format_id);
   }
+  printf("Count font: %d", count_font);
   for (int i = 0; i < count_font; i++) {
     printf("Font size: %d\n", fonts[i].size);
     printf("Font name: %s\n", fonts[i].name);
     printf("Font is bold: %d\n", fonts[i].is_bold);
     printf("Font is italic: %d\n", fonts[i].is_italic);
+    printf("Font underline: %s\n", fonts[i].underline);
     printf("Font color rgb: %s\n", fonts[i].color.rgb);
+    free(fonts[i].name);
+    free(fonts[i].underline);
+    free(fonts[i].color.rgb);
   }
   return status;
 }
