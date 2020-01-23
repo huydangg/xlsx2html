@@ -50,9 +50,14 @@ struct Font {
 };
 
 struct Fill {
+  struct PatternFill pattern_fill;
+};
+
+struct PatternFill {
   XML_Char *pattern_type;
   struct Color bg_color;
-};
+  struct Color fg_color;
+}
 
 struct Border {
   XML_Char *style;
@@ -75,6 +80,7 @@ struct Border borders[50];
 int count_sheet = 0;
 int count_numFmt = 0;
 int count_font = 0;
+int count_fill = 0;
 
 char *insert_substr_to_str_at_pos(char *des, char *substr, int pos) {
   char *_tmp_sheet_id = malloc(strlen(substr));
@@ -140,6 +146,10 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
     XML_SetUserData(xmlparser, &fonts);
     XML_SetElementHandler(xmlparser, font_main_start_element, NULL);
   }
+  if (strcmp(name, "fills") == 0) {
+    XML_SetUserData(xmlparser, &fills);
+    XML_SetElementHandler(xmlparser, fill_main_start_element, NULL);
+  }
   
   /*printf("%" XML_FMT_STR "\n", name);*/
 }
@@ -162,8 +172,7 @@ static void XMLCALL font_main_start_element(void *userData, const XML_Char *name
 
 static void XMLCALL font_main_end_element(void *userData, const XML_Char *name) {
   if (strcmp(name, "font") == 0){
-   XML_SetElementHandler(xmlparser, font_main_start_element, endElement);
-  }
+   XML_SetElementHandler(xmlparser, font_main_start_element, endElement); }
 }
 
 static void XMLCALL font_item_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
@@ -210,14 +219,29 @@ static void XMLCALL font_item_start_element(void *userData, const XML_Char *name
 	fonts_callbackdata[count_font - 1].color = color;
       }
     }
-  } else {
-    XML_SetElementHandler(xmlparser, NULL, font_main_end_element);
+  } else if(strcmp(name, "family") == 0){
+
+  } else if(strcmp(name, "charset") == 0){
+
   }
+  XML_SetElementHandler(xmlparser, NULL, font_main_end_element);
 
 }
 
 static void XMLCALL font_item_end_element(void *userData, const XML_Char *name) {
 
+}
+
+static void XMLCALL fill_main_start_element(void *userData, const XML_Char *name) {
+
+  if (strcmp(name, "fill") == 0) {
+    count_fill++;
+    XML_SetElementHandler(xmlparser, font_item_start_element, NULL);
+  }
+}
+
+static void XMLCALL fill_main_end_element(void *userData, const XML_Char *name) {
+  
 }
 
 void content_handler(void *userData, const XML_Char *s, int len) {
