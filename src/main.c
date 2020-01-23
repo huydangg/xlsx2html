@@ -23,6 +23,10 @@ static void XMLCALL font_main_start_element(void *userData, const XML_Char *name
 static void XMLCALL font_main_end_element(void *userData, const XML_Char *name); 
 static void XMLCALL font_item_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
 static void XMLCALL font_item_end_element(void *userData, const XML_Char *name);
+static void XMLCALL fill_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+static void XMLCALL fill_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
+static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
+static void XMLCALL fill_item_lv1_end_element(void *userData, const XML_Char *name); 
 XML_Parser xmlparser = NULL;
 
 struct SheetData {
@@ -49,15 +53,15 @@ struct Font {
   struct Color color;
 };
 
-struct Fill {
-  struct PatternFill pattern_fill;
-};
-
 struct PatternFill {
   XML_Char *pattern_type;
   struct Color bg_color;
   struct Color fg_color;
-}
+};
+
+struct Fill {
+  struct PatternFill pattern_fill;
+};
 
 struct Border {
   XML_Char *style;
@@ -158,8 +162,11 @@ static void XMLCALL
 endElement(void *userData, const XML_Char *name) {
   (void)name;
   if (strcmp(name, "fonts") == 0) {
-    XML_SetElementHandler(xmlparser, startElement, NULL);
+  } else if (strcmp(name, "fills") == 0) {
+
   }
+
+  XML_SetElementHandler(xmlparser, startElement, NULL);
 }
 
 static void XMLCALL font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
@@ -232,16 +239,48 @@ static void XMLCALL font_item_end_element(void *userData, const XML_Char *name) 
 
 }
 
-static void XMLCALL fill_main_start_element(void *userData, const XML_Char *name) {
-
+static void XMLCALL fill_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "fill") == 0) {
     count_fill++;
-    XML_SetElementHandler(xmlparser, font_item_start_element, NULL);
+    XML_SetElementHandler(xmlparser, fill_item_lv1_start_element, NULL);
   }
 }
 
 static void XMLCALL fill_main_end_element(void *userData, const XML_Char *name) {
-  
+  if (strcmp(name, "fill") == 0)  {
+    XML_SetElementHandler(xmlparser, fill_main_start_element, endElement);
+  }
+}
+
+static void XMLCALL fill_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+  if (strcmp(name, "patternFill") == 0)  {
+
+  } else if (strcmp(name, "gradientFill") == 0) {
+    
+  }
+  XML_SetElementHandler(xmlparser, fill_item_lv2_start_element, fill_item_lv1_end_element);
+}
+
+static void XMLCALL fill_item_lv1_end_element(void *userData, const XML_Char *name) {
+  if (strcmp(name, "patternFill") == 0) {
+
+  } else if (strcmp(name, "gradientFill") == 0) {
+    
+  }
+  XML_SetElementHandler(xmlparser, fill_item_lv1_start_element, fill_main_end_element);
+}
+
+static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+  if (strcmp(name, "bgColor") == 0)  {
+     
+  } else if (strcmp(name, "fgColor") == 0) {
+    
+  }
+  XML_SetElementHandler(xmlparser, NULL, fill_item_lv1_end_element);
+}
+
+static void XMLCALL fill_item_lv2_end_element(void *userData, const XML_Char *name) {
+
 }
 
 void content_handler(void *userData, const XML_Char *s, int len) {
@@ -289,7 +328,7 @@ int load_styles(zip_t *zip) {
     free(numfmts[i].format_code);
     free(numfmts[i].format_id);
   }
-  printf("Count font: %d", count_font);
+  printf("Count font: %d\n", count_font);
   for (int i = 0; i < count_font; i++) {
     printf("Font size: %d\n", fonts[i].size);
     printf("Font name: %s\n", fonts[i].name);
@@ -340,7 +379,7 @@ int process_zip_file(zip_file_t *archive, void *callbackdata) {
 }
 
 int main(void) {
-  const char *file_name = "/home/huydang/Downloads/excelsample/report__codestringers.xlsx";
+  const char *file_name = "/Volumes/PUBLIC/excelsample/report__codestringers.xlsx";
   zip_t *zip = open_zip(file_name);
   if (zip == NULL){
     fprintf(stderr, "File not found");
