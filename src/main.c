@@ -86,6 +86,7 @@ int count_sheet = 0;
 int count_numFmt = 0;
 int count_font = 0;
 int count_fill = 0;
+int count_border = 0;
 
 char *insert_substr_to_str_at_pos(char *des, char *substr, int pos) {
   char *_tmp_sheet_id = malloc(strlen(substr));
@@ -153,6 +154,9 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "fills") == 0) {
     XML_SetUserData(xmlparser, &fills);
     XML_SetElementHandler(xmlparser, fill_main_start_element, NULL);
+  }
+  if (strcmp(name, "borders") == 0) {
+    XML_SetUserData(xmlparser, &borders);
   }
 }
 
@@ -293,13 +297,39 @@ static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *
 }
 
 static void XMLCALL fill_item_lv2_end_element(void *userData, const XML_Char *name) {
-  if (strcmp(name, "bgcolor") == 0) {
+  if (strcmp(name, "bgColor") == 0) {
     
-  } else if (strcmp(name, "fgcolor") == 0) {
+  } else if (strcmp(name, "fgColor") == 0) {
 
   }
   XML_SetElementHandler(xmlparser, fill_item_lv2_start_element, fill_item_lv1_end_element);
-	   
+}
+
+static void XMLCALL border_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+  if (strcmp(name, "border") == 0) {
+    count_border++;
+    XML_SetElementHandler(xmlparser, border_item_lv1_start_element, NULL);
+  }
+}
+
+static void XMLCALL border_main_end_element(void *userData, const XML_Char *name) {
+
+}
+
+static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+  if (strcmp(name, "left") == 0) {
+
+  } else if (strcmp(name, "right") == 0) {
+
+  } else if (strcmp(name, "top") == 0) {
+
+  } else if (strcmp(name, "bottom") == 0) {
+
+  }
+}
+
+static void XMLCALL border_item_lv1_end_element(void *userData, const XML_Char *name) {
+  XML_SetElementHandler(xmlparser, border_item_lv1_start_element, NULL);
 }
 
 void content_handler(void *userData, const XML_Char *s, int len) {
