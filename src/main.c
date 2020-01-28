@@ -27,6 +27,7 @@ static void XMLCALL fill_main_start_element(void *userData, const XML_Char *name
 static void XMLCALL fill_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
 static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
 static void XMLCALL fill_item_lv1_end_element(void *userData, const XML_Char *name); 
+static void XMLCALL fill_item_lv2_end_element(void *userData, const XML_Char *name); 
 XML_Parser xmlparser = NULL;
 
 struct SheetData {
@@ -129,7 +130,6 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
 	sheets_data_callbackdata[count_sheet - 1].path_name = insert_substr_to_str_at_pos(pattern_name, attrs[i + 1], 19);
 	memcpy(sheets_data_callbackdata[count_sheet - 1].sheet_id, attrs[i + 1], strlen(attrs[i + 1]));
       }
-
     } 
   }
   if (strcmp(name, "numFmt") == 0){
@@ -154,8 +154,6 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
     XML_SetUserData(xmlparser, &fills);
     XML_SetElementHandler(xmlparser, fill_main_start_element, NULL);
   }
-  
-  /*printf("%" XML_FMT_STR "\n", name);*/
 }
 
 static void XMLCALL
@@ -163,7 +161,6 @@ endElement(void *userData, const XML_Char *name) {
   (void)name;
   if (strcmp(name, "fonts") == 0) {
   } else if (strcmp(name, "fills") == 0) {
-
   }
 
   XML_SetElementHandler(xmlparser, startElement, NULL);
@@ -254,11 +251,16 @@ static void XMLCALL fill_main_end_element(void *userData, const XML_Char *name) 
 
 static void XMLCALL fill_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "patternFill") == 0)  {
-
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "patternType") == 0) {
+        fills[count_fill - 1].pattern_fill.pattern_type = malloc(strlen(attrs[i + 1]));
+        memcpy(fills[count_fill - 1].pattern_fill.pattern_type, attrs[i + 1], strlen(attrs[i + 1]));
+      }
+    }
+    XML_SetElementHandler(xmlparser, fill_item_lv2_start_element, fill_item_lv1_end_element);
   } else if (strcmp(name, "gradientFill") == 0) {
     
   }
-  XML_SetElementHandler(xmlparser, fill_item_lv2_start_element, fill_item_lv1_end_element);
 }
 
 static void XMLCALL fill_item_lv1_end_element(void *userData, const XML_Char *name) {
@@ -271,16 +273,33 @@ static void XMLCALL fill_item_lv1_end_element(void *userData, const XML_Char *na
 }
 
 static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+  int i;
   if (strcmp(name, "bgColor") == 0)  {
-     
+    for (i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "rgb") == 0) {
+        fills[count_fill - 1].pattern_fill.bg_color.rgb = malloc(strlen(attrs[i + 1]));
+        memcpy(fills[count_fill - 1].pattern_fill.bg_color.rgb, attrs[i + 1], strlen(attrs[i + 1]));
+      }
+    }
   } else if (strcmp(name, "fgColor") == 0) {
-    
+     for (i = 0; attrs[i]; i += 2) {
+       if (strcmp(attrs[i], "rgb") == 0) {
+         fills[count_fill - 1].pattern_fill.fg_color.rgb = malloc(strlen(attrs[i + 1]));
+         memcpy(fills[count_fill - 1].pattern_fill.fg_color.rgb, attrs[i + 1], strlen(attrs[i + 1]));
+       }
+     }   
   }
-  XML_SetElementHandler(xmlparser, NULL, fill_item_lv1_end_element);
+  XML_SetElementHandler(xmlparser, NULL, fill_item_lv2_end_element);
 }
 
 static void XMLCALL fill_item_lv2_end_element(void *userData, const XML_Char *name) {
+  if (strcmp(name, "bgcolor") == 0) {
+    
+  } else if (strcmp(name, "fgcolor") == 0) {
 
+  }
+  XML_SetElementHandler(xmlparser, fill_item_lv2_start_element, fill_item_lv1_end_element);
+	   
 }
 
 void content_handler(void *userData, const XML_Char *s, int len) {
@@ -340,6 +359,14 @@ int load_styles(zip_t *zip) {
     free(fonts[i].underline);
     free(fonts[i].color.rgb);
   }
+  for (int i = 0; i < count_fill; i++) {
+    printf("Fill pattern type: %s\n", fills[i].pattern_fill.pattern_type);
+    printf("Fill bg_color rgb: %s\n", fills[i].pattern_fill.bg_color.rgb);
+    printf("Fill fg_color rgb: %s\n", fills[i].pattern_fill.fg_color.rgb);
+    free(fills[i].pattern_fill.pattern_type);
+    free(fills[i].pattern_fill.bg_color.rgb);
+    free(fills[i].pattern_fill.fg_color.rgb);
+  }
   return status;
 }
 
@@ -397,7 +424,6 @@ int main(void) {
     zip_close(zip);
     return 0;
   } 
-
   zip_close(zip);
   return 0; 
 }
