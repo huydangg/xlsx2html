@@ -83,7 +83,7 @@ struct BorderCell {
 
 struct SheetData sheets_data[50];
 struct NumFMT numfmts[50];
-struct Font fonts[50];
+struct Font fonts[100];
 struct Fill fills[50];
 struct BorderCell borders[50];
 
@@ -191,43 +191,45 @@ static void XMLCALL font_main_end_element(void *userData, const XML_Char *name) 
 
 static void XMLCALL font_item_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
   struct Font *fonts_callbackdata = userData;
-  int i;
   if (strcmp(name, "sz") == 0) {
-    for (i = 0; attrs[i]; i += 2) {
+    for (int i = 0; attrs[i]; i += 2) {
       if(strcmp(attrs[i], "val") == 0){
 	fonts_callbackdata[count_font - 1].size = (int)strtol((char *)attrs[i + 1], NULL, 10);
       }
     }
   } else if (strcmp(name, "name") == 0) {
-    for (i = 0; attrs[i]; i += 2) {
+    for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "val") == 0) {
 	fonts_callbackdata[count_font - 1].name = malloc(strlen(attrs[i + 1]));
+	fonts_callbackdata[count_font - 1].name[strlen(attrs[i + 1])] = '\0';
 	memcpy(fonts_callbackdata[count_font - 1].name, attrs[i + 1], strlen(attrs[i + 1])); 
       }
     }
   } else if (strcmp(name, "b") == 0) {
-    for (i = 0; attrs[i]; i += 2) {
+    for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "val") == 0) {
         fonts_callbackdata[count_font - 1].is_bold = strcmp(attrs[i + 1], "true") == 0 ? 1 : 0;
       }
     }
   } else if (strcmp(name, "i") == 0) {
-    for (i = 0; attrs[i]; i += 2) {
+    for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "val") == 0) {
 	fonts_callbackdata[count_font - 1].is_italic = strcmp(attrs[i + 1], "true") == 0 ? 1 : 0;
       }
     }
   } else if (strcmp(name, "u") == 0) {
-    for (i = 0; attrs[i]; i += 2) {
+    for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "val") == 0) {
 	fonts_callbackdata[count_font - 1].underline = malloc(strlen(attrs[i + 1]));
+	fonts_callbackdata[count_font - 1].underline[strlen(attrs[i + 1])] = '\0';
 	memcpy(fonts_callbackdata[count_font - 1].underline, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
   } else if (strcmp(name, "color") == 0) {
-    for (i = 0; attrs[i]; i += 2) {
+    for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
 	fonts_callbackdata[count_font - 1].color.rgb = malloc(strlen(attrs[i + 1]));
+	fonts_callbackdata[count_font - 1].color.rgb[strlen(attrs[i + 1])] = '\0';
 	memcpy(fonts_callbackdata[count_font - 1].color.rgb, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -236,12 +238,12 @@ static void XMLCALL font_item_start_element(void *userData, const XML_Char *name
   } else if(strcmp(name, "charset") == 0){
 
   }
-  XML_SetElementHandler(xmlparser, NULL, font_main_end_element);
+  XML_SetElementHandler(xmlparser, NULL, font_item_end_element);
 
 }
 
 static void XMLCALL font_item_end_element(void *userData, const XML_Char *name) {
-
+  XML_SetElementHandler(xmlparser, font_item_start_element, font_main_end_element);
 }
 
 static void XMLCALL fill_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
@@ -263,6 +265,7 @@ static void XMLCALL fill_item_lv1_start_element(void *userData, const XML_Char *
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "patternType") == 0) {
         fills_callbackdata[count_fill - 1].pattern_fill.pattern_type = malloc(strlen(attrs[i + 1]));
+        fills_callbackdata[count_fill - 1].pattern_fill.pattern_type[strlen(attrs[i + 1])] = '\0';
         memcpy(fills_callbackdata[count_fill - 1].pattern_fill.pattern_type, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -287,6 +290,7 @@ static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
         fills_callbackdata[count_fill - 1].pattern_fill.bg_color.rgb = malloc(strlen(attrs[i + 1]));
+        fills_callbackdata[count_fill - 1].pattern_fill.bg_color.rgb[strlen(attrs[i + 1])] = '\0';
         memcpy(fills_callbackdata[count_fill - 1].pattern_fill.bg_color.rgb, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -294,6 +298,7 @@ static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *
      for (int i = 0; attrs[i]; i += 2) {
        if (strcmp(attrs[i], "rgb") == 0) {
          fills_callbackdata[count_fill - 1].pattern_fill.fg_color.rgb = malloc(strlen(attrs[i + 1]));
+         fills_callbackdata[count_fill - 1].pattern_fill.fg_color.rgb[strlen(attrs[i + 1])] = '\0';
          memcpy(fills_callbackdata[count_fill - 1].pattern_fill.fg_color.rgb, attrs[i + 1], strlen(attrs[i + 1]));
        }
      }   
@@ -315,7 +320,7 @@ static void XMLCALL border_main_start_element(void *userData, const XML_Char *na
     count_border++;
     XML_SetElementHandler(xmlparser, border_item_lv1_start_element, NULL);
   }
-}
+} 
 
 static void XMLCALL border_main_end_element(void *userData, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, border_main_start_element, endElement);
@@ -332,6 +337,7 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
       if (strcmp(attrs[i], "style") == 0) {
         printf("%s\n", attrs[i + 1]);
         borders_callbackdata[count_border - 1].left.style = malloc(strlen(attrs[i + 1]));
+        borders_callbackdata[count_border - 1].left.style[strlen(attrs[i + 1])] = '\0';
 	memcpy(borders_callbackdata[count_border - 1].left.style, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -339,6 +345,7 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
         borders_callbackdata[count_border - 1].right.style = malloc(strlen(attrs[i + 1]));
+        borders_callbackdata[count_border - 1].right.style[strlen(attrs[i + 1])] = '\0';
 	memcpy(borders_callbackdata[count_border - 1].right.style, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -346,6 +353,7 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
         borders_callbackdata[count_border - 1].top.style = malloc(strlen(attrs[i + 1]));
+        borders_callbackdata[count_border - 1].top.style[strlen(attrs[i + 1])] = '\0';
 	memcpy(borders_callbackdata[count_border - 1].top.style, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -353,6 +361,7 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
         borders_callbackdata[count_border - 1].bottom.style = malloc(strlen(attrs[i + 1]));
+        borders_callbackdata[count_border - 1].bottom.style[strlen(attrs[i + 1])] = '\0';
 	memcpy(borders_callbackdata[count_border - 1].bottom.style, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -381,6 +390,7 @@ static void XMLCALL border_item_lv2_start_element(void *userData, const XML_Char
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
         _tmp_border->border_color.rgb = malloc(strlen(attrs[i + 1]));
+	_tmp_border->border_color.rgb[strlen(attrs[i + 1])] = '\0';
 	memcpy(_tmp_border->border_color.rgb, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -449,6 +459,7 @@ int load_styles(zip_t *zip) {
     free(fonts[i].underline);
     free(fonts[i].color.rgb);
   }
+  printf("Count fills: %d\n", count_fill);
   for (int i = 0; i < count_fill; i++) {
     printf("Fill pattern type: %s\n", fills[i].pattern_fill.pattern_type);
     printf("Fill bg_color rgb: %s\n", fills[i].pattern_fill.bg_color.rgb);
@@ -457,8 +468,8 @@ int load_styles(zip_t *zip) {
     free(fills[i].pattern_fill.bg_color.rgb);
     free(fills[i].pattern_fill.fg_color.rgb);
   }
-  printf("Count border: %d", count_border);
-  for (int i = 0; i < count_border; i++) {
+  printf("Count border: %d\n", count_border);
+  /*for (int i = 0; i < count_border; i++) {
     printf("Border left style: %s\n", borders[i].left.style);
     printf("Border left color rgb: %s\n", borders[i].left.border_color.rgb);
     printf("Border right style: %s\n", borders[i].right.style);
@@ -467,8 +478,7 @@ int load_styles(zip_t *zip) {
     printf("Border top color rgb: %s\n", borders[i].top.border_color.rgb);
     printf("Border bottom style: %s\n", borders[i].bottom.style);
     printf("Border bottom color rgb: %s\n", borders[i].bottom.border_color.rgb);
-
-  }
+  }*/
   return status;
 }
 
@@ -508,7 +518,7 @@ int process_zip_file(zip_file_t *archive, void *callbackdata) {
 }
 
 int main(void) {
-  const char *file_name = "/Volumes/PUBLIC/excelsample/report__codestringers.xlsx";
+  const char *file_name = "/home/huydang/Downloads/excelsample/report__codestringers.xlsx";
   zip_t *zip = open_zip(file_name);
   if (zip == NULL){
     fprintf(stderr, "File not found");
