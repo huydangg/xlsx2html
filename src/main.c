@@ -127,10 +127,11 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
       }
       if (strcmp(attrs[i], "name") == 0){
 	sheets_data_callbackdata[count_sheet - 1].name = malloc(strlen(attrs[i + 1]));
+        sheets_data_callbackdata[count_sheet - 1].name[strlen(attrs[i + 1])] = '\0';
 	memcpy(sheets_data_callbackdata[count_sheet - 1].name, attrs[i + 1], strlen(attrs[i + 1]));
       }
       if (strcmp(attrs[i], "sheetId") == 0){
-	sheets_data_callbackdata[count_sheet - 1].sheet_id = malloc(strlen(attrs[i + 1]) + 1);
+	sheets_data_callbackdata[count_sheet - 1].sheet_id = malloc(strlen(attrs[i + 1]));
 	sheets_data_callbackdata[count_sheet - 1].sheet_id[strlen(attrs[i + 1])] = '\0';
 	char *pattern_name = "xl/worksheets/sheet.xml";
 	sheets_data_callbackdata[count_sheet - 1].path_name = insert_substr_to_str_at_pos(pattern_name, attrs[i + 1], 19);
@@ -144,10 +145,12 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
     for (i = 0; attrs[i]; i += 2){
       if (strcmp(attrs[i], "formatCode") == 0){
         numFmts_callbackdata[count_numFmt - 1].format_code = malloc(strlen(attrs[i + 1]));
+        numFmts_callbackdata[count_numFmt - 1].format_code[strlen(attrs[i + 1])] = '\0';
 	memcpy(numFmts_callbackdata[count_numFmt - 1].format_code, attrs[i + 1], strlen(attrs[i + 1]));
       }
       if (strcmp(attrs[i], "numFmtId") == 0){
         numFmts_callbackdata[count_numFmt - 1].format_id = malloc(strlen(attrs[i + 1]));
+        numFmts_callbackdata[count_numFmt - 1].format_id[strlen(attrs[i + 1])] = '\0';
 	memcpy(numFmts_callbackdata[count_numFmt - 1].format_id, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -335,9 +338,9 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
   if (strcmp(name, "left") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
-        printf("%s\n", attrs[i + 1]);
         borders_callbackdata[count_border - 1].left.style = malloc(strlen(attrs[i + 1]));
         borders_callbackdata[count_border - 1].left.style[strlen(attrs[i + 1])] = '\0';
+	printf("%lu", sizeof(borders_callbackdata[count_border - 1].left.style));
 	memcpy(borders_callbackdata[count_border - 1].left.style, attrs[i + 1], strlen(attrs[i + 1]));
       }
     }
@@ -469,7 +472,7 @@ int load_styles(zip_t *zip) {
     free(fills[i].pattern_fill.fg_color.rgb);
   }
   printf("Count border: %d\n", count_border);
-  /*for (int i = 0; i < count_border; i++) {
+  for (int i = 0; i < count_border; i++) {
     printf("Border left style: %s\n", borders[i].left.style);
     printf("Border left color rgb: %s\n", borders[i].left.border_color.rgb);
     printf("Border right style: %s\n", borders[i].right.style);
@@ -478,7 +481,7 @@ int load_styles(zip_t *zip) {
     printf("Border top color rgb: %s\n", borders[i].top.border_color.rgb);
     printf("Border bottom style: %s\n", borders[i].bottom.style);
     printf("Border bottom color rgb: %s\n", borders[i].bottom.border_color.rgb);
-  }*/
+  }
   return status;
 }
 
