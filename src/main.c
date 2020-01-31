@@ -321,7 +321,12 @@ static void XMLCALL fill_item_lv2_end_element(void *userData, const XML_Char *na
 static void XMLCALL border_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "border") == 0) {
     count_border++;
-    XML_SetElementHandler(xmlparser, border_item_lv1_start_element, NULL);
+    struct BorderCell *borders_callbackdata = userData;
+    borders_callbackdata[count_border - 1].left.style = NULL;
+    borders_callbackdata[count_border - 1].right.style = NULL;
+    borders_callbackdata[count_border - 1].top.style = NULL;
+    borders_callbackdata[count_border - 1].bottom.style = NULL;
+    XML_SetElementHandler(xmlparser, border_item_lv1_start_element, border_item_lv1_end_element);
   }
 } 
 
@@ -330,11 +335,7 @@ static void XMLCALL border_main_end_element(void *userData, const XML_Char *name
 }
 
 static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct BorderCell *borders_callbackdata = userData;
-  borders_callbackdata[count_border - 1].left.style = NULL;
-  borders_callbackdata[count_border - 1].right.style = NULL;
-  borders_callbackdata[count_border - 1].top.style = NULL;
-  borders_callbackdata[count_border - 1].bottom.style = NULL;
+  struct BorderCell *borders_callbackdata = userData; 
   if (strcmp(name, "left") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
@@ -343,6 +344,7 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
 	memcpy(borders_callbackdata[count_border - 1].left.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
+    XML_SetUserData(xmlparser, &borders_callbackdata[count_border - 1].left);
   } else if (strcmp(name, "right") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
@@ -351,6 +353,7 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
 	memcpy(borders_callbackdata[count_border - 1].right.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
+    XML_SetUserData(xmlparser, &borders_callbackdata[count_border - 1].right);
   } else if (strcmp(name, "top") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
@@ -359,6 +362,7 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
 	memcpy(borders_callbackdata[count_border - 1].top.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
+    XML_SetUserData(xmlparser, &borders_callbackdata[count_border - 1].top);
   } else if (strcmp(name, "bottom") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
@@ -367,33 +371,26 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
 	memcpy(borders_callbackdata[count_border - 1].bottom.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
+    XML_SetUserData(xmlparser, &borders_callbackdata[count_border - 1].bottom);
   } else if (strcmp(name, "diagonal") == 0) {
   }
   XML_SetElementHandler(xmlparser, border_item_lv2_start_element, border_item_lv1_end_element);
 }
 
 static void XMLCALL border_item_lv1_end_element(void *userData, const XML_Char *name) {
+  XML_SetUserData(xmlparser, &borders);
   XML_SetElementHandler(xmlparser, border_item_lv1_start_element, border_main_end_element);
 }
 
 static void XMLCALL border_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct BorderCell *borders_callbackdata = userData;
-  struct Border *_tmp_border;
-  if (borders_callbackdata[count_border - 1].left.style != NULL) {
-    _tmp_border = &borders_callbackdata[count_border - 1].left;
-  } else if (borders_callbackdata[count_border - 1].right.style != NULL) {
-    _tmp_border = &borders_callbackdata[count_border - 1].right;
-  } else if (borders_callbackdata[count_border - 1].top.style != NULL) {
-    _tmp_border = &borders_callbackdata[count_border - 1].top;
-  } else if (borders_callbackdata[count_border - 1].bottom.style != NULL) {
-    _tmp_border = &borders_callbackdata[count_border - 1].bottom;
-  }
+  struct Border *border_specific_callbackdata = userData;
+
   if(strcmp(name, "color") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
-        _tmp_border->border_color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	_tmp_border->border_color.rgb[strlen(attrs[i + 1])] = '\0';
-	memcpy(_tmp_border->border_color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        border_specific_callbackdata->border_color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        border_specific_callbackdata->border_color.rgb[strlen(attrs[i + 1])] = '\0';
+	memcpy(border_specific_callbackdata->border_color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
   }
@@ -472,6 +469,7 @@ int load_styles(zip_t *zip) {
   }
   printf("Count border: %d\n", count_border);
   for (int i = 0; i < count_border; i++) {
+    printf("---------------------------------------------------------\n");
     printf("Border left style: %s\n", borders[i].left.style);
     printf("Border left color rgb: %s\n", borders[i].left.border_color.rgb);
     printf("Border right style: %s\n", borders[i].right.style);
@@ -480,6 +478,14 @@ int load_styles(zip_t *zip) {
     printf("Border top color rgb: %s\n", borders[i].top.border_color.rgb);
     printf("Border bottom style: %s\n", borders[i].bottom.style);
     printf("Border bottom color rgb: %s\n", borders[i].bottom.border_color.rgb);
+    free(borders[i].left.style);
+    free(borders[i].left.border_color.rgb);
+    free(borders[i].right.style);
+    free(borders[i].right.border_color.rgb);
+    free(borders[i].top.style);
+    free(borders[i].top.border_color.rgb);
+    free(borders[i].bottom.style);
+    free(borders[i].bottom.border_color.rgb);
   }
   return status;
 }
