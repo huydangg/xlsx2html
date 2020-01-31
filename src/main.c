@@ -407,6 +407,7 @@ void content_handler(void *userData, const XML_Char *s, int len) {
   }
   char *value = malloc((len + 1) * sizeof(XML_Char));
   strncpy(value, s, len);
+  free(value);
 }
 
 /*int load_contenttype(zip_t *zip){
