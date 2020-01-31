@@ -432,6 +432,9 @@ int load_workbook(zip_t *zip) {
     printf("Name %s\n", sheets_data[i].name);
     printf("sheetID: %s\n", sheets_data[i].sheet_id);
     printf("Path name: %s\n", sheets_data[i].path_name);
+    free(sheets_data[i].name);
+    free(sheets_data[i].sheet_id);
+    free(sheets_data[i].path_name);
   }
   return status;
 }
