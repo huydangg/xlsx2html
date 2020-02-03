@@ -94,13 +94,13 @@ int count_fill = 0;
 int count_border = 0;
 
 XML_Char *insert_substr_to_str_at_pos(XML_Char *des, XML_Char *substr, int pos) {
-  XML_Char *_tmp_sheet_id = malloc(sizeof(XML_Char) * strlen(substr));
-  strcpy(_tmp_sheet_id, substr);
+  XML_Char *_tmp_sheet_id = malloc(sizeof(XML_Char) * (strlen(substr) + 1));
+  memcpy(_tmp_sheet_id, substr, sizeof(XML_Char) * (strlen(substr) + 1));
   XML_Char *_tmp_path_name = malloc(sizeof(XML_Char) * (strlen(_tmp_sheet_id) + strlen(des) + 1));
-  strncpy(_tmp_path_name, des, pos);
+  memcpy(_tmp_path_name, des, pos);
   _tmp_path_name[pos] = '\0';
-  strcat(_tmp_path_name, _tmp_sheet_id);
-  strcat(_tmp_path_name, des + pos);
+  memcpy(_tmp_path_name + pos, _tmp_sheet_id, sizeof(XML_Char) * (strlen(_tmp_sheet_id) + 1));
+  memcpy(_tmp_path_name + pos + strlen(_tmp_sheet_id), des + pos, sizeof(XML_Char) * (strlen(des + pos) + 1));
   free(_tmp_sheet_id);
   return _tmp_path_name;
 }
@@ -127,15 +127,13 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
       }
       if (strcmp(attrs[i], "name") == 0){
 	sheets_data_callbackdata[count_sheet - 1].name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        sheets_data_callbackdata[count_sheet - 1].name[strlen(attrs[i + 1])] = '\0';
 	memcpy(sheets_data_callbackdata[count_sheet - 1].name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
       if (strcmp(attrs[i], "sheetId") == 0){
 	sheets_data_callbackdata[count_sheet - 1].sheet_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	sheets_data_callbackdata[count_sheet - 1].sheet_id[strlen(attrs[i + 1])] = '\0';
+	memcpy(sheets_data_callbackdata[count_sheet - 1].sheet_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	char *pattern_name = "xl/worksheets/sheet.xml";
 	sheets_data_callbackdata[count_sheet - 1].path_name = insert_substr_to_str_at_pos(pattern_name, attrs[i + 1], 19);
-	memcpy(sheets_data_callbackdata[count_sheet - 1].sheet_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     } 
   }
@@ -145,12 +143,10 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
     for (i = 0; attrs[i]; i += 2){
       if (strcmp(attrs[i], "formatCode") == 0){
         numFmts_callbackdata[count_numFmt - 1].format_code = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        numFmts_callbackdata[count_numFmt - 1].format_code[strlen(attrs[i + 1])] = '\0';
 	memcpy(numFmts_callbackdata[count_numFmt - 1].format_code, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
       if (strcmp(attrs[i], "numFmtId") == 0){
         numFmts_callbackdata[count_numFmt - 1].format_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        numFmts_callbackdata[count_numFmt - 1].format_id[strlen(attrs[i + 1])] = '\0';
 	memcpy(numFmts_callbackdata[count_numFmt - 1].format_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -204,7 +200,6 @@ static void XMLCALL font_item_start_element(void *userData, const XML_Char *name
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "val") == 0) {
 	fonts_callbackdata[count_font - 1].name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	fonts_callbackdata[count_font - 1].name[strlen(attrs[i + 1])] = '\0';
 	memcpy(fonts_callbackdata[count_font - 1].name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1)); 
       }
     }
@@ -224,7 +219,6 @@ static void XMLCALL font_item_start_element(void *userData, const XML_Char *name
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "val") == 0) {
 	fonts_callbackdata[count_font - 1].underline = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	fonts_callbackdata[count_font - 1].underline[strlen(attrs[i + 1])] = '\0';
 	memcpy(fonts_callbackdata[count_font - 1].underline, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -232,7 +226,6 @@ static void XMLCALL font_item_start_element(void *userData, const XML_Char *name
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
 	fonts_callbackdata[count_font - 1].color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	fonts_callbackdata[count_font - 1].color.rgb[strlen(attrs[i + 1])] = '\0';
 	memcpy(fonts_callbackdata[count_font - 1].color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -268,7 +261,6 @@ static void XMLCALL fill_item_lv1_start_element(void *userData, const XML_Char *
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "patternType") == 0) {
         fills_callbackdata[count_fill - 1].pattern_fill.pattern_type = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        fills_callbackdata[count_fill - 1].pattern_fill.pattern_type[strlen(attrs[i + 1])] = '\0';
         memcpy(fills_callbackdata[count_fill - 1].pattern_fill.pattern_type, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -293,7 +285,6 @@ static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
         fills_callbackdata[count_fill - 1].pattern_fill.bg_color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        fills_callbackdata[count_fill - 1].pattern_fill.bg_color.rgb[strlen(attrs[i + 1])] = '\0';
         memcpy(fills_callbackdata[count_fill - 1].pattern_fill.bg_color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -301,7 +292,6 @@ static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *
      for (int i = 0; attrs[i]; i += 2) {
        if (strcmp(attrs[i], "rgb") == 0) {
          fills_callbackdata[count_fill - 1].pattern_fill.fg_color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-         fills_callbackdata[count_fill - 1].pattern_fill.fg_color.rgb[strlen(attrs[i + 1])] = '\0';
          memcpy(fills_callbackdata[count_fill - 1].pattern_fill.fg_color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
        }
      }   
@@ -340,7 +330,6 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
         borders_callbackdata[count_border - 1].left.style = malloc(sizeof(XML_Char) * strlen(attrs[i + 1]) + 1);
-        borders_callbackdata[count_border - 1].left.style[strlen(attrs[i + 1])] = '\0';
 	memcpy(borders_callbackdata[count_border - 1].left.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -349,7 +338,6 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
         borders_callbackdata[count_border - 1].right.style = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        borders_callbackdata[count_border - 1].right.style[strlen(attrs[i + 1])] = '\0';
 	memcpy(borders_callbackdata[count_border - 1].right.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -358,7 +346,6 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
         borders_callbackdata[count_border - 1].top.style = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        borders_callbackdata[count_border - 1].top.style[strlen(attrs[i + 1])] = '\0';
 	memcpy(borders_callbackdata[count_border - 1].top.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -367,7 +354,6 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
         borders_callbackdata[count_border - 1].bottom.style = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        borders_callbackdata[count_border - 1].bottom.style[strlen(attrs[i + 1])] = '\0';
 	memcpy(borders_callbackdata[count_border - 1].bottom.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -389,7 +375,6 @@ static void XMLCALL border_item_lv2_start_element(void *userData, const XML_Char
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
         border_specific_callbackdata->border_color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        border_specific_callbackdata->border_color.rgb[strlen(attrs[i + 1])] = '\0';
 	memcpy(border_specific_callbackdata->border_color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
@@ -407,6 +392,7 @@ void content_handler(void *userData, const XML_Char *s, int len) {
   }
   char *value = malloc((len + 1) * sizeof(XML_Char));
   strncpy(value, s, len);
+  free(value);
 }
 
 /*int load_contenttype(zip_t *zip){
@@ -431,6 +417,9 @@ int load_workbook(zip_t *zip) {
     printf("Name %s\n", sheets_data[i].name);
     printf("sheetID: %s\n", sheets_data[i].sheet_id);
     printf("Path name: %s\n", sheets_data[i].path_name);
+    free(sheets_data[i].name);
+    free(sheets_data[i].sheet_id);
+    free(sheets_data[i].path_name);
   }
   return status;
 }
