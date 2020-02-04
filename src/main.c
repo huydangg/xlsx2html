@@ -106,8 +106,8 @@ struct NumFMT numfmts[50];
 struct Font fonts[100];
 struct Fill fills[50];
 struct BorderCell borders[50];
-struct Xf cellStyleXfs[50];
-struct Xf cellXfs[310];
+struct Xf *cellStyleXfs;
+struct Xf *cellXfs;
 
 int count_sheet = 0;
 int count_numFmt = 0;
@@ -189,11 +189,21 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
     XML_SetElementHandler(xmlparser, border_main_start_element, NULL);
   }
   if (strcmp(name, "cellStyleXfs") == 0) {
-    XML_SetUserData(xmlparser, &cellStyleXfs);
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "count") == 0) {
+        cellStyleXfs = malloc(sizeof(struct Xf) * (int)strtol((char *)attrs[i + 1], NULL, 10));
+      }
+    }
+    XML_SetUserData(xmlparser, cellStyleXfs);
     XML_SetElementHandler(xmlparser, xf_main_start_element, NULL);
   }
   if (strcmp(name, "cellXfs") == 0) {
-    XML_SetUserData(xmlparser, &cellXfs);
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "count") == 0) {
+        cellXfs = malloc(sizeof(struct Xf) * (int)strtol((char *)attrs[i + 1], NULL, 10));
+      }
+    }
+    XML_SetUserData(xmlparser, cellXfs);
     XML_SetElementHandler(xmlparser, xf_main_start_element, NULL);
   }
 }
@@ -531,7 +541,7 @@ int load_styles(zip_t *zip) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   // Load NumFMT first
   int status = process_zip_file(archive, &numfmts);
-  /*for (int i = 0; i < count_numFmt; i++) {
+  for (int i = 0; i < count_numFmt; i++) {
     printf("Format code: %s\n", numfmts[i].format_code);
     printf("Format id: %s\n", numfmts[i].format_id);
     free(numfmts[i].format_code);
@@ -577,7 +587,7 @@ int load_styles(zip_t *zip) {
     free(borders[i].top.border_color.rgb);
     free(borders[i].bottom.style);
     free(borders[i].bottom.border_color.rgb);
-  }*/
+  }
   printf("Count cellStyleXfs: %d\n", count_cellStyleXfs);
   for (int i = 0; i < count_cellStyleXfs; i++) {
     printf("---------------------------------------------------------\n");
@@ -597,6 +607,7 @@ int load_styles(zip_t *zip) {
     free(cellStyleXfs[i].alignment.vertical);
     free(cellStyleXfs[i].alignment.textRotation);
   }
+  free(cellStyleXfs);
   printf("Count cellXfs: %d\n", count_cellXfs);
   for (int i = 0; i < count_cellXfs; i++) {
     printf("---------------------------------------------------------\n");
@@ -616,7 +627,9 @@ int load_styles(zip_t *zip) {
     free(cellXfs[i].xfId);
     free(cellXfs[i].alignment.horizontal);
     free(cellXfs[i].alignment.vertical);
+    free(cellXfs[i].alignment.textRotation);
   }
+  free(cellXfs);
   return status;
 }
 
