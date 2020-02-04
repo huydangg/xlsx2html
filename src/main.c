@@ -15,24 +15,28 @@
 #  define XML_FMT_STR "ls"
 #else
 #  define XML_FMT_STR "s"
-#endif 
-#define PARSE_BUFFER_SIZE 256 
+#endif
+#define PARSE_BUFFER_SIZE 256
 
 int process_zip_file(zip_file_t *archive, void *callbackdata);
-static void XMLCALL font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
-static void XMLCALL font_main_end_element(void *userData, const XML_Char *name); 
-static void XMLCALL font_item_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
+static void XMLCALL font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+static void XMLCALL font_main_end_element(void *userData, const XML_Char *name);
+static void XMLCALL font_item_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 static void XMLCALL font_item_end_element(void *userData, const XML_Char *name);
 static void XMLCALL fill_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 static void XMLCALL fill_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
-static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
+static void XMLCALL fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 static void XMLCALL fill_item_lv1_end_element(void *userData, const XML_Char *name); 
-static void XMLCALL fill_item_lv2_end_element(void *userData, const XML_Char *name); 
-static void XMLCALL border_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
+static void XMLCALL fill_item_lv2_end_element(void *userData, const XML_Char *name);
+static void XMLCALL border_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 static void XMLCALL border_item_lv1_end_element(void *userData, const XML_Char *name);
 static void XMLCALL border_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 static void XMLCALL border_item_lv2_end_element(void *userData, const XML_Char *name);
+static void XMLCALL xf_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+static void XMLCALL xf_main_end_element(void *userData, const XML_Char *name);
+static void XMLCALL xf_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+static void XMLCALL xf_item_lv1_end_element(void *userData, const XML_Char *name);
 XML_Parser xmlparser = NULL;
 
 struct SheetData {
@@ -81,17 +85,38 @@ struct BorderCell {
   struct Border bottom;
 };
 
+struct Alignment {
+  XML_Char *horizontal;
+  XML_Char *vertical;
+  XML_Char *textRotation;
+  char isWrapText;
+};
+
+struct Xf {
+  XML_Char *borderId;
+  XML_Char *fillId;
+  XML_Char *fontId;
+  XML_Char *numFmtId;
+  XML_Char *xfId; // CellStyleXfs
+  struct Alignment alignment;
+};
+
 struct SheetData sheets_data[50];
 struct NumFMT numfmts[50];
 struct Font fonts[100];
 struct Fill fills[50];
 struct BorderCell borders[50];
+struct Xf cellStyleXfs[50];
+struct Xf cellXfs[310];
 
 int count_sheet = 0;
 int count_numFmt = 0;
 int count_font = 0;
 int count_fill = 0;
 int count_border = 0;
+int count_cellStyleXfs = 0;
+int count_cellXfs = 0;
+
 
 XML_Char *insert_substr_to_str_at_pos(XML_Char *des, XML_Char *substr, int pos) {
   XML_Char *_tmp_sheet_id = malloc(sizeof(XML_Char) * (strlen(substr) + 1));
@@ -163,6 +188,14 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
     XML_SetUserData(xmlparser, &borders);
     XML_SetElementHandler(xmlparser, border_main_start_element, NULL);
   }
+  if (strcmp(name, "cellStyleXfs") == 0) {
+    XML_SetUserData(xmlparser, &cellStyleXfs);
+    XML_SetElementHandler(xmlparser, xf_main_start_element, NULL);
+  }
+  if (strcmp(name, "cellXfs") == 0) {
+    XML_SetUserData(xmlparser, &cellXfs);
+    XML_SetElementHandler(xmlparser, xf_main_start_element, NULL);
+  }
 }
 
 static void XMLCALL
@@ -177,8 +210,7 @@ endElement(void *userData, const XML_Char *name) {
 
 static void XMLCALL font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "font") == 0){
-    count_font++; 
-    printf("count_font: %d", count_font);
+    count_font++;
     XML_SetElementHandler(xmlparser, font_item_start_element, NULL);
   }
 }
@@ -193,13 +225,13 @@ static void XMLCALL font_item_start_element(void *userData, const XML_Char *name
   if (strcmp(name, "sz") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if(strcmp(attrs[i], "val") == 0){
-	fonts_callbackdata[count_font - 1].size = (int)strtol((char *)attrs[i + 1], NULL, 10);
+        fonts_callbackdata[count_font - 1].size = (int)strtol((char *)attrs[i + 1], NULL, 10);
       }
     }
   } else if (strcmp(name, "name") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "val") == 0) {
-	fonts_callbackdata[count_font - 1].name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        fonts_callbackdata[count_font - 1].name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	memcpy(fonts_callbackdata[count_font - 1].name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1)); 
       }
     }
@@ -386,6 +418,76 @@ static void XMLCALL border_item_lv2_end_element(void *userData, const XML_Char *
   XML_SetElementHandler(xmlparser, NULL, border_item_lv1_end_element);
 }
 
+static void XMLCALL xf_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+  struct Xf *xfs_callbackdata = userData;
+  if (strcmp(name, "xf") == 0) {
+    int _tmp_count;
+    if (xfs_callbackdata == cellStyleXfs) {
+       _tmp_count = ++count_cellStyleXfs;
+    } else if (xfs_callbackdata == cellXfs) {
+      _tmp_count = ++count_cellXfs;
+    }
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "borderId") == 0) {
+        xfs_callbackdata[_tmp_count - 1].borderId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].borderId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      } else if (strcmp(attrs[i], "fillId") == 0) {
+        xfs_callbackdata[_tmp_count - 1].fillId	= malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].fillId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      } else if (strcmp(attrs[i], "fontId") == 0) {
+        xfs_callbackdata[_tmp_count - 1].fontId	= malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].fontId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      } else if (strcmp(attrs[i], "numFmtId") == 0) {
+        xfs_callbackdata[_tmp_count - 1].numFmtId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].numFmtId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      } else if (strcmp(attrs[i], "xfId") == 0) {
+        xfs_callbackdata[_tmp_count - 1].xfId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].xfId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      }
+    }
+  }
+  XML_SetElementHandler(xmlparser, xf_item_lv1_start_element, xf_main_end_element);
+}
+
+static void XMLCALL xf_main_end_element(void *userData, const XML_Char *name) {
+  XML_SetElementHandler(xmlparser, xf_main_start_element, endElement);
+}
+
+static void XMLCALL xf_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+  struct Xf *xfs_callbackdata = userData;
+  if (strcmp(name, "alignment") == 0) {
+    int _tmp_count;
+    if (xfs_callbackdata == cellStyleXfs) {
+       _tmp_count = count_cellStyleXfs;
+    } else if (xfs_callbackdata == cellXfs) {
+      _tmp_count = count_cellXfs;
+    }
+
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "horizontal") == 0) {
+	xfs_callbackdata[_tmp_count - 1].alignment.horizontal = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].alignment.horizontal, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      } else if (strcmp(attrs[i], "vertical") == 0) {
+	xfs_callbackdata[_tmp_count - 1].alignment.vertical = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].alignment.vertical, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      } else if (strcmp(attrs[i], "textRotation") == 0) {
+	xfs_callbackdata[_tmp_count - 1].alignment.textRotation = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].alignment.textRotation, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      } else if (strcmp(attrs[i], "wrapText") == 0) {
+        xfs_callbackdata[_tmp_count - 1].alignment.isWrapText = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0';
+      }
+    }
+
+  } else if (strcmp(name, "protection") == 0) {
+
+  }
+  XML_SetElementHandler(xmlparser, NULL, xf_item_lv1_end_element);
+}
+
+static void XMLCALL xf_item_lv1_end_element(void *userData, const XML_Char *name) {
+  XML_SetElementHandler(xmlparser, xf_item_lv1_start_element, xf_main_end_element);
+}
+
 void content_handler(void *userData, const XML_Char *s, int len) {
   if (len == 0){
     return;
@@ -429,7 +531,7 @@ int load_styles(zip_t *zip) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   // Load NumFMT first
   int status = process_zip_file(archive, &numfmts);
-  for (int i = 0; i < count_numFmt; i++) {
+  /*for (int i = 0; i < count_numFmt; i++) {
     printf("Format code: %s\n", numfmts[i].format_code);
     printf("Format id: %s\n", numfmts[i].format_id);
     free(numfmts[i].format_code);
@@ -475,6 +577,45 @@ int load_styles(zip_t *zip) {
     free(borders[i].top.border_color.rgb);
     free(borders[i].bottom.style);
     free(borders[i].bottom.border_color.rgb);
+  }*/
+  printf("Count cellStyleXfs: %d\n", count_cellStyleXfs);
+  for (int i = 0; i < count_cellStyleXfs; i++) {
+    printf("---------------------------------------------------------\n");
+    printf("Xf borderId: %s\n", cellStyleXfs[i].borderId);
+    printf("Xf fillId: %s\n", cellStyleXfs[i].fillId);
+    printf("Xf fontId: %s\n", cellStyleXfs[i].fontId);
+    printf("Xf numFmtId: %s\n", cellStyleXfs[i].numFmtId);
+    printf("Xf alignment horizontal: %s\n", cellStyleXfs[i].alignment.horizontal);
+    printf("Xf alignment vertical: %s\n", cellStyleXfs[i].alignment.vertical);
+    printf("Xf alignment textRotation: %s\n", cellStyleXfs[i].alignment.textRotation);
+    printf("Xf alignment isWrapText: %c\n", cellStyleXfs[i].alignment.isWrapText);
+    free(cellStyleXfs[i].borderId);
+    free(cellStyleXfs[i].fillId);
+    free(cellStyleXfs[i].fontId);
+    free(cellStyleXfs[i].numFmtId);
+    free(cellStyleXfs[i].alignment.horizontal);
+    free(cellStyleXfs[i].alignment.vertical);
+    free(cellStyleXfs[i].alignment.textRotation);
+  }
+  printf("Count cellXfs: %d\n", count_cellXfs);
+  for (int i = 0; i < count_cellXfs; i++) {
+    printf("---------------------------------------------------------\n");
+    printf("Xf borderId: %s\n", cellXfs[i].borderId);
+    printf("Xf fillId: %s\n", cellXfs[i].fillId);
+    printf("Xf fontId: %s\n", cellXfs[i].fontId);
+    printf("Xf numFmtId: %s\n", cellXfs[i].numFmtId);
+    printf("Xf xfId: %s\n", cellXfs[i].xfId);
+    printf("Xf alignment horizontal: %s\n", cellXfs[i].alignment.horizontal);
+    printf("Xf alignment vertical: %s\n", cellXfs[i].alignment.vertical);
+    printf("Xf alignment textRotation: %s\n", cellXfs[i].alignment.textRotation);
+    printf("Xf alignment isWrapText: %c\n", cellXfs[i].alignment.isWrapText);
+    free(cellXfs[i].borderId);
+    free(cellXfs[i].fillId);
+    free(cellXfs[i].fontId);
+    free(cellXfs[i].numFmtId);
+    free(cellXfs[i].xfId);
+    free(cellXfs[i].alignment.horizontal);
+    free(cellXfs[i].alignment.vertical);
   }
   return status;
 }
