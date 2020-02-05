@@ -18,7 +18,11 @@
 #endif
 #define PARSE_BUFFER_SIZE 256
 
-int process_zip_file(zip_file_t *archive, void *callbackdata);
+int process_zip_file(zip_file_t *archive);
+static void XMLCALL sheet_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+static void XMLCALL sheet_main_end_element(void *userData, const XML_Char *name);
+static void XMLCALL numFmt_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+static void XMLCALL numFmt_main_end_element(void *userData, const XML_Char *name);
 static void XMLCALL font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 static void XMLCALL font_main_end_element(void *userData, const XML_Char *name);
 static void XMLCALL font_item_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
@@ -43,6 +47,7 @@ struct SheetData {
    XML_Char *name;
    XML_Char *sheet_id;
    char *path_name;
+   char isHidden;
 };
 
 struct NumFMT {
@@ -101,11 +106,11 @@ struct Xf {
   struct Alignment alignment;
 };
 
-struct SheetData sheets_data[50];
-struct NumFMT numfmts[50];
-struct Font fonts[100];
-struct Fill fills[50];
-struct BorderCell borders[50];
+struct SheetData *sheets_data;
+struct NumFMT *numfmts;
+struct Font *fonts;
+struct Fill *fills;
+struct BorderCell *borders;
 struct Xf *cellStyleXfs;
 struct Xf *cellXfs;
 
@@ -132,75 +137,56 @@ XML_Char *insert_substr_to_str_at_pos(XML_Char *des, XML_Char *substr, int pos) 
 
 static void XMLCALL
 startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  int i;
   (void)attrs;
 
-  if (strcmp(name, "Override") == 0){
-    for(i = 0; attrs[i]; i += 2){
-      if(strcmp(attrs[i], "PartName") == 0){
-        printf(" %s = '%s'\n", attrs[i], attrs[i + 1]);
-      }
-    }
-  }
-  if (strcmp(name, "sheet") == 0){
-    struct SheetData *sheets_data_callbackdata = userData;
-    count_sheet++;
-    for(i = 0; attrs[i]; i += 2){
-      if(strcmp(attrs[i], "state") == 0 && strcmp(attrs[i + 1], "hidden") == 0){
-	count_sheet--;
-	return;
-      }
-      if (strcmp(attrs[i], "name") == 0){
-	sheets_data_callbackdata[count_sheet - 1].name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(sheets_data_callbackdata[count_sheet - 1].name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-      }
-      if (strcmp(attrs[i], "sheetId") == 0){
-	sheets_data_callbackdata[count_sheet - 1].sheet_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(sheets_data_callbackdata[count_sheet - 1].sheet_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	char *pattern_name = "xl/worksheets/sheet.xml";
-	sheets_data_callbackdata[count_sheet - 1].path_name = insert_substr_to_str_at_pos(pattern_name, attrs[i + 1], 19);
-      }
-    } 
-  }
-  if (strcmp(name, "numFmt") == 0){
-    struct NumFMT *numFmts_callbackdata = userData;
-    count_numFmt++;
-    for (i = 0; attrs[i]; i += 2){
-      if (strcmp(attrs[i], "formatCode") == 0){
-        numFmts_callbackdata[count_numFmt - 1].format_code = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(numFmts_callbackdata[count_numFmt - 1].format_code, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-      }
-      if (strcmp(attrs[i], "numFmtId") == 0){
-        numFmts_callbackdata[count_numFmt - 1].format_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(numFmts_callbackdata[count_numFmt - 1].format_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-      }
-    }
-  }
-  if(strcmp(name, "fonts") == 0){
-    XML_SetUserData(xmlparser, &fonts);
-    XML_SetElementHandler(xmlparser, font_main_start_element, NULL);
-  }
-  if (strcmp(name, "fills") == 0) {
-    XML_SetUserData(xmlparser, &fills);
-    XML_SetElementHandler(xmlparser, fill_main_start_element, NULL);
-  }
-  if (strcmp(name, "borders") == 0) {
-    XML_SetUserData(xmlparser, &borders);
-    XML_SetElementHandler(xmlparser, border_main_start_element, NULL);
-  }
-  if (strcmp(name, "cellStyleXfs") == 0) {
+  if (strcmp(name, "sheets") == 0) {
+    sheets_data = malloc(sizeof(struct SheetData));
+    XML_SetUserData(xmlparser, sheets_data);
+    XML_SetElementHandler(xmlparser, sheet_main_start_element, NULL);
+  } else if (strcmp(name, "numFmts") == 0){
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "count") == 0) {
-        cellStyleXfs = malloc(sizeof(struct Xf) * (int)strtol((char *)attrs[i + 1], NULL, 10));
+	numfmts = calloc((int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct NumFMT));
+      }
+    }
+    XML_SetUserData(xmlparser, numfmts);
+    XML_SetElementHandler(xmlparser, numFmt_main_start_element, NULL);
+  } else if(strcmp(name, "fonts") == 0){
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "count") == 0) {
+	fonts = calloc((int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct Font));
+      }
+    }
+    XML_SetUserData(xmlparser, fonts);
+    XML_SetElementHandler(xmlparser, font_main_start_element, NULL);
+  } else if (strcmp(name, "fills") == 0) {
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "count") == 0) {
+	fills = calloc((int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct Fill));
+      }
+    }
+    XML_SetUserData(xmlparser, fills);
+    XML_SetElementHandler(xmlparser, fill_main_start_element, NULL);
+  } else if (strcmp(name, "borders") == 0) {
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "count") == 0) {
+	borders = calloc((int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct BorderCell));
+      }
+    }
+    XML_SetUserData(xmlparser, borders);
+    XML_SetElementHandler(xmlparser, border_main_start_element, NULL);
+  } else if (strcmp(name, "cellStyleXfs") == 0) {
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "count") == 0) {
+	cellStyleXfs = calloc((int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct Xf));
       }
     }
     XML_SetUserData(xmlparser, cellStyleXfs);
     XML_SetElementHandler(xmlparser, xf_main_start_element, NULL);
-  }
-  if (strcmp(name, "cellXfs") == 0) {
+  } else if (strcmp(name, "cellXfs") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "count") == 0) {
-        cellXfs = malloc(sizeof(struct Xf) * (int)strtol((char *)attrs[i + 1], NULL, 10));
+	cellXfs  = calloc((int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct Xf));
       }
     }
     XML_SetUserData(xmlparser, cellXfs);
@@ -218,16 +204,69 @@ endElement(void *userData, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, startElement, NULL);
 }
 
+static void XMLCALL numFmt_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+  struct NumFMT *numFmts_callbackdata = userData;
+  if (strcmp(name, "numFmt") == 0) {
+    count_numFmt++;
+    for (int i = 0; attrs[i]; i += 2){
+      if (strcmp(attrs[i], "formatCode") == 0){
+        numFmts_callbackdata[count_numFmt - 1].format_code = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(numFmts_callbackdata[count_numFmt - 1].format_code, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      }
+      if (strcmp(attrs[i], "numFmtId") == 0){
+        numFmts_callbackdata[count_numFmt - 1].format_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(numFmts_callbackdata[count_numFmt - 1].format_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      }
+    }
+  }
+  XML_SetElementHandler(xmlparser, NULL, numFmt_main_end_element);
+}
+
+static void XMLCALL numFmt_main_end_element(void *userData, const XML_Char *name) {
+  XML_SetElementHandler(xmlparser, numFmt_main_start_element, endElement);
+}
+
+static void XMLCALL sheet_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+  struct SheetData *sheets_data_callbackdata = userData;
+  if (strcmp(name, "sheet") == 0){
+    count_sheet++;
+    if (count_sheet > 1) {
+      sheets_data_callbackdata = realloc(sheets_data_callbackdata, sizeof(struct SheetData) * count_sheet);
+    }
+    for(int i = 0; attrs[i]; i += 2){
+      if(strcmp(attrs[i], "state") == 0){
+        sheets_data_callbackdata[count_sheet - 1].isHidden = strcmp(attrs[i + 1], "hidden") == 0 ? '1' : '0';
+      }
+      if (strcmp(attrs[i], "name") == 0){
+	sheets_data_callbackdata[count_sheet - 1].name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	memcpy(sheets_data_callbackdata[count_sheet - 1].name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      }
+      if (strcmp(attrs[i], "sheetId") == 0){
+	sheets_data_callbackdata[count_sheet - 1].sheet_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	memcpy(sheets_data_callbackdata[count_sheet - 1].sheet_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	char *pattern_name = "xl/worksheets/sheet.xml";
+	sheets_data_callbackdata[count_sheet - 1].path_name = insert_substr_to_str_at_pos(pattern_name, attrs[i + 1], 19);
+      }
+    } 
+  }
+  XML_SetElementHandler(xmlparser, NULL, sheet_main_end_element);
+}
+
+static void XMLCALL sheet_main_end_element(void *userData, const XML_Char *name) {
+  XML_SetElementHandler(xmlparser, sheet_main_start_element, endElement);
+}
+
 static void XMLCALL font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  if (strcmp(name, "font") == 0){
+  if (strcmp(name, "font") == 0) {
     count_font++;
     XML_SetElementHandler(xmlparser, font_item_start_element, NULL);
   }
 }
 
 static void XMLCALL font_main_end_element(void *userData, const XML_Char *name) {
-  if (strcmp(name, "font") == 0){
-   XML_SetElementHandler(xmlparser, font_main_start_element, endElement); }
+  if (strcmp(name, "font") == 0) {
+   XML_SetElementHandler(xmlparser, font_main_start_element, endElement);
+  }
 }
 
 static void XMLCALL font_item_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
@@ -353,13 +392,8 @@ static void XMLCALL fill_item_lv2_end_element(void *userData, const XML_Char *na
 static void XMLCALL border_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "border") == 0) {
     count_border++;
-    struct BorderCell *borders_callbackdata = userData;
-    borders_callbackdata[count_border - 1].left.style = NULL;
-    borders_callbackdata[count_border - 1].right.style = NULL;
-    borders_callbackdata[count_border - 1].top.style = NULL;
-    borders_callbackdata[count_border - 1].bottom.style = NULL;
-    XML_SetElementHandler(xmlparser, border_item_lv1_start_element, border_item_lv1_end_element);
   }
+  XML_SetElementHandler(xmlparser, border_item_lv1_start_element, border_item_lv1_end_element);
 } 
 
 static void XMLCALL border_main_end_element(void *userData, const XML_Char *name) {
@@ -406,7 +440,7 @@ static void XMLCALL border_item_lv1_start_element(void *userData, const XML_Char
 }
 
 static void XMLCALL border_item_lv1_end_element(void *userData, const XML_Char *name) {
-  XML_SetUserData(xmlparser, &borders);
+  XML_SetUserData(xmlparser, borders);
   XML_SetElementHandler(xmlparser, border_item_lv1_start_element, border_main_end_element);
 }
 
@@ -472,7 +506,6 @@ static void XMLCALL xf_item_lv1_start_element(void *userData, const XML_Char *na
     } else if (xfs_callbackdata == cellXfs) {
       _tmp_count = count_cellXfs;
     }
-
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "horizontal") == 0) {
 	xfs_callbackdata[_tmp_count - 1].alignment.horizontal = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
@@ -524,7 +557,7 @@ zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name) {
 int load_workbook(zip_t *zip) {
   const char *zip_file_name = "xl/workbook.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
-  int status = process_zip_file(archive, &sheets_data);
+  int status = process_zip_file(archive);
   for(int i = 0; i < count_sheet; i++) {
     printf("Name %s\n", sheets_data[i].name);
     printf("sheetID: %s\n", sheets_data[i].sheet_id);
@@ -533,6 +566,7 @@ int load_workbook(zip_t *zip) {
     free(sheets_data[i].sheet_id);
     free(sheets_data[i].path_name);
   }
+  free(sheets_data);
   return status;
 }
 
@@ -540,13 +574,14 @@ int load_styles(zip_t *zip) {
   const char *zip_file_name = "xl/styles.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   // Load NumFMT first
-  int status = process_zip_file(archive, &numfmts);
+  int status = process_zip_file(archive);
   for (int i = 0; i < count_numFmt; i++) {
     printf("Format code: %s\n", numfmts[i].format_code);
     printf("Format id: %s\n", numfmts[i].format_id);
     free(numfmts[i].format_code);
     free(numfmts[i].format_id);
   }
+  free(numfmts);
   printf("Count font: %d\n", count_font);
   for (int i = 0; i < count_font; i++) {
     printf("Font size: %d\n", fonts[i].size);
@@ -559,6 +594,7 @@ int load_styles(zip_t *zip) {
     free(fonts[i].underline);
     free(fonts[i].color.rgb);
   }
+  free(fonts);
   printf("Count fills: %d\n", count_fill);
   for (int i = 0; i < count_fill; i++) {
     printf("Fill pattern type: %s\n", fills[i].pattern_fill.pattern_type);
@@ -568,6 +604,7 @@ int load_styles(zip_t *zip) {
     free(fills[i].pattern_fill.bg_color.rgb);
     free(fills[i].pattern_fill.fg_color.rgb);
   }
+  free(fills);
   printf("Count border: %d\n", count_border);
   for (int i = 0; i < count_border; i++) {
     printf("---------------------------------------------------------\n");
@@ -588,7 +625,7 @@ int load_styles(zip_t *zip) {
     free(borders[i].bottom.style);
     free(borders[i].bottom.border_color.rgb);
   }
-  printf("Count cellStyleXfs: %d\n", count_cellStyleXfs);
+  free(borders);
   for (int i = 0; i < count_cellStyleXfs; i++) {
     printf("---------------------------------------------------------\n");
     printf("Xf borderId: %s\n", cellStyleXfs[i].borderId);
@@ -637,14 +674,13 @@ int load_sheet(zip_t *zip, const char *sheet_file_name) {
   return 1;
 }
 
-int process_zip_file(zip_file_t *archive, void *callbackdata) {
+int process_zip_file(zip_file_t *archive) {
   void *buf;
   zip_int64_t buflen;
   xmlparser = XML_ParserCreate(NULL);
   int done;
   enum XML_Status status = XML_STATUS_ERROR;
 
-  XML_SetUserData(xmlparser, callbackdata);
   XML_SetElementHandler(xmlparser, startElement, endElement);
   XML_SetCharacterDataHandler(xmlparser, content_handler);
   buf = XML_GetBuffer(xmlparser, PARSE_BUFFER_SIZE);
