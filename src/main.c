@@ -106,7 +106,7 @@ struct Xf {
   struct Alignment alignment;
 };
 
-struct SheetData *sheets_data;
+struct SheetData **sheets_data;
 struct NumFMT *numfmts;
 struct Font *fonts;
 struct Fill *fills;
@@ -140,8 +140,12 @@ startElement(void *userData, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
 
   if (strcmp(name, "sheets") == 0) {
-    sheets_data = malloc(sizeof(struct SheetData));
-    XML_SetUserData(xmlparser, sheets_data);
+    sheets_data = malloc(sizeof(struct SheetData *));
+    if (sheets_data == NULL) {
+      fprintf(stderr, "Error when malloc sheets_data");
+    }
+    printf("%d\n", sizeof(struct SheetData));
+    printf("%d\n", sizeof(struct SheetData *));
     XML_SetElementHandler(xmlparser, sheet_main_start_element, NULL);
   } else if (strcmp(name, "numFmts") == 0){
     for (int i = 0; attrs[i]; i += 2) {
@@ -227,25 +231,33 @@ static void XMLCALL numFmt_main_end_element(void *userData, const XML_Char *name
 }
 
 static void XMLCALL sheet_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct SheetData *sheets_data_callbackdata = userData;
   if (strcmp(name, "sheet") == 0){
+    struct SheetData **_tmp_sheets_data_callbackdata;
     count_sheet++;
     if (count_sheet > 1) {
-      sheets_data_callbackdata = realloc(sheets_data_callbackdata, sizeof(struct SheetData) * count_sheet);
+      _tmp_sheets_data_callbackdata = realloc(sheets_data, sizeof(struct SheetData *) * count_sheet);
+      if (_tmp_sheets_data_callbackdata) {
+	sheets_data = _tmp_sheets_data_callbackdata;
+      } else {
+	fprintf(stderr, "Error when resize sheets_data");
+	// TODO: Handle error
+      }
     }
+
+    sheets_data[count_sheet - 1] = malloc(sizeof(struct SheetData));
     for(int i = 0; attrs[i]; i += 2){
       if(strcmp(attrs[i], "state") == 0){
-        sheets_data_callbackdata[count_sheet - 1].isHidden = strcmp(attrs[i + 1], "hidden") == 0 ? '1' : '0';
+        sheets_data[count_sheet - 1]->isHidden = strcmp(attrs[i + 1], "hidden") == 0 ? '1' : '0';
       }
       if (strcmp(attrs[i], "name") == 0){
-	sheets_data_callbackdata[count_sheet - 1].name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(sheets_data_callbackdata[count_sheet - 1].name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	sheets_data[count_sheet - 1]->name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	memcpy(sheets_data[count_sheet - 1]->name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
       if (strcmp(attrs[i], "sheetId") == 0){
-	sheets_data_callbackdata[count_sheet - 1].sheet_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(sheets_data_callbackdata[count_sheet - 1].sheet_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	sheets_data[count_sheet - 1]->sheet_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	memcpy(sheets_data[count_sheet - 1]->sheet_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	char *pattern_name = "xl/worksheets/sheet.xml";
-	sheets_data_callbackdata[count_sheet - 1].path_name = insert_substr_to_str_at_pos(pattern_name, attrs[i + 1], 19);
+	sheets_data[count_sheet - 1]->path_name = insert_substr_to_str_at_pos(pattern_name, attrs[i + 1], 19);
       }
     } 
   }
@@ -559,12 +571,13 @@ int load_workbook(zip_t *zip) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   int status = process_zip_file(archive);
   for(int i = 0; i < count_sheet; i++) {
-    printf("Name %s\n", sheets_data[i].name);
-    printf("sheetID: %s\n", sheets_data[i].sheet_id);
-    printf("Path name: %s\n", sheets_data[i].path_name);
-    free(sheets_data[i].name);
-    free(sheets_data[i].sheet_id);
-    free(sheets_data[i].path_name);
+    printf("Name %s\n", sheets_data[i]->name);
+    printf("sheetID: %s\n", sheets_data[i]->sheet_id);
+    printf("Path name: %s\n", sheets_data[i]->path_name);
+    free(sheets_data[i]->name);
+    free(sheets_data[i]->sheet_id);
+    free(sheets_data[i]->path_name);
+    free(sheets_data[i]);
   }
   free(sheets_data);
   return status;
