@@ -18,7 +18,7 @@
 struct Sheet {
    XML_Char *name;
    XML_Char *sheet_id;
-   char *path_name;
+   XML_Char *path_name;
    char isHidden;
 };
 
@@ -44,8 +44,8 @@ struct Color {
 struct Font {
   int size;
   XML_Char *name;
-  int is_bold;
-  int is_italic; 
+  char isBold;
+  char isItalic; 
   XML_Char *underline;
   struct Color color;
 };

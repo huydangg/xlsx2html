@@ -1,12 +1,8 @@
 #include <read_main.h>
 #include <read_styles.h>
 
+XML_Parser xmlparser;
 
-/*int load_contenttype(zip_t *zip){
-  const char *zip_file_name = "[Content_Types].xml";
-  int status = process_zip_file(zip, zip_file_name);
-  return status;
-}*/
 
 zip_t *open_zip(const char *file_name) {
   return zip_open(file_name, ZIP_RDONLY, NULL);
@@ -49,8 +45,8 @@ int load_styles(zip_t *zip) {
   for (int i = 0; i < array_fonts.length; i++) {
     printf("Font size: %d\n", array_fonts.fonts[i].size);
     printf("Font name: %s\n", array_fonts.fonts[i].name);
-    printf("Font is bold: %d\n", array_fonts.fonts[i].is_bold);
-    printf("Font is italic: %d\n", array_fonts.fonts[i].is_italic);
+    printf("Font is bold: %c\n", array_fonts.fonts[i].isBold);
+    printf("Font is italic: %c\n", array_fonts.fonts[i].isItalic);
     printf("Font underline: %s\n", array_fonts.fonts[i].underline);
     printf("Font color rgb: %s\n", array_fonts.fonts[i].color.rgb);
     free(array_fonts.fonts[i].name);
@@ -133,14 +129,11 @@ int load_styles(zip_t *zip) {
   return status;
 }
 
-int load_sheet(zip_t *zip, const char *sheet_file_name) {
-  return 1;
-}
 
 int process_zip_file(zip_file_t *archive, void *callbackdata, XML_StartElementHandler start_element, XML_EndElementHandler end_element) {
   void *buf;
   zip_int64_t buflen;
-  XML_Parser xmlparser = XML_ParserCreate(NULL);
+  xmlparser = XML_ParserCreate(NULL);
   int done;
   enum XML_Status status = XML_STATUS_ERROR;
 
