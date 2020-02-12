@@ -113,12 +113,12 @@ void numFmt_main_start_element(void *userData, const XML_Char *name, const XML_C
     array_numfmts.length++;
     for (int i = 0; attrs[i]; i += 2){
       if (strcmp(attrs[i], "formatCode") == 0){
-        numFmts_callbackdata[array_numfmts.length - 1].format_code = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(numFmts_callbackdata[array_numfmts.length - 1].format_code, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        numFmts_callbackdata[array_numfmts.length - 1].formatCode = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(numFmts_callbackdata[array_numfmts.length - 1].formatCode, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
       if (strcmp(attrs[i], "numFmtId") == 0){
-        numFmts_callbackdata[array_numfmts.length - 1].format_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(numFmts_callbackdata[array_numfmts.length - 1].format_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        numFmts_callbackdata[array_numfmts.length - 1].numFmtId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(numFmts_callbackdata[array_numfmts.length - 1].numFmtId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
   }
@@ -153,8 +153,8 @@ void sheet_main_start_element(void *userData, const XML_Char *name, const XML_Ch
 	memcpy(array_sheets.sheets[array_sheets.length - 1]->name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
       if (strcmp(attrs[i], "sheetId") == 0){
-	array_sheets.sheets[array_sheets.length - 1]->sheet_id = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(array_sheets.sheets[array_sheets.length - 1]->sheet_id, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	array_sheets.sheets[array_sheets.length - 1]->sheetId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	memcpy(array_sheets.sheets[array_sheets.length - 1]->sheetId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	char *pattern_name = "xl/worksheets/sheet.xml";
 	array_sheets.sheets[array_sheets.length - 1]->path_name = insert_substr_to_str_at_pos(pattern_name, attrs[i + 1], 19);
       }
@@ -188,7 +188,7 @@ void font_item_start_element(void *userData, const XML_Char *name, const XML_Cha
   if (strcmp(name, "sz") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if(strcmp(attrs[i], "val") == 0){
-        fonts_callbackdata[array_fonts.length - 1].size = (int)strtol((char *)attrs[i + 1], NULL, 10);
+        fonts_callbackdata[array_fonts.length - 1].sz = (int)strtol((char *)attrs[i + 1], NULL, 10);
       }
     }
   } else if (strcmp(name, "name") == 0) {
@@ -255,8 +255,8 @@ void fill_item_lv1_start_element(void *userData, const XML_Char *name, const XML
   if (strcmp(name, "patternFill") == 0)  {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "patternType") == 0) {
-        fills_callbackdata[array_fills.length - 1].pattern_fill.pattern_type = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(fills_callbackdata[array_fills.length - 1].pattern_fill.pattern_type, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        fills_callbackdata[array_fills.length - 1].patternFill.patternType = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(fills_callbackdata[array_fills.length - 1].patternFill.patternType, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
     XML_SetElementHandler(xmlparser, fill_item_lv2_start_element, fill_item_lv1_end_element);
@@ -279,15 +279,15 @@ void fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML
   if (strcmp(name, "bgColor") == 0)  {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
-        fills_callbackdata[array_fills.length - 1].pattern_fill.bg_color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(fills_callbackdata[array_fills.length - 1].pattern_fill.bg_color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        memcpy(fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
   } else if (strcmp(name, "fgColor") == 0) {
      for (int i = 0; attrs[i]; i += 2) {
        if (strcmp(attrs[i], "rgb") == 0) {
-         fills_callbackdata[array_fills.length - 1].pattern_fill.fg_color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-         memcpy(fills_callbackdata[array_fills.length - 1].pattern_fill.fg_color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+         fills_callbackdata[array_fills.length - 1].patternFill.fgColor.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+         memcpy(fills_callbackdata[array_fills.length - 1].patternFill.fgColor.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
        }
      }   
   }
@@ -363,8 +363,8 @@ void border_item_lv2_start_element(void *userData, const XML_Char *name, const X
   if(strcmp(name, "color") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
-        border_specific_callbackdata->border_color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(border_specific_callbackdata->border_color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        border_specific_callbackdata->color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	memcpy(border_specific_callbackdata->color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
   }

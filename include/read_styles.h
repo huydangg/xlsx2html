@@ -17,7 +17,7 @@
 
 struct Sheet {
    XML_Char *name;
-   XML_Char *sheet_id;
+   XML_Char *sheetId;
    XML_Char *path_name;
    char isHidden;
 };
@@ -28,8 +28,8 @@ struct ArraySheets {
 };
 
 struct NumFMT {
-  XML_Char *format_code;
-  XML_Char *format_id;
+  XML_Char *formatCode;
+  XML_Char *numFmtId;
 };
 
 struct ArrayNumFMTs {
@@ -42,7 +42,7 @@ struct Color {
 };
 
 struct Font {
-  int size;
+  int sz;
   XML_Char *name;
   char isBold;
   char isItalic; 
@@ -56,13 +56,13 @@ struct ArrayFonts {
 };
 
 struct PatternFill {
-  XML_Char *pattern_type;
-  struct Color bg_color;
-  struct Color fg_color;
+  XML_Char *patternType;
+  struct Color bgColor;
+  struct Color fgColor;
 };
 
 struct Fill {
-  struct PatternFill pattern_fill;
+  struct PatternFill patternFill;
 };
 
 struct ArrayFills {
@@ -72,7 +72,7 @@ struct ArrayFills {
 
 struct Border {
   XML_Char *style;
-  struct Color border_color;
+  struct Color color;
 };
 
 struct BorderCell {

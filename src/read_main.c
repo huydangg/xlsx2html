@@ -18,10 +18,10 @@ int load_workbook(zip_t *zip) {
   int status = process_zip_file(archive, NULL, styles_start_element, styles_end_element);
   for(int i = 0; i < array_sheets.length; i++) {
     printf("Name %s\n", array_sheets.sheets[i]->name);
-    printf("sheetID: %s\n", array_sheets.sheets[i]->sheet_id);
+    printf("sheetID: %s\n", array_sheets.sheets[i]->sheetId);
     printf("Path name: %s\n", array_sheets.sheets[i]->path_name);
     free(array_sheets.sheets[i]->name);
-    free(array_sheets.sheets[i]->sheet_id);
+    free(array_sheets.sheets[i]->sheetId);
     free(array_sheets.sheets[i]->path_name);
     free(array_sheets.sheets[i]);
   }
@@ -35,15 +35,15 @@ int load_styles(zip_t *zip) {
   // Load NumFMT first
   int status = process_zip_file(archive, NULL, styles_start_element, styles_end_element);
   for (int i = 0; i < array_numfmts.length; i++) {
-    printf("Format code: %s\n", array_numfmts.numfmts[i].format_code);
-    printf("Format id: %s\n", array_numfmts.numfmts[i].format_id);
-    free(array_numfmts.numfmts[i].format_code);
-    free(array_numfmts.numfmts[i].format_id);
+    printf("Format code: %s\n", array_numfmts.numfmts[i].formatCode);
+    printf("Format id: %s\n", array_numfmts.numfmts[i].numFmtId);
+    free(array_numfmts.numfmts[i].formatCode);
+    free(array_numfmts.numfmts[i].numFmtId);
   }
   free(array_numfmts.numfmts);
   printf("Count font: %d\n", array_fonts.length);
   for (int i = 0; i < array_fonts.length; i++) {
-    printf("Font size: %d\n", array_fonts.fonts[i].size);
+    printf("Font size: %d\n", array_fonts.fonts[i].sz);
     printf("Font name: %s\n", array_fonts.fonts[i].name);
     printf("Font is bold: %c\n", array_fonts.fonts[i].isBold);
     printf("Font is italic: %c\n", array_fonts.fonts[i].isItalic);
@@ -56,33 +56,33 @@ int load_styles(zip_t *zip) {
   free(array_fonts.fonts);
   printf("Count fills: %d\n", array_fills.length);
   for (int i = 0; i < array_fills.length; i++) {
-    printf("Fill pattern type: %s\n", array_fills.fills[i].pattern_fill.pattern_type);
-    printf("Fill bg_color rgb: %s\n", array_fills.fills[i].pattern_fill.bg_color.rgb);
-    printf("Fill fg_color rgb: %s\n", array_fills.fills[i].pattern_fill.fg_color.rgb);
-    free(array_fills.fills[i].pattern_fill.pattern_type);
-    free(array_fills.fills[i].pattern_fill.bg_color.rgb);
-    free(array_fills.fills[i].pattern_fill.fg_color.rgb);
+    printf("Fill pattern type: %s\n", array_fills.fills[i].patternFill.patternType);
+    printf("Fill bg_color rgb: %s\n", array_fills.fills[i].patternFill.bgColor.rgb);
+    printf("Fill fg_color rgb: %s\n", array_fills.fills[i].patternFill.fgColor.rgb);
+    free(array_fills.fills[i].patternFill.patternType);
+    free(array_fills.fills[i].patternFill.bgColor.rgb);
+    free(array_fills.fills[i].patternFill.fgColor.rgb);
   }
   free(array_fills.fills);
   printf("Count border: %d\n", array_borders.length);
   for (int i = 0; i < array_borders.length; i++) {
     printf("---------------------------------------------------------\n");
     printf("Border left style: %s\n", array_borders.borders[i].left.style);
-    printf("Border left color rgb: %s\n", array_borders.borders[i].left.border_color.rgb);
+    printf("Border left color rgb: %s\n", array_borders.borders[i].left.color.rgb);
     printf("Border right style: %s\n", array_borders.borders[i].right.style);
-    printf("Border right color rgb: %s\n", array_borders.borders[i].right.border_color.rgb);
+    printf("Border right color rgb: %s\n", array_borders.borders[i].right.color.rgb);
     printf("Border top style: %s\n", array_borders.borders[i].top.style);
-    printf("Border top color rgb: %s\n", array_borders.borders[i].top.border_color.rgb);
+    printf("Border top color rgb: %s\n", array_borders.borders[i].top.color.rgb);
     printf("Border bottom style: %s\n", array_borders.borders[i].bottom.style);
-    printf("Border bottom color rgb: %s\n", array_borders.borders[i].bottom.border_color.rgb);
+    printf("Border bottom color rgb: %s\n", array_borders.borders[i].bottom.color.rgb);
     free(array_borders.borders[i].left.style);
-    free(array_borders.borders[i].left.border_color.rgb);
+    free(array_borders.borders[i].left.color.rgb);
     free(array_borders.borders[i].right.style);
-    free(array_borders.borders[i].right.border_color.rgb);
+    free(array_borders.borders[i].right.color.rgb);
     free(array_borders.borders[i].top.style);
-    free(array_borders.borders[i].top.border_color.rgb);
+    free(array_borders.borders[i].top.color.rgb);
     free(array_borders.borders[i].bottom.style);
-    free(array_borders.borders[i].bottom.border_color.rgb);
+    free(array_borders.borders[i].bottom.color.rgb);
   }
   free(array_borders.borders);
   for (int i = 0; i < array_cellStyleXfs.length; i++) {
