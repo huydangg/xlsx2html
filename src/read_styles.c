@@ -384,6 +384,10 @@ void xf_main_start_element(void *userData, const XML_Char *name, const XML_Char 
     } else if (xfs_callbackdata == array_cellXfs.Xfs) {
       _tmp_count = ++array_cellXfs.length;
     }
+    xfs_callbackdata[_tmp_count - 1].isApplyAlignment = '0';
+    xfs_callbackdata[_tmp_count - 1].isApplyFont = '0';
+    xfs_callbackdata[_tmp_count - 1].isApplyNumberFormat = '0';
+    xfs_callbackdata[_tmp_count - 1].isApplyBorder = '0';
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "borderId") == 0) {
         xfs_callbackdata[_tmp_count - 1].borderId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
@@ -400,6 +404,14 @@ void xf_main_start_element(void *userData, const XML_Char *name, const XML_Char 
       } else if (strcmp(attrs[i], "xfId") == 0) {
         xfs_callbackdata[_tmp_count - 1].xfId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
         memcpy(xfs_callbackdata[_tmp_count - 1].xfId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+      } else if (strcmp(attrs[i], "applyAlignment") == 0) {
+        xfs_callbackdata[_tmp_count - 1].isApplyAlignment = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0';
+      } else if (strcmp(attrs[i], "applyNumberFormat") == 0) {
+        xfs_callbackdata[_tmp_count - 1].isApplyNumberFormat = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0';
+      } else if (strcmp(attrs[i], "applyBorder") == 0) {
+        xfs_callbackdata[_tmp_count - 1].isApplyBorder = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0';
+      } else if (strcmp(attrs[i], "applyFont") == 0) {
+        xfs_callbackdata[_tmp_count - 1].isApplyFont = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0';
       }
     }
   }
@@ -453,5 +465,3 @@ void content_handler(void *userData, const XML_Char *s, int len) {
   strncpy(value, s, len);
   free(value);
 }
-
-

@@ -101,6 +101,10 @@ struct Xf {
   XML_Char *fontId;
   XML_Char *numFmtId;
   XML_Char *xfId; // CellStyleXfs
+  char isApplyAlignment;
+  char isApplyBorder;
+  char isApplyFont;
+  char isApplyNumberFormat;
   struct Alignment alignment;
 };
 
