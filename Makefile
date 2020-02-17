@@ -1,5 +1,5 @@
 # The name of the source files
-SOURCES = src/read_main.c src/read_styles.c
+SOURCES = src/read_main.c src/read_styles.c src/read_worksheet.c src/read_workbook.c
 
 # The name of the executable
 EXE = result
@@ -41,5 +41,7 @@ clean:
 	-rm -f $(OBJECTS)  # Remove the object files
 
 # Finally we need to tell "make" what source and header file each object file depends on
-src/read_main.o: src/read_main.c include/read_main.h include/read_styles.h
+src/read_main.o: src/read_main.c include/read_main.h 
 src/read_styles.o: src/read_styles.c include/read_styles.h
+src/read_worksheet.o: src/read_worksheet.c include/read_worksheet.h
+src/read_workbook.o: src/read_workbook.c include/read_workbook.h

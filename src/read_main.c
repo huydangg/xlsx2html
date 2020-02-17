@@ -1,5 +1,4 @@
 #include <read_main.h>
-#include <read_styles.h>
 
 XML_Parser xmlparser;
 
@@ -15,17 +14,12 @@ zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name) {
 int load_workbook(zip_t *zip) {
   const char *zip_file_name = "xl/workbook.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
-  int status = process_zip_file(archive, NULL, styles_start_element, styles_end_element);
+  int status = process_zip_file(archive, NULL, NULL, workbook_start_element, workbook_end_element);
   for(int i = 0; i < array_sheets.length; i++) {
     printf("Name %s\n", array_sheets.sheets[i]->name);
     printf("sheetID: %s\n", array_sheets.sheets[i]->sheetId);
     printf("Path name: %s\n", array_sheets.sheets[i]->path_name);
-    free(array_sheets.sheets[i]->name);
-    free(array_sheets.sheets[i]->sheetId);
-    free(array_sheets.sheets[i]->path_name);
-    free(array_sheets.sheets[i]);
   }
-  free(array_sheets.sheets);
   return status;
 }
 
@@ -33,7 +27,7 @@ int load_styles(zip_t *zip) {
   const char *zip_file_name = "xl/styles.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   // Load NumFMT first
-  int status = process_zip_file(archive, NULL, styles_start_element, styles_end_element);
+  int status = process_zip_file(archive, NULL, NULL, styles_start_element, styles_end_element);
   for (int i = 0; i < array_numfmts.length; i++) {
     printf("Format code: %s\n", array_numfmts.numfmts[i].formatCode);
     printf("Format id: %s\n", array_numfmts.numfmts[i].numFmtId);
@@ -129,8 +123,34 @@ int load_styles(zip_t *zip) {
   return status;
 }
 
+int load_worksheets(zip_t *zip) {
+  printf("Length sheets: %d\n", array_sheets.length);
+  for(int i = 0; i < array_sheets.length; i++) {
+    printf("---------------------------------------------------------\n");
+    printf("Loading %s\n", array_sheets.sheets[i]->path_name);
+    zip_file_t *archive = open_zip_file(zip, array_sheets.sheets[i]->path_name);
+    int status_worksheet = process_zip_file(archive, NULL, NULL, worksheet_start_element, worksheet_end_element);
+    if (!status_worksheet){
+      return status_worksheet;
+    }
+    printf("Length cols: %d\n", array_cols.length);
+    for (int index_col = 0; index_col < array_cols.length; index_col++) {
+      printf("Col isHidden: %c\n", array_cols.cols[index_col]->isHidden);
+      printf("Col min: %d | max : %d\n", array_cols.cols[index_col]->min, array_cols.cols[index_col]->max);
+      printf("Col width: %f\n", array_cols.cols[index_col]->width);
+      free(array_cols.cols[index_col]);
+    }
+    free(array_cols.cols);
+    free(array_sheets.sheets[i]->name);
+    free(array_sheets.sheets[i]->sheetId);
+    free(array_sheets.sheets[i]->path_name);
+    free(array_sheets.sheets[i]);
+  }
+  free(array_sheets.sheets);
+  return 1;
+}
 
-int process_zip_file(zip_file_t *archive, void *callbackdata, XML_StartElementHandler start_element, XML_EndElementHandler end_element) {
+int process_zip_file(zip_file_t *archive, void *callbackdata, XML_CharacterDataHandler content_handler, XML_StartElementHandler start_element, XML_EndElementHandler end_element) {
   void *buf;
   zip_int64_t buflen;
   xmlparser = XML_ParserCreate(NULL);
@@ -178,7 +198,13 @@ int main(void) {
   }
   int status_styles = load_styles(zip);
   if (!status_styles) {
-    fprintf(stderr, "Failed to read workbook");
+    fprintf(stderr, "Failed to read styles");
+    zip_close(zip);
+    return 0;
+  }
+  int status_worksheets = load_worksheets(zip);
+  if (!status_worksheets) {
+    fprintf(stderr, "Failed to read worksheets");
     zip_close(zip);
     return 0;
   }

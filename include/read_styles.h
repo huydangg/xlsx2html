@@ -15,17 +15,7 @@
 #endif
 
 
-struct Sheet {
-   XML_Char *name;
-   XML_Char *sheetId;
-   XML_Char *path_name;
-   char isHidden;
-};
 
-struct ArraySheets {
-  unsigned short int length;
-  struct Sheet **sheets;
-};
 
 struct NumFMT {
   XML_Char *formatCode;
@@ -114,7 +104,6 @@ struct ArrayXfs {
 };
   
 extern XML_Parser xmlparser;
-extern struct ArraySheets array_sheets;
 extern struct ArrayNumFMTs array_numfmts;
 extern struct ArrayFonts array_fonts;
 extern struct ArrayFills array_fills;
@@ -124,11 +113,8 @@ extern struct ArrayXfs array_cellXfs;
 
 
 
-void content_handler(void *userData, const XML_Char *s, int len); 
 void styles_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
 void styles_end_element(void *userData, const XML_Char *name); 
-void sheet_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
-void sheet_main_end_element(void *userData, const XML_Char *name);
 void numFmt_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 void numFmt_main_end_element(void *userData, const XML_Char *name);
 void font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
