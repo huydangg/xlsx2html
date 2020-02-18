@@ -1,0 +1,39 @@
+table{
+  border-collapse: separate;
+  border-spacing: 0px;
+  white-space: nowrap;
+  width: -moz-fit-content;
+  width: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: -webkit-fit-content;
+  table-layout: fixed
+} 
+table tr{
+  border-bottom: 0.5px solid #DDD;
+}
+table tbody {
+  border-spacing: 0px;
+}
+table td, table th {
+  padding: 0px;
+  border: 0.5px solid #DDD;
+  margin: 0px;
+}
+table tbody tr td {
+  text-align: left;
+}
+p {
+  margin: 0px;
+  padding: 0px;
+}
+#listButton{
+  margin: auto;
+  white-space: nowrap;
+  width: 100%;
+  overflow: auto;
+}
+@media print {
+  div {
+    overflow:initial !important
+  }
+}
