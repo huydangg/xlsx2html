@@ -4,11 +4,54 @@
 #include <read_worksheet.h>
 
 struct ArrayCols array_cols;
+char start_col = 'A'; // A
+char *end_col;
+char start_row  = '1';// 1
+char *end_row;
 
+
+void get_end_col_end_row_from_range(XML_Char *range, char *end_row, char *end_col) {
+  // ex: A1:Q109
+  int pos_colon = 0;
+  char *check_colon = strchr(range, ':');
+  if (check_colon){
+    pos_colon = check_colon - range + 1;
+  }
+  char *_tmp_end_cell = range + pos_colon;
+  int length = (int)strlen(_tmp_end_cell);
+  char _tmp_end_col[3];
+  int count_col_char = 0;
+  while (*_tmp_end_cell) {
+    if (*_tmp_end_cell >= 'A' && *_tmp_end_cell <= 'Z') {
+      count_col_char++; 
+      _tmp_end_col[count_col_char - 1] = *_tmp_end_cell;
+    } else {
+      end_row = malloc(sizeof(_tmp_end_cell));
+      memcpy(end_row, _tmp_end_cell, sizeof(_tmp_end_cell));
+      end_row[strlen(_tmp_end_cell)] = '\0';
+      break;
+    }
+    _tmp_end_cell++;
+  }
+  end_col = malloc((count_col_char + 1) * sizeof(char));
+  end_col = _tmp_end_col;
+  memcpy(end_col, _tmp_end_col, sizeof(_tmp_end_col));
+  end_col[count_col_char] = '\0';
+  printf("END COL: %s\n", end_col);
+  printf("END ROW: %s\n", end_row);
+}
 
 void worksheet_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  if (strcmp(name, "cols") == 0) {
+  if (strcmp(name, "sheetPr") == 0) {
+    // TODO: tabColor
+  } else if (strcmp(name, "dimension") == 0) {
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "ref") == 0) {
+        get_end_col_end_row_from_range(attrs[i + 1], end_row, end_col);
+      }
+    }
+  } else if (strcmp(name, "cols") == 0) {
     array_cols.length = 0;
     array_cols.cols = malloc(sizeof(struct Col *));
     if (array_cols.cols == NULL) {

@@ -1,6 +1,7 @@
 #include <expat.h>
 
 
+
 struct Col {
   unsigned short int min;
   unsigned short int max;
@@ -12,6 +13,11 @@ struct ArrayCols {
   unsigned short int length;
   struct Col **cols;
 };
+
+extern char start_col; // A
+extern char *end_col;
+extern char start_row; // 1
+extern char *end_row;
 
 extern XML_Parser xmlparser;
 extern struct ArrayCols array_cols;
