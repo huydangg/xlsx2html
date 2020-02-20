@@ -1,7 +1,6 @@
 #include <expat.h>
 
 
-
 struct Col {
   unsigned short int min;
   unsigned short int max;
@@ -14,14 +13,17 @@ struct ArrayCols {
   struct Col **cols;
 };
 
-extern char start_col; // A
-extern char *end_col;
-extern char start_row; // 1
-extern char *end_row;
+struct WorkSheet {
+  char start_col; // A
+  char *end_col;
+  char start_row; // 1
+  char *end_row;
+  struct ArrayCols array_cols;
+};
 
 extern XML_Parser xmlparser;
-extern struct ArrayCols array_cols;
 
+struct WorkSheet;  
 
 void worksheet_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 void worksheet_end_element(void *userData, const XML_Char *name);

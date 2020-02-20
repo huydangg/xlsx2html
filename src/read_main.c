@@ -129,22 +129,32 @@ int load_worksheets(zip_t *zip) {
     printf("---------------------------------------------------------\n");
     printf("Loading %s\n", array_sheets.sheets[i]->path_name);
     zip_file_t *archive = open_zip_file(zip, array_sheets.sheets[i]->path_name);
-    int status_worksheet = process_zip_file(archive, NULL, NULL, worksheet_start_element, worksheet_end_element);
+    struct WorkSheet worksheet;
+    worksheet.start_col = 'A';
+    worksheet.start_row = '1';
+    int status_worksheet = process_zip_file(archive, &worksheet, NULL, worksheet_start_element, worksheet_end_element);
     if (!status_worksheet){
       return status_worksheet;
     }
-    printf("Length cols: %d\n", array_cols.length);
-    for (int index_col = 0; index_col < array_cols.length; index_col++) {
-      printf("Col isHidden: %c\n", array_cols.cols[index_col]->isHidden);
-      printf("Col min: %d | max : %d\n", array_cols.cols[index_col]->min, array_cols.cols[index_col]->max);
-      printf("Col width: %f\n", array_cols.cols[index_col]->width);
-      free(array_cols.cols[index_col]);
+    printf("START_ROW: %c\n", worksheet.start_row);
+    printf("START_COL: %c\n", worksheet.start_col);
+    printf("END_ROW: %s\n", worksheet.end_row);
+    printf("END_COL: %s\n", worksheet.end_col);
+    printf("Length cols: %d\n", worksheet.array_cols.length);
+    for (int index_col = 0; index_col < worksheet.array_cols.length; index_col++) {
+      printf("Col isHidden: %c\n", worksheet.array_cols.cols[index_col]->isHidden);
+      printf("Col min: %d | max : %d\n", worksheet.array_cols.cols[index_col]->min, worksheet.array_cols.cols[index_col]->max);
+      printf("Col width: %f\n", worksheet.array_cols.cols[index_col]->width);
+      free(worksheet.array_cols.cols[index_col]);
     }
-    free(array_cols.cols);
+    free(worksheet.array_cols.cols);
+    free(worksheet.end_row);
+    free(worksheet.end_col);
     free(array_sheets.sheets[i]->name);
     free(array_sheets.sheets[i]->sheetId);
     free(array_sheets.sheets[i]->path_name);
     free(array_sheets.sheets[i]);
+
   }
   free(array_sheets.sheets);
   return 1;
