@@ -6,9 +6,10 @@
 struct ArraySheets array_sheets;
 
 
-XML_Char *insert_substr_to_str_at_pos(XML_Char *des, XML_Char *substr, int pos) {
-  XML_Char *_tmp_sheet_id = malloc(sizeof(XML_Char) * (strlen(substr) + 1));
-  memcpy(_tmp_sheet_id, substr, sizeof(XML_Char) * (strlen(substr) + 1));
+XML_Char *insert_substr_to_str_at_pos(XML_Char *des, const XML_Char *substr, int pos) {
+  const XML_Char *_substr = substr;
+  XML_Char *_tmp_sheet_id = malloc(sizeof(XML_Char) * (strlen(_substr) + 1));
+  memcpy(_tmp_sheet_id, _substr, sizeof(XML_Char) * (strlen(_substr) + 1));
   XML_Char *_tmp_path_name = malloc(sizeof(XML_Char) * (strlen(_tmp_sheet_id) + strlen(des) + 1));
   memcpy(_tmp_path_name, des, pos);
   _tmp_path_name[pos] = '\0';
