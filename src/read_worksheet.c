@@ -6,7 +6,7 @@
 
 
 void get_end_col_end_row_from_range(const XML_Char *range, char **end_row, char **end_col) {
-  // ex: A1:Q109
+  // ex: A1:Q109 or I28
   int pos_colon = 0;
   char *check_colon = strchr(range, ':');
   if (check_colon){
@@ -79,6 +79,7 @@ void col_start_element(void *userData, const XML_Char *name, const XML_Char **at
       }
     }
     worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1] = malloc(sizeof(struct Col));
+    worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->isHidden = '0';
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "hidden") == 0) {
         worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->isHidden = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0'; 
