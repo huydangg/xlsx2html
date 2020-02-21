@@ -1,5 +1,5 @@
 # The name of the source files
-SOURCES = src/read_main.c src/read_styles.c src/read_worksheet.c src/read_workbook.c
+SOURCES =  src/read_main.c src/read_styles.c src/read_worksheet.c src/read_workbook.c
 
 # The name of the executable
 EXE = result
@@ -11,8 +11,7 @@ CFLAGS = -Wall -Iinclude
 LDFLAGS =
 
 # Libraries to link with (none for the moment)
-LIBS = -lzip -lexpat
-
+LIBS = -lzip -lexpat 
 # Use the GCC frontend program when linking
 LD = gcc
 
@@ -39,7 +38,7 @@ src/%.o: src/%.c
 clean:
 	-rm -f $(EXE)      # Remove the executable file
 	-rm -f $(OBJECTS)  # Remove the object files
-
+	-rm -f templates/index.html  # Remove the object files
 # Finally we need to tell "make" what source and header file each object file depends on
 src/read_main.o: src/read_main.c include/read_main.h 
 src/read_styles.o: src/read_styles.c include/read_styles.h
