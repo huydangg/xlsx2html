@@ -193,8 +193,61 @@ int process_zip_file(zip_file_t *archive, void *callbackdata, XML_CharacterDataH
   return 1;
 }
 
+void embed_css(FILE *f, char *css_path) {
+  FILE *fcss;
+  fcss = fopen(css_path, "rb");
+  if (fcss == NULL) {
+    fprintf(stderr, "Cannot open css file to read");
+  }
+  char line[256];
+  while (fgets(line, sizeof(line), fcss)) {
+    fputs(line, f);
+  }
+  fclose(fcss);
+}
+
+void embed_string(FILE *f, char *s) {
+  
+}
+
+void post_process() {
+  FILE *fmanifest;
+  fmanifest = fopen("/media/huydang/HuyDang1/xlsxmagic/templates/manifest", "rb");
+  if (fmanifest == NULL) {
+    fprintf(stderr, "Cannot open manifest file to read");
+    return;
+  }
+  FILE *findexhtml;
+  findexhtml = fopen("/media/huydang/HuyDang1/xlsxmagic/templates/index.html", "ab+");
+  if (findexhtml == NULL) {
+    fprintf(stderr, "Cannot open index html file to read");
+    return;
+  }
+  char line[256];
+  while(fgets(line, sizeof(line), fmanifest)) {
+    if (line[0] == '\n') {
+      continue;
+    } else if (line[0] == '#') {
+      continue;
+    } else if (line[0] == '@') {
+      if (strcmp(line, "@base.css")) {
+	fputs("<styles>", findexhtml);
+        embed_css(findexhtml, "/media/huydang/HuyDang1/xlsxmagic/templates/base.css");
+	fputs("</styles>", findexhtml);
+      }
+    } else if (line[0] == '$') {
+      
+    } else {
+      //Insert html statement
+      fputs(line, findexhtml);
+    }
+  }
+  fclose(fmanifest);
+  fclose(findexhtml);
+}
+
 int main(void) {
-  const char *file_name = "/home/huydang/Downloads/excelsample/report__codestringers.xlsx";
+  const char *file_name = "/home/huydang/Downloads/excelsample/1.xlsx";
   zip_t *zip = open_zip(file_name);
   if (zip == NULL){
     fprintf(stderr, "File not found");
@@ -218,6 +271,7 @@ int main(void) {
     zip_close(zip);
     return 0;
   }
+  post_process();
   zip_close(zip);
   return 0; 
 }
