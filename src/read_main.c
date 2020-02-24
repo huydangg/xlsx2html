@@ -1,4 +1,5 @@
 #include <read_main.h>
+#include <string.h>
 
 XML_Parser xmlparser;
 
@@ -150,13 +151,7 @@ int load_worksheets(zip_t *zip) {
     free(worksheet.array_cols.cols);
     free(worksheet.end_row);
     free(worksheet.end_col);
-    free(array_sheets.sheets[i]->name);
-    free(array_sheets.sheets[i]->sheetId);
-    free(array_sheets.sheets[i]->path_name);
-    free(array_sheets.sheets[i]);
-
   }
-  free(array_sheets.sheets);
   return 1;
 }
 
@@ -193,9 +188,8 @@ int process_zip_file(zip_file_t *archive, void *callbackdata, XML_CharacterDataH
   return 1;
 }
 
-void embed_css(FILE *f, char *css_path) {
-  FILE *fcss;
-  fcss = fopen(css_path, "rb");
+void embed_css(FILE *f, const char *css_path) { const char *_css_path = css_path; FILE *fcss;
+  fcss = fopen(_css_path, "rb");
   if (fcss == NULL) {
     fprintf(stderr, "Cannot open css file to read");
   }
@@ -206,19 +200,24 @@ void embed_css(FILE *f, char *css_path) {
   fclose(fcss);
 }
 
-void embed_string(FILE *f, char *s) {
-  
+//The first chunk (chunk_1_0.html).
+void generate_columns() {
+
 }
 
-void post_process() {
+// Generate index html file
+void pre_process() {
+  const char *BASE_CSS_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/base.css";
+  const char *INDEX_HTML_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/index.html";
+  const char *MANIFEST_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/manifest";
   FILE *fmanifest;
-  fmanifest = fopen("/media/huydang/HuyDang1/xlsxmagic/templates/manifest", "rb");
+  fmanifest = fopen(MANIFEST_PATH, "rb");
   if (fmanifest == NULL) {
     fprintf(stderr, "Cannot open manifest file to read");
     return;
   }
   FILE *findexhtml;
-  findexhtml = fopen("/media/huydang/HuyDang1/xlsxmagic/templates/index.html", "ab+");
+  findexhtml = fopen(INDEX_HTML_PATH, "ab+");
   if (findexhtml == NULL) {
     fprintf(stderr, "Cannot open index html file to read");
     return;
@@ -230,14 +229,35 @@ void post_process() {
     } else if (line[0] == '#') {
       continue;
     } else if (line[0] == '@') {
-      if (strcmp(line, "@base.css")) {
+      if (strcmp(line, "@base.min.css\n") == 0) {
 	fputs("<styles>", findexhtml);
-        embed_css(findexhtml, "/media/huydang/HuyDang1/xlsxmagic/templates/base.css");
+        embed_css(findexhtml, BASE_CSS_PATH);
 	fputs("</styles>", findexhtml);
       }
     } else if (line[0] == '$') {
-      
-    } else {
+      if (strcmp(line, "$tables\n") == 0) {
+	for (int i = 0; i < array_sheets.length; i++) {
+	  char div_table[256]; // Warning: Need to allocte dynamic
+	  snprintf(div_table, sizeof(div_table), "<div name=\"%s\" style=\"position: relative; overflow: auto; width: 100%; height: 95vh\"; display: none>", array_sheets.sheets[i]->name);
+          fputs(div_table, findexhtml);
+	  fputs("<table>", findexhtml);
+          fputs("<thead>", findexhtml);
+          char div_thead[256]; // Warning: Need to allocte dynamic
+	  snprintf(div_thead, sizeof(div_thead), "<div data-chunk-no=\"0\" data-chunk-url=\"https://webstg.filestring.net/preview/320401b6-2150-11ea-a956-060ffd2d73c2/chunk/chunk_%d_0.html\"", i);
+	  fputs(div_thead, findexhtml);
+	  fputs("</thead", findexhtml);
+	  fputs("<tbody>", findexhtml);
+	  fputs("</tbody>", findexhtml);
+	  fputs("</table>", findexhtml);
+	  fputs("</div>", findexhtml);
+          free(array_sheets.sheets[i]->name);
+          free(array_sheets.sheets[i]->sheetId);
+          free(array_sheets.sheets[i]->path_name);
+          free(array_sheets.sheets[i]);
+        }
+        free(array_sheets.sheets);
+      }
+     } else {
       //Insert html statement
       fputs(line, findexhtml);
     }
@@ -271,7 +291,7 @@ int main(void) {
     zip_close(zip);
     return 0;
   }
-  post_process();
+  pre_process();
   zip_close(zip);
   return 0; 
 }
