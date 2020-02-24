@@ -19,25 +19,26 @@
 <script type="text/javascript" crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js"></script>
 <title>Document</title>
 </head>
+
 <body style="overflow: auto; height: 100vh">
-<div id="myDynamicTable" style="position: relative; overflow: auto; width: 100%; height: 95vh">
-<table id="tb" border="1">
-<thead>
-
-$columns
-
-</thead>
-<tbody>
-
-$data_chunks
-
-</tbody>
-</table>
-</div>
+# Number of worksheets(included all chunks). Example in the below 
+# <div name="sheet1" style="position: relative; overflow: auto; width: 100%; height: 95vh" display: none>
+#<table>
+#<thead><div data-chunk-no="0" data-chunk-url="https://webstg.filestring.net/chunk_0.html"></thead>
+#<tbody>
+#<div data-chunk-no="1" data-chunk-url="https://webstg.filestring.net/chunk_1.html"></div>
+#<div data-chunk-no="2" data-chunk-url="https://webstg.filestring.net/chunk_2.html"></div>
+#...
+#</tbody>
+#</table>
+# </div>
+# <div name="sheet2" style="position: relative; overflow: auto; width: 100%; height: 95vh display: none">
+# ...
+#</div>
+$tables
 <div id="listButton">
-
-$button
-
+#List of <button> tags
+$buttons
 </div>
 </body>
 </html>
