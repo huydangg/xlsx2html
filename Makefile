@@ -11,7 +11,7 @@ CFLAGS = -Wall -Iinclude
 LDFLAGS =
 
 # Libraries to link with (none for the moment)
-LIBS = -lzip -lexpat 
+LIBS = -lzip -lexpat -lm
 # Use the GCC frontend program when linking
 LD = gcc
 
