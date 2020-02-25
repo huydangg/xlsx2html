@@ -1,5 +1,8 @@
 #include <read_main.h>
 #include <string.h>
+#include <math.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 XML_Parser xmlparser;
 
@@ -142,11 +145,15 @@ int load_worksheets(zip_t *zip) {
     printf("END_ROW: %s\n", worksheet.end_row);
     printf("END_COL: %s\n", worksheet.end_col);
     printf("Length cols: %d\n", worksheet.array_cols.length);
+    int status = generate_columns(worksheet.array_cols, worksheet.end_col, i);
+    if (status == -1) {
+      fprintf(stderr, "Error when generated chunk0 of %s Sheet\n", array_sheets.sheets[i]->name);
+      return -1;
+    }
     for (int index_col = 0; index_col < worksheet.array_cols.length; index_col++) {
       printf("Col isHidden: %c\n", worksheet.array_cols.cols[index_col]->isHidden);
       printf("Col min: %d | max : %d\n", worksheet.array_cols.cols[index_col]->min, worksheet.array_cols.cols[index_col]->max);
       printf("Col width: %f\n", worksheet.array_cols.cols[index_col]->width);
-      free(worksheet.array_cols.cols[index_col]);
     }
     free(worksheet.array_cols.cols);
     free(worksheet.end_row);
@@ -200,15 +207,105 @@ void embed_css(FILE *f, const char *css_path) { const char *_css_path = css_path
   fclose(fcss);
 }
 
-//The first chunk (chunk_1_0.html).
-void generate_columns() {
+size_t ptr_strlen(const char *s) {
+  const char *p = s;
+  for (; *p != '\0'; p++);
+  return p - s;
+}
 
+int column_name_to_number(const char *column_name) {
+  const char *col_name = column_name;
+  char *base = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  int i, j, result = 0;
+  for (i = 0, j = ptr_strlen(col_name) - 1; i < ptr_strlen(col_name); i += 1, j -= 1) {
+    const char *ptr = strchr(base, col_name[i]);
+    if (!ptr) {
+      return -1;
+    }
+    int index = ptr - base;
+    result += (int)pow((double)ptr_strlen(base), (double)j) * (index + 1);
+  }
+  return result;
+}
+
+char *int_to_column_name(int i) {
+  char COLUMN_NAME[10];
+  char *first_statement = i<16926? "" : ((char *)((((i/26)-1)%26)+65));
+  char *second_statement = i<2730? "" : ((char *)((((i/26)-1)%26)+65));
+  char *third_statement = i<26? "" : ((char *)((((i/26)-1)%26)+65));
+  char *last_statement = (char *)((i%26)+65);
+  snprintf(COLUMN_NAME, sizeof(COLUMN_NAME), "%s%s%s%s", first_statement, second_statement, third_statement, last_statement);
+  return COLUMN_NAME;
+}
+
+//The first chunk (chunk_1_0.html).
+int generate_columns(struct ArrayCols array_cols, const char *end_col_name, int index_worksheet) {
+    /*printf("START_ROW: %c\n", worksheet.start_row);
+    printf("START_COL: %c\n", worksheet.start_col);
+    printf("END_ROW: %s\n", worksheet.end_row);
+    printf("END_COL: %s\n", worksheet.end_col);
+    printf("Length cols: %d\n", worksheet.array_cols.length);
+    for (int index_col = 0; index_col < worksheet.array_cols.length; index_col++) {
+      printf("Col isHidden: %c\n", worksheet.array_cols.cols[index_col]->isHidden);
+      printf("Col min: %d | max : %d\n", worksheet.array_cols.cols[index_col]->min, worksheet.array_cols.cols[index_col]->max);
+      printf("Col width: %f\n", worksheet.array_cols.cols[index_col]->width);
+      free(worksheet.array_cols.cols[index_col]);
+    }*/
+  const char *_end_col_name = end_col_name;
+  const char *OUTPUT_ROOT_DIR = "/media/huydang/HuyDang1/xlsxmagic/output";
+  const char *CHUNKS_DIR_NAME = "chunks";
+  char THE_FIRST_CHUNK_DIR[256];
+  snprintf(THE_FIRST_CHUNK_DIR, sizeof(THE_FIRST_CHUNK_DIR), "%s/%s", OUTPUT_ROOT_DIR, CHUNKS_DIR_NAME);
+  //THE_FIRST_CHUNK_DIR[strlen(THE_FIRST_CHUNK_DIR)] = '\0';
+  struct stat st = {0};
+  printf("%s\n", THE_FIRST_CHUNK_DIR);
+  if (stat(THE_FIRST_CHUNK_DIR, &st) == -1) {
+    int status = mkdir(THE_FIRST_CHUNK_DIR, 0777);
+    if (status != 0) {
+      fprintf(stderr, "Error when create a chunk dir with status is %d\n", status);
+      return -1; 
+    }
+  }
+  char THE_FIRST_CHUNK_PATH[256];
+  snprintf(THE_FIRST_CHUNK_PATH, sizeof(THE_FIRST_CHUNK_PATH), "%s/chunk_%d_0.html", THE_FIRST_CHUNK_DIR, index_worksheet);
+  FILE *fchunk0;
+  fchunk0 = fopen(THE_FIRST_CHUNK_PATH, "ab+");
+  if (fchunk0 == NULL) {
+    fprintf(stderr, "Cannot open chunk0 file to read\n");
+    return -1;
+  }
+  int end_col_number = column_name_to_number(_end_col_name);
+  if (end_col_number == -1) {
+    fprintf(stderr, "Error when convert column name to number\n");
+    return -1;
+  }
+  fputs("<thead>", fchunk0);
+  fputs("<tr>", fchunk0);
+  for (int i = 1; i <= end_col_number; i++) {
+    char TH_STRING[256];
+    for (int index_col = 0; index_col < array_cols.length; index_col++) {
+      if (i >= array_cols.cols[index_col]->min && i <= array_cols.cols[index_col]->max) {
+	snprintf(TH_STRING, sizeof(TH_STRING), "<th style=\"width: %fpx;\">", array_cols.cols[index_col]->width);
+        free(array_cols.cols[index_col]);
+        break;
+      }
+      free(array_cols.cols[index_col]);
+    }
+    fputs(TH_STRING, fchunk0);
+    printf("COLUMN_NAME: %s\n", int_to_column_name(i));
+    fputs(int_to_column_name(i), fchunk0);
+    fputs("</th>", fchunk0);
+  }
+  fputs("</tr>", fchunk0);
+  fputs("</thead>", fchunk0);
+  fclose(fchunk0);
+  return 1;
 }
 
 // Generate index html file
 void pre_process() {
   const char *BASE_CSS_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/base.css";
-  const char *INDEX_HTML_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/index.html";
+  const char *INDEX_HTML_PATH = "/media/huydang/huydang1/xlsxmagic/output/index.html";
   const char *MANIFEST_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/manifest";
   FILE *fmanifest;
   fmanifest = fopen(MANIFEST_PATH, "rb");
