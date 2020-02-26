@@ -154,6 +154,7 @@ int load_worksheets(zip_t *zip) {
       printf("Col isHidden: %c\n", worksheet.array_cols.cols[index_col]->isHidden);
       printf("Col min: %d | max : %d\n", worksheet.array_cols.cols[index_col]->min, worksheet.array_cols.cols[index_col]->max);
       printf("Col width: %f\n", worksheet.array_cols.cols[index_col]->width);
+      free(worksheet.array_cols.cols[index_col]);
     }
     free(worksheet.array_cols.cols);
     free(worksheet.end_row);
@@ -228,29 +229,23 @@ int column_name_to_number(const char *column_name) {
   return result;
 }
 
-char *int_to_column_name(int i) {
-  char COLUMN_NAME[10];
-  char *first_statement = i<16926? "" : ((char *)((((i/26)-1)%26)+65));
-  char *second_statement = i<2730? "" : ((char *)((((i/26)-1)%26)+65));
-  char *third_statement = i<26? "" : ((char *)((((i/26)-1)%26)+65));
-  char *last_statement = (char *)((i%26)+65);
-  snprintf(COLUMN_NAME, sizeof(COLUMN_NAME), "%s%s%s%s", first_statement, second_statement, third_statement, last_statement);
-  return COLUMN_NAME;
+char *int_to_column_name(int n) {
+  char *column_name = malloc(4);
+  column_name[0] = '\0';
+  while (n > 0) {
+    n--;
+    char _tmp_column_name[2];
+    _tmp_column_name[0] = (char)('A' + n%26);
+    _tmp_column_name[1] = '\0';
+    strcat(column_name, _tmp_column_name);
+    n /= 26;
+  }
+  column_name[ptr_strlen(column_name)] = '\0';
+  return column_name;
 }
 
 //The first chunk (chunk_1_0.html).
 int generate_columns(struct ArrayCols array_cols, const char *end_col_name, int index_worksheet) {
-    /*printf("START_ROW: %c\n", worksheet.start_row);
-    printf("START_COL: %c\n", worksheet.start_col);
-    printf("END_ROW: %s\n", worksheet.end_row);
-    printf("END_COL: %s\n", worksheet.end_col);
-    printf("Length cols: %d\n", worksheet.array_cols.length);
-    for (int index_col = 0; index_col < worksheet.array_cols.length; index_col++) {
-      printf("Col isHidden: %c\n", worksheet.array_cols.cols[index_col]->isHidden);
-      printf("Col min: %d | max : %d\n", worksheet.array_cols.cols[index_col]->min, worksheet.array_cols.cols[index_col]->max);
-      printf("Col width: %f\n", worksheet.array_cols.cols[index_col]->width);
-      free(worksheet.array_cols.cols[index_col]);
-    }*/
   const char *_end_col_name = end_col_name;
   const char *OUTPUT_ROOT_DIR = "/media/huydang/HuyDang1/xlsxmagic/output";
   const char *CHUNKS_DIR_NAME = "chunks";
@@ -279,25 +274,21 @@ int generate_columns(struct ArrayCols array_cols, const char *end_col_name, int 
     fprintf(stderr, "Error when convert column name to number\n");
     return -1;
   }
-  fputs("<thead>", fchunk0);
-  fputs("<tr>", fchunk0);
   for (int i = 1; i <= end_col_number; i++) {
     char TH_STRING[256];
     for (int index_col = 0; index_col < array_cols.length; index_col++) {
       if (i >= array_cols.cols[index_col]->min && i <= array_cols.cols[index_col]->max) {
-	snprintf(TH_STRING, sizeof(TH_STRING), "<th style=\"width: %fpx;\">", array_cols.cols[index_col]->width);
-        free(array_cols.cols[index_col]);
+	snprintf(TH_STRING, sizeof(TH_STRING), "<th style=\"width: %gpx;\">", array_cols.cols[index_col]->width);
         break;
       }
-      free(array_cols.cols[index_col]);
     }
     fputs(TH_STRING, fchunk0);
-    printf("COLUMN_NAME: %s\n", int_to_column_name(i));
-    fputs(int_to_column_name(i), fchunk0);
+    char *column_name = int_to_column_name(i);
+    printf("COLUMN_NAME: %s\n", column_name);
+    fputs(column_name, fchunk0);
+    free(column_name);
     fputs("</th>", fchunk0);
   }
-  fputs("</tr>", fchunk0);
-  fputs("</thead>", fchunk0);
   fclose(fchunk0);
   return 1;
 }
@@ -305,18 +296,17 @@ int generate_columns(struct ArrayCols array_cols, const char *end_col_name, int 
 // Generate index html file
 void pre_process() {
   const char *BASE_CSS_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/base.css";
-  const char *INDEX_HTML_PATH = "/media/huydang/huydang1/xlsxmagic/output/index.html";
+  const char *INDEX_HTML_PATH = "/media/huydang/HuyDang1/xlsxmagic/output/index.html";
   const char *MANIFEST_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/manifest";
   FILE *fmanifest;
   fmanifest = fopen(MANIFEST_PATH, "rb");
-  if (fmanifest == NULL) {
     fprintf(stderr, "Cannot open manifest file to read");
     return;
   }
   FILE *findexhtml;
   findexhtml = fopen(INDEX_HTML_PATH, "ab+");
   if (findexhtml == NULL) {
-    fprintf(stderr, "Cannot open index html file to read");
+    fprintf(stderr, "Cannot open index html file to read\n");
     return;
   }
   char line[256];
@@ -338,11 +328,13 @@ void pre_process() {
 	  snprintf(div_table, sizeof(div_table), "<div name=\"%s\" style=\"position: relative; overflow: auto; width: 100%; height: 95vh\"; display: none>", array_sheets.sheets[i]->name);
           fputs(div_table, findexhtml);
 	  fputs("<table>", findexhtml);
-          fputs("<thead>", findexhtml);
+	  fputs("<thead>", findexhtml);
+	  fputs("<tr>", findexhtml);
           char div_thead[256]; // Warning: Need to allocte dynamic
 	  snprintf(div_thead, sizeof(div_thead), "<div data-chunk-no=\"0\" data-chunk-url=\"https://webstg.filestring.net/preview/320401b6-2150-11ea-a956-060ffd2d73c2/chunk/chunk_%d_0.html\"", i);
 	  fputs(div_thead, findexhtml);
-	  fputs("</thead", findexhtml);
+	  fputs("</tr", findexhtml);
+	  fputs("</thead>", findexhtml);
 	  fputs("<tbody>", findexhtml);
 	  fputs("</tbody>", findexhtml);
 	  fputs("</table>", findexhtml);
