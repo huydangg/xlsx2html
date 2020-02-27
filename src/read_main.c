@@ -251,7 +251,6 @@ int generate_columns(struct ArrayCols array_cols, const char *end_col_name, int 
   const char *CHUNKS_DIR_NAME = "chunks";
   char THE_FIRST_CHUNK_DIR[256];
   snprintf(THE_FIRST_CHUNK_DIR, sizeof(THE_FIRST_CHUNK_DIR), "%s/%s", OUTPUT_ROOT_DIR, CHUNKS_DIR_NAME);
-  //THE_FIRST_CHUNK_DIR[strlen(THE_FIRST_CHUNK_DIR)] = '\0';
   struct stat st = {0};
   printf("%s\n", THE_FIRST_CHUNK_DIR);
   if (stat(THE_FIRST_CHUNK_DIR, &st) == -1) {
@@ -274,6 +273,7 @@ int generate_columns(struct ArrayCols array_cols, const char *end_col_name, int 
     fprintf(stderr, "Error when convert column name to number\n");
     return -1;
   }
+  fputs("<th width: 35px; height: 15px;></th>", fchunk0);
   for (int i = 1; i <= end_col_number; i++) {
     char TH_STRING[256];
     for (int index_col = 0; index_col < array_cols.length; index_col++) {
