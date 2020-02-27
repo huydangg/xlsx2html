@@ -300,6 +300,7 @@ void pre_process() {
   const char *MANIFEST_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/manifest";
   FILE *fmanifest;
   fmanifest = fopen(MANIFEST_PATH, "rb");
+  if (fmanifest == NULL) {
     fprintf(stderr, "Cannot open manifest file to read");
     return;
   }
