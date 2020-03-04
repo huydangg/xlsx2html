@@ -14,7 +14,6 @@ zip_t *open_zip(const char *file_name) {
 zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name) {
   return zip_fopen(zip, zip_file_name, ZIP_FL_UNCHANGED);
 }
-
 int load_workbook(zip_t *zip) {
   const char *zip_file_name = "xl/workbook.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
@@ -163,16 +162,33 @@ int load_worksheets(zip_t *zip) {
   return 1;
 }
 
+int load_sharedStrings(zip_t *zip) {
+  const char *file_name = "xl/sharedStrings.xml";
+  const char *_tmp_sharedStrings_path = "/media/huydang/HuyDang1/xlsxmagic/output/sharedStrings.html";
+  zip_file_t *archive = open_zip_file(zip, file_name);
+  FILE *_tmp_sharedStrings_file;
+  _tmp_sharedStrings_file = fopen(_tmp_sharedStrings_path, "w+");
+  if (_tmp_sharedStrings_file == NULL) {
+    fprintf(stderr, "Cannot open _tmp_sharedStrings html file to write");
+    return -1;
+  }
+  int status_sharedStrings = process_zip_file(archive, _tmp_sharedStrings_file, NULL, sharedStrings_main_start_element, sharedStrings_main_end_element);
+  if (status_sharedStrings == -1) {
+    fprintf(stderr, "Error when load sharedStrings\n");
+    fclose(_tmp_sharedStrings_file);
+    return -1;
+  }
+  fclose(_tmp_sharedStrings_file);
+  return 1;
+}
+
 int process_zip_file(zip_file_t *archive, void *callbackdata, XML_CharacterDataHandler content_handler, XML_StartElementHandler start_element, XML_EndElementHandler end_element) {
   void *buf;
   zip_int64_t buflen;
   xmlparser = XML_ParserCreate(NULL);
   int done;
   enum XML_Status status = XML_STATUS_ERROR;
-
-  if (callbackdata){
-    XML_SetUserData(xmlparser, callbackdata);
-  }
+  XML_SetUserData(xmlparser, callbackdata);
   XML_SetElementHandler(xmlparser, start_element, end_element);
   XML_SetCharacterDataHandler(xmlparser, content_handler);
   buf = XML_GetBuffer(xmlparser, PARSE_BUFFER_SIZE);
@@ -196,7 +212,8 @@ int process_zip_file(zip_file_t *archive, void *callbackdata, XML_CharacterDataH
   return 1;
 }
 
-void embed_css(FILE *f, const char *css_path) { const char *_css_path = css_path; FILE *fcss;
+void embed_css(FILE *f, const char *css_path) {
+  const char *_css_path = css_path; FILE *fcss;
   fcss = fopen(_css_path, "rb");
   if (fcss == NULL) {
     fprintf(stderr, "Cannot open css file to read");
@@ -244,7 +261,7 @@ char *int_to_column_name(int n) {
   return column_name;
 }
 
-//The first chunk (chunk_1_0.html).
+//The first chunk (chunk_%d_0.html).
 int generate_columns(struct ArrayCols array_cols, const char *end_col_name, int index_worksheet) {
   const char *_end_col_name = end_col_name;
   const char *OUTPUT_ROOT_DIR = "/media/huydang/HuyDang1/xlsxmagic/output";
@@ -356,8 +373,18 @@ void pre_process() {
   fclose(findexhtml);
 }
 
+void test_read_sharedStrings() {
+  FILE *sharedStrings_file;
+  sharedStrings_file = fopen("/media/huydang/HuyDang1/xlsxmagic/output/sharedStrings.dat", "r");
+  char line[256];
+  while (fgets(line, sizeof(line), sharedStrings_file)) {
+    printf("TEST READ SHARED STRING: %s\n", line);
+  }
+  fclose(sharedStrings_file);
+}
+
 int main(void) {
-  const char *file_name = "/home/huydang/Downloads/excelsample/1.xlsx";
+  const char *file_name = "/home/huydang/Downloads/excelsample/report__codestringers.xlsx";
   zip_t *zip = open_zip(file_name);
   if (zip == NULL){
     fprintf(stderr, "File not found");
@@ -381,7 +408,14 @@ int main(void) {
     zip_close(zip);
     return 0;
   }
+  int status_sharedStrings = load_sharedStrings(zip);
+  if (!status_sharedStrings) {
+    fprintf(stderr, "Failed to read sharedStrings");
+    zip_close(zip);
+    return 0;
+  }
   pre_process();
+//  test_read_sharedStrings();
   zip_close(zip);
   return 0; 
 }
