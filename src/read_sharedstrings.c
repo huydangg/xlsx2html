@@ -125,12 +125,16 @@ void sharedStrings_rPritem_end_element(void *userData, const XML_Char *name) {
 }
 
 void sharedStrings_content_handler(void *callbackdata, const XML_Char *buf, int len) {
-  if (len == 0 || buf == NULL){
+  if (len == 0){
     return;
   }
   FILE *_tmp_sharedStrings_callbackdata = callbackdata;
-  char *value = malloc(len + 1);
-  memcpy(value, buf, len + 1);
-  fprintf(_tmp_sharedStrings_callbackdata, "%s", value);
+  XML_Char *value;
+  if ((value = malloc(len + 1)) == NULL) {
+    return;
+  } 
+  memcpy(value, buf, len);
+  value[len] = '\0';
+  fputs(value, _tmp_sharedStrings_callbackdata);
   free(value);
 }
