@@ -130,7 +130,7 @@ void font_item_start_element(void *userData, const XML_Char *name, const XML_Cha
   if (strcmp(name, "sz") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if(strcmp(attrs[i], "val") == 0){
-        fonts_callbackdata[array_fonts.length - 1].sz = (int)strtol((char *)attrs[i + 1], NULL, 10);
+        fonts_callbackdata[array_fonts.length - 1].sz = strtof((char *)attrs[i + 1], NULL);
       }
     }
   } else if (strcmp(name, "name") == 0) {

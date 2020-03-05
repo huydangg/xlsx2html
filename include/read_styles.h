@@ -32,7 +32,7 @@ struct Color {
 };
 
 struct Font {
-  int sz;
+  float sz;
   XML_Char *name;
   char isBold;
   char isItalic; 
