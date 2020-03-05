@@ -40,7 +40,7 @@ int load_styles(zip_t *zip) {
   free(array_numfmts.numfmts);
   printf("Count font: %d\n", array_fonts.length);
   for (int i = 0; i < array_fonts.length; i++) {
-    printf("Font size: %d\n", array_fonts.fonts[i].sz);
+    printf("Font size: %f\n", array_fonts.fonts[i].sz);
     printf("Font name: %s\n", array_fonts.fonts[i].name);
     printf("Font is bold: %c\n", array_fonts.fonts[i].isBold);
     printf("Font is italic: %c\n", array_fonts.fonts[i].isItalic);
@@ -343,7 +343,7 @@ void pre_process() {
       if (strcmp(line, "$tables\n") == 0) {
 	for (int i = 0; i < array_sheets.length; i++) {
 	  char div_table[256]; // Warning: Need to allocte dynamic
-	  snprintf(div_table, sizeof(div_table), "<div name=\"%s\" style=\"position: relative; overflow: auto; width: 100%; height: 95vh\"; display: none>", array_sheets.sheets[i]->name);
+	  snprintf(div_table, sizeof(div_table), "<div name=\"%s\" style=\"position: relative; overflow: auto; width: 100%%; height: 95vh\"; display: none>", array_sheets.sheets[i]->name);
           fputs(div_table, findexhtml);
 	  fputs("<table>", findexhtml);
 	  fputs("<thead>", findexhtml);
