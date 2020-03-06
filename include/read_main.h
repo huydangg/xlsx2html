@@ -1,5 +1,3 @@
-#include <zip.h>
-#include <expat.h>
 #include <read_styles.h>
 #include <read_worksheet.h>
 #include <read_workbook.h>
