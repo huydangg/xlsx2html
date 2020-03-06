@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <expat.h>
 #include <string.h>
 #include <stdlib.h>
 #include <read_styles.h>
@@ -12,7 +11,7 @@ struct ArrayXfs array_cellStyleXfs;
 struct ArrayXfs array_cellXfs;
 
 
-void styles_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+void styles_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
   if (strcmp(name, "numFmts") == 0){
     array_numfmts.length = 0;
@@ -77,7 +76,7 @@ void styles_start_element(void *userData, const XML_Char *name, const XML_Char *
   }
 }
 
-void styles_end_element(void *userData, const XML_Char *name) {
+void styles_end_element(void *callbackdata, const XML_Char *name) {
   (void)name;
   if (strcmp(name, "fonts") == 0) {
   } else if (strcmp(name, "fills") == 0) {
@@ -86,8 +85,8 @@ void styles_end_element(void *userData, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, styles_start_element, NULL);
 }
 
-void numFmt_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct NumFMT *numFmts_callbackdata = userData;
+void numFmt_main_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  struct NumFMT *numFmts_callbackdata = callbackdata;
   if (strcmp(name, "numFmt") == 0) {
     array_numfmts.length++;
     for (int i = 0; attrs[i]; i += 2){
@@ -104,13 +103,13 @@ void numFmt_main_start_element(void *userData, const XML_Char *name, const XML_C
   XML_SetElementHandler(xmlparser, NULL, numFmt_main_end_element);
 }
 
-void numFmt_main_end_element(void *userData, const XML_Char *name) {
+void numFmt_main_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, numFmt_main_start_element, styles_end_element);
 }
 
 
-void font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct Font *fonts_callbackdata = userData;
+void font_main_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  struct Font *fonts_callbackdata = callbackdata;
   if (strcmp(name, "font") == 0) {
     array_fonts.length++; 
     fonts_callbackdata[array_fonts.length - 1].isBold = '0';
@@ -119,14 +118,14 @@ void font_main_start_element(void *userData, const XML_Char *name, const XML_Cha
   }
 }
 
-void font_main_end_element(void *userData, const XML_Char *name) {
+void font_main_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "font") == 0) {
    XML_SetElementHandler(xmlparser, font_main_start_element, styles_end_element);
   }
 }
 
-void font_item_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct Font *fonts_callbackdata = userData;
+void font_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  struct Font *fonts_callbackdata = callbackdata;
   if (strcmp(name, "sz") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if(strcmp(attrs[i], "val") == 0){
@@ -175,25 +174,25 @@ void font_item_start_element(void *userData, const XML_Char *name, const XML_Cha
 
 }
 
-void font_item_end_element(void *userData, const XML_Char *name) {
+void font_item_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, font_item_start_element, font_main_end_element);
 }
 
-void fill_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+void fill_main_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "fill") == 0) {
     array_fills.length++;
     XML_SetElementHandler(xmlparser, fill_item_lv1_start_element, NULL);
   }
 }
 
-void fill_main_end_element(void *userData, const XML_Char *name) {
+void fill_main_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "fill") == 0)  {
     XML_SetElementHandler(xmlparser, fill_main_start_element, styles_end_element);
   }
 }
 
-void fill_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct Fill *fills_callbackdata = userData;
+void fill_item_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  struct Fill *fills_callbackdata = callbackdata;
   if (strcmp(name, "patternFill") == 0)  {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "patternType") == 0) {
@@ -207,7 +206,7 @@ void fill_item_lv1_start_element(void *userData, const XML_Char *name, const XML
   }
 }
 
-void fill_item_lv1_end_element(void *userData, const XML_Char *name) {
+void fill_item_lv1_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "patternFill") == 0) {
 
   } else if (strcmp(name, "gradientFill") == 0) {
@@ -216,8 +215,8 @@ void fill_item_lv1_end_element(void *userData, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, fill_item_lv1_start_element, fill_main_end_element);
 }
 
-void fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct Fill *fills_callbackdata = userData;
+void fill_item_lv2_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  struct Fill *fills_callbackdata = callbackdata;
   if (strcmp(name, "bgColor") == 0)  {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
@@ -236,7 +235,7 @@ void fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML
   XML_SetElementHandler(xmlparser, NULL, fill_item_lv2_end_element);
 }
 
-void fill_item_lv2_end_element(void *userData, const XML_Char *name) {
+void fill_item_lv2_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "bgColor") == 0) {
     
   } else if (strcmp(name, "fgColor") == 0) {
@@ -245,19 +244,19 @@ void fill_item_lv2_end_element(void *userData, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, fill_item_lv2_start_element, fill_item_lv1_end_element);
 }
 
-void border_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+void border_main_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "border") == 0) {
     array_borders.length++;
   }
   XML_SetElementHandler(xmlparser, border_item_lv1_start_element, border_item_lv1_end_element);
 } 
 
-void border_main_end_element(void *userData, const XML_Char *name) {
+void border_main_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, border_main_start_element, styles_end_element);
 }
 
-void border_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct BorderCell *borders_callbackdata = userData; 
+void border_item_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  struct BorderCell *borders_callbackdata = callbackdata; 
   if (strcmp(name, "left") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "style") == 0) {
@@ -295,13 +294,13 @@ void border_item_lv1_start_element(void *userData, const XML_Char *name, const X
   XML_SetElementHandler(xmlparser, border_item_lv2_start_element, border_item_lv1_end_element);
 }
 
-void border_item_lv1_end_element(void *userData, const XML_Char *name) {
+void border_item_lv1_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetUserData(xmlparser, array_borders.borders);
   XML_SetElementHandler(xmlparser, border_item_lv1_start_element, border_main_end_element);
 }
 
-void border_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct Border *border_specific_callbackdata = userData;
+void border_item_lv2_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  struct Border *border_specific_callbackdata = callbackdata;
   if(strcmp(name, "color") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
@@ -313,12 +312,12 @@ void border_item_lv2_start_element(void *userData, const XML_Char *name, const X
   XML_SetElementHandler(xmlparser, NULL, border_item_lv2_end_element);
 }
 
-void border_item_lv2_end_element(void *userData, const XML_Char *name) {
+void border_item_lv2_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, NULL, border_item_lv1_end_element);
 }
 
-void xf_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct Xf *xfs_callbackdata = userData;
+void xf_main_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  struct Xf *xfs_callbackdata = callbackdata;
   if (strcmp(name, "xf") == 0) {
     int _tmp_count;
     if (xfs_callbackdata == array_cellStyleXfs.Xfs) {
@@ -360,12 +359,12 @@ void xf_main_start_element(void *userData, const XML_Char *name, const XML_Char 
   XML_SetElementHandler(xmlparser, xf_item_lv1_start_element, xf_main_end_element);
 }
 
-void xf_main_end_element(void *userData, const XML_Char *name) {
+void xf_main_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, xf_main_start_element, styles_end_element);
 }
 
-void xf_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
-  struct Xf *xfs_callbackdata = userData;
+void xf_item_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  struct Xf *xfs_callbackdata = callbackdata;
   if (strcmp(name, "alignment") == 0) {
     int _tmp_count;
     if (xfs_callbackdata == array_cellStyleXfs.Xfs) {
@@ -395,7 +394,7 @@ void xf_item_lv1_start_element(void *userData, const XML_Char *name, const XML_C
   XML_SetElementHandler(xmlparser, NULL, xf_item_lv1_end_element);
 }
 
-void xf_item_lv1_end_element(void *userData, const XML_Char *name) {
+void xf_item_lv1_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, xf_item_lv1_start_element, xf_main_end_element);
 }
 

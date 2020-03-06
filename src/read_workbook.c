@@ -19,7 +19,7 @@ XML_Char *insert_substr_to_str_at_pos(XML_Char *des, const XML_Char *substr, int
   return _tmp_path_name;
 }
 
-void workbook_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+void workbook_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
   if (strcmp(name, "sheets") == 0) {
     array_sheets.length = 0;
@@ -33,11 +33,11 @@ void workbook_start_element(void *userData, const XML_Char *name, const XML_Char
   }
 }
 
-void workbook_end_element(void *userData, const XML_Char *name) {
+void workbook_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, workbook_start_element, NULL);
 }
 
-void sheet_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+void sheet_main_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "sheet") == 0){
     struct Sheet **_tmp_sheets_callbackdata;
     array_sheets.length++;
@@ -71,6 +71,6 @@ void sheet_main_start_element(void *userData, const XML_Char *name, const XML_Ch
   XML_SetElementHandler(xmlparser, NULL, sheet_main_end_element);
 }
 
-void sheet_main_end_element(void *userData, const XML_Char *name) {
+void sheet_main_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, sheet_main_start_element, workbook_end_element);
 }

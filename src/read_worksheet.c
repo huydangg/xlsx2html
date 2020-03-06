@@ -32,9 +32,9 @@ void get_end_col_end_row_from_range(const XML_Char *range, char **end_row, char 
   }
 }
 
-void worksheet_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  struct WorkSheet *worksheet_callbackdata = userData;
+  struct WorkSheet *worksheet_callbackdata = callbackdata;
   char *_tmp_end_row = worksheet_callbackdata->end_row;
   char *_tmp_end_col = worksheet_callbackdata->end_col;
   if (strcmp(name, "dimension") == 0) {
@@ -59,13 +59,13 @@ void worksheet_start_element(void *userData, const XML_Char *name, const XML_Cha
   }
 }
 
-void worksheet_end_element(void *userData, const XML_Char *name) {
+void worksheet_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, worksheet_start_element, NULL);
 }
 
-void col_start_element(void *userData, const XML_Char *name, const XML_Char **attrs) {
+void col_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  struct WorkSheet *worksheet_callbackdata = userData;
+  struct WorkSheet *worksheet_callbackdata = callbackdata;
   if (strcmp(name, "col") == 0) {
     struct Col **_tmp_cols;
     worksheet_callbackdata->array_cols.length++;
@@ -95,11 +95,11 @@ void col_start_element(void *userData, const XML_Char *name, const XML_Char **at
   XML_SetElementHandler(xmlparser, NULL, col_end_element);
 }
 
-void col_end_element(void *userData, const XML_Char *name) {
+void col_end_element(void *callbackdata, const XML_Char *name) {
   XML_SetElementHandler(xmlparser, col_start_element, worksheet_end_element);
 }
 
-void content_handler(void *userData, const XML_Char *s, int len) {
+void content_handler(void *callbackdata, const XML_Char *s, int len) {
   if (len == 0){
     return;
   }
