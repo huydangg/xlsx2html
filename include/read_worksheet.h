@@ -1,3 +1,6 @@
+#ifndef INCLUDED_READ_WORKSHEET_H
+#define INCLUDED_READ_WORKSHEET_H
+
 #include <expat.h>
 
 
@@ -29,3 +32,5 @@ void worksheet_start_element(void *userData, const XML_Char *name, const XML_Cha
 void worksheet_end_element(void *userData, const XML_Char *name);
 void col_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 void col_end_element(void *userData, const XML_Char *name);
+
+#endif

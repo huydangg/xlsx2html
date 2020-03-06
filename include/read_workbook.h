@@ -1,3 +1,6 @@
+#ifndef INCLUDED_READ_WORKBOOK_H
+#define INCLUDED_READ_WORKBOOK_H
+
 #include <expat.h>
 
 
@@ -20,3 +23,5 @@ void workbook_start_element(void *userData, const XML_Char *name, const XML_Char
 void workbook_end_element(void *userData, const XML_Char *name);
 void sheet_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
 void sheet_main_end_element(void *userData, const XML_Char *name);
+
+#endif
