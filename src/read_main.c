@@ -166,19 +166,19 @@ int load_sharedStrings(zip_t *zip) {
   const char *file_name = "xl/sharedStrings.xml";
   const char *_tmp_sharedStrings_path = "/media/huydang/HuyDang1/xlsxmagic/output/sharedStrings.html";
   zip_file_t *archive = open_zip_file(zip, file_name);
-  FILE *_tmp_sharedStrings_file;
-  _tmp_sharedStrings_file = fopen(_tmp_sharedStrings_path, "w+");
-  if (_tmp_sharedStrings_file == NULL) {
+  FILE *sharedStrings_file;
+  sharedStrings_file = fopen(_tmp_sharedStrings_path, "w+");
+  if (sharedStrings_file == NULL) {
     fprintf(stderr, "Cannot open _tmp_sharedStrings html file to write");
     return -1;
   }
-  int status_sharedStrings = process_zip_file(archive, _tmp_sharedStrings_file, NULL, sharedStrings_main_start_element, sharedStrings_main_end_element);
+  int status_sharedStrings = process_zip_file(archive, sharedStrings_file, NULL, sharedStrings_main_start_element, sharedStrings_main_end_element);
   if (status_sharedStrings == -1) {
     fprintf(stderr, "Error when load sharedStrings\n");
-    fclose(_tmp_sharedStrings_file);
+    fclose(sharedStrings_file);
     return -1;
   }
-  fclose(_tmp_sharedStrings_file);
+  fclose(sharedStrings_file);
   return 1;
 }
 
