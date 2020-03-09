@@ -48,13 +48,13 @@ void sharedStrings_lv1_end_element(void *callbackdata, const XML_Char *name) {
   }
 }
 
-
-
 void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
   FILE *sharedStrings_file_callbackdata = callbackdata;
   if (strcmp(name, "t") == 0) {
+    char *font_style = NULL;
     if (font.name != NULL) {
+      char *font_name = malloc((12 + strlen(font.name) + 1 + 1) * sizeof(XML_Char));
       printf("---------------------------------------------\n");
       printf("FONT SIZE: %f\n", font.sz);
       printf("FONT NAME: %s\n", font.name);
@@ -62,19 +62,43 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
       printf("FONT IS ITALIC: %c\n", font.isItalic);
       printf("FONT UNDERLINE: %s\n", font.underline);
       printf("FONT COLOR RGB: %s\n", font.color.rgb);
-    }
-    fprintf(sharedStrings_file_callbackdata, "<p>");
-    
-    if (font.name != NULL) {
+      //12: "font-family:" | 1: '\0' | 1: ';'
+      snprintf(font_name, 12 + strlen(font.name) + 1 + 1, "font-family:%s;", font.name);
+      font_style = realloc(font_style, (strlen(font_name) + 1) * sizeof(XML_Char));
+      strcat(font_style, font_name);
+      free(font_name);
       free(font.name);
     }
+
     if (font.color.rgb != NULL) {
+      char *font_color_rgb = malloc((6 + strlen(font.color.rgb) + 1 + 1) * sizeof(XML_Char));
+      // 6: "color:"
+      snprintf(font_color_rgb, 6 + strlen(font.color.rgb) + 1 + 1, "color:%s;", font.color.rgb);
+      font_style = realloc(font_style, (strlen(font_style) + strlen(font_color_rgb) + 1) * sizeof(XML_Char));
+      strcat(font_style, font_color_rgb);
+      free(font_color_rgb);
       free(font.color.rgb);
     }
-    if (font.underline != NULL) {
+    if (font.underline != NULL && strcmp(font.underline, "none") != 0) {
+      char *font_text_decoration_line = "text-decoration-line:underline;";
+      font_style = realloc(font_style, (31 + strlen(font_style) + 1) * sizeof(XML_Char));
+      strcat(font_style, font_text_decoration_line);
+      if (strcmp(font.underline, "single") == 0) {
+        char *font_text_decoration_style = "text-decoration-style:single;";
+        font_style = realloc(font_style, (strlen(font_style) + 29 + 1) * sizeof(XML_Char));
+        strcat(font_style, font_text_decoration_style);
+      } else if(strcmp(font.underline, "double") == 0) {
+        char *font_text_decoration_style = "text-decoration-style:double;";
+        font_style = realloc(font_style, (strlen(font_style) + 29 + 1) * sizeof(XML_Char));
+        strcat(font_style, font_text_decoration_style);
+      }
       free(font.underline);
     }
-    // Destroy font obj
+    if (font_style != NULL) {
+      fprintf(sharedStrings_file_callbackdata, "<p style=\"%s\">", font_style);
+      free(font_style);
+    }
+    // Set font obj to default
     font = new_font();
     XML_SetElementHandler(xmlparser, NULL, sharedStrings_lv2_end_element);
     XML_SetCharacterDataHandler(xmlparser, sharedStrings_content_handler);
