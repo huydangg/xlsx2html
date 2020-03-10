@@ -3,14 +3,11 @@
 
 #include <private.h>
 
-
-struct SharedStrings {
-  FILE *sharedStrings_file;
-  struct Font font;
-};
+//Mapping index with position.
 
 extern XML_Parser xmlparser;
 struct Font new_font();
+extern long int *sharedStrings_position;
 
 void sharedStrings_main_start_element(void *, const XML_Char *, const XML_Char **);
 void sharedStrings_main_end_element(void *, const XML_Char *);
