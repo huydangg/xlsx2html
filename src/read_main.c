@@ -14,6 +14,7 @@ zip_t *open_zip(const char *file_name) {
 zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name) {
   return zip_fopen(zip, zip_file_name, ZIP_FL_UNCHANGED);
 }
+
 int load_workbook(zip_t *zip) {
   const char *zip_file_name = "xl/workbook.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
@@ -167,7 +168,7 @@ int load_sharedStrings(zip_t *zip) {
   const char *_tmp_sharedStrings_path = "/media/huydang/HuyDang1/xlsxmagic/output/sharedStrings.html";
   zip_file_t *archive = open_zip_file(zip, file_name);
   FILE *sharedStrings_file;
-  sharedStrings_file = fopen(_tmp_sharedStrings_path, "w+");
+  sharedStrings_file = fopen(_tmp_sharedStrings_path, "wb+");
   if (sharedStrings_file == NULL) {
     fprintf(stderr, "Cannot open _tmp_sharedStrings html file to write");
     return -1;
@@ -384,7 +385,7 @@ void test_read_sharedStrings() {
 }
 
 int main(void) {
-  const char *file_name = "/home/huydang/Downloads/excelsample/report__codestringers.xlsx";
+  const char *file_name = "/home/huydang/Downloads/excelsample/13__codestringers.xlsx";
   zip_t *zip = open_zip(file_name);
   if (zip == NULL){
     fprintf(stderr, "File not found");
@@ -402,18 +403,19 @@ int main(void) {
     zip_close(zip);
     return 0;
   }
-  int status_worksheets = load_worksheets(zip);
-  if (!status_worksheets) {
-    fprintf(stderr, "Failed to read worksheets");
-    zip_close(zip);
-    return 0;
-  }
   int status_sharedStrings = load_sharedStrings(zip);
   if (!status_sharedStrings) {
     fprintf(stderr, "Failed to read sharedStrings");
     zip_close(zip);
     return 0;
   }
+  int status_worksheets = load_worksheets(zip);
+  if (!status_worksheets) {
+    fprintf(stderr, "Failed to read worksheets");
+    zip_close(zip);
+    return 0;
+  }
+
   pre_process();
 //  test_read_sharedStrings();
   zip_close(zip);
