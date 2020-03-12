@@ -7,4 +7,4 @@
 
 
 int process_zip_file(zip_file_t *, void *, XML_CharacterDataHandler, XML_StartElementHandler, XML_EndElementHandler); 
-int generate_columns(struct ArrayCols, const char *, int);
+int generate_columns(struct ArrayCols, unsigned short, int);
