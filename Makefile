@@ -46,3 +46,4 @@ src/read_worksheet.o: src/read_worksheet.c include/read_worksheet.h
 src/read_workbook.o: src/read_workbook.c include/read_workbook.h
 src/read_sharedstrings.o: src/read_sharedstrings.c include/read_sharedstrings.h
 include/private.o: include/private.h
+include/const.o: include/const.h
