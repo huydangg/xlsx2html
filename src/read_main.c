@@ -153,9 +153,8 @@ int load_worksheets(zip_t *zip) {
     free(worksheet.array_cols.cols);
     free(worksheet.end_row);
     free(worksheet.end_col);
-    //sharedStrings files is handled
-    free(sharedStrings_position); 
   }
+  free(sharedStrings_position);
   return 1;
 }
 

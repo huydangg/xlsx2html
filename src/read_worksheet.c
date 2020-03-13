@@ -75,21 +75,25 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
   fclose(fchunk0);
   return 1;
 }
+
 struct SheetData {
   unsigned short current_cell_remain;
   FILE *worksheet_file;
   unsigned short current_sheet;
   unsigned short end_col_number;
 };
+
 // When tag <row> is empty.
 void generate_cells(void *callbackdata, const XML_Char *name) {
-  printf("NAMEEEEEEEEEEEEEEEEEEEEE CELLLLLLLLLLLLLLLLLLLLL: %s\n", name);
   struct SheetData *sheetData_callbackdata = callbackdata;
   for (int i = 1; i <= sheetData_callbackdata->end_col_number; i++) {
     fputs("<td></td>", sheetData_callbackdata->worksheet_file);
     COUNT_CELLS++;
   }
+  fputs("</tr>", sheetData_callbackdata->worksheet_file);
+  XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
 }
+
 void get_end_col_end_row_from_range(const XML_Char *range, char **end_row, char **end_col) {
   // ex: A1:Q109 or I28
   int pos_colon = 0;
@@ -116,8 +120,6 @@ void get_end_col_end_row_from_range(const XML_Char *range, char **end_row, char 
     _tmp_end_cell++;
   }
 }
-
-
 
 void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
@@ -155,6 +157,9 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     struct SheetData *sheetData_callbackdata = malloc(sizeof(struct SheetData));
     sheetData_callbackdata->current_sheet = worksheet_callbackdata->index_sheet;
     sheetData_callbackdata->end_col_number = worksheet_callbackdata->end_col_number;
+    char CHUNK_PATH[256];
+    snprintf(CHUNK_PATH, sizeof(CHUNK_PATH), "/media/huydang/HuyDang1/xlsxmagic/output/chunks/chunk_%d_%d.html", sheetData_callbackdata->current_sheet, CURRENT_CHUNK);
+    sheetData_callbackdata->worksheet_file = fopen(CHUNK_PATH, "wb+");
     XML_SetUserData(xmlparser, sheetData_callbackdata);
     XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
   }
@@ -165,6 +170,13 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
     struct SheetData *sheetData_callbackdata = callbackdata;
     fclose(sheetData_callbackdata->worksheet_file);
     free(sheetData_callbackdata);
+  } else if (strcmp(name, "cols") == 0) {
+    struct WorkSheet *worksheet_callbackdata = callbackdata;
+    int status = generate_columns(worksheet_callbackdata->array_cols, worksheet_callbackdata->end_col_number, worksheet_callbackdata->index_sheet);
+    if (status == -1) {
+      fprintf(stderr, "Error when generated chunk0 of  Sheet\n");
+      return;
+    }
   }
   XML_SetElementHandler(xmlparser, worksheet_start_element, NULL);
 }
@@ -202,12 +214,9 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     //TODO: Need to calculate number of chunks first.
     struct SheetData *sheetData_callbackdata = callbackdata;
     printf("sheetData_callbackdata->current_sheet: %d\n", sheetData_callbackdata->current_sheet);
-    char CHUNK_PATH[256];
-    snprintf(CHUNK_PATH, sizeof(CHUNK_PATH), "/media/huydang/HuyDang1/xlsxmagic/output/chunks/chunk_%d_%d.html", sheetData_callbackdata->current_sheet, CURRENT_CHUNK);
-    sheetData_callbackdata->worksheet_file = fopen(CHUNK_PATH, "wb+");
     char *ROW_NUMBER = NULL;
     for (int i = 0; attrs[i]; i+=2) {
-      if (strcmp(attrs[i], "r")) {
+      if (strcmp(attrs[i], "r") == 0) {
 	int len_row_number = strlen(attrs[i + 1]);
 	ROW_NUMBER = realloc(ROW_NUMBER, len_row_number + 1);
 	memcpy(ROW_NUMBER, attrs[i + 1], len_row_number + 1);
@@ -223,40 +232,45 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	fputs(TH_TAG, sheetData_callbackdata->worksheet_file);
       }
     }
-    printf("COUNTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT: %d\n", XML_GetSpecifiedAttributeCount(xmlparser));
+    free(ROW_NUMBER);
     XML_SetElementHandler(xmlparser, cell_start_element, generate_cells);
   }
 }
 
-
 void col_row_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "col") == 0) {
-
-    struct WorkSheet *worksheet_callbackdata = callbackdata;
-    int status = generate_columns(worksheet_callbackdata->array_cols, worksheet_callbackdata->end_col_number, worksheet_callbackdata->index_sheet);
-    if (status == -1) {
-      fprintf(stderr, "Error when generated chunk0 of  Sheet\n");
-      return;
-    }
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
   } else if (strcmp(name, "row") == 0) {
+    struct SheetData *sheetData_callbackdata = callbackdata;
+    fputs("</tr>", sheetData_callbackdata->worksheet_file);
+    XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
   }
 }
 
 void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) { 
-  /*XML_AttrInfo *test_info =  XML_GetAttributeInfo(xmlparser);
-  printf("ATTR INFO name start: %d\n", test_info[0].nameStart);
-  printf("ATTR INFO name end: %d\n", test_info[0].nameEnd);
-  printf("ATTR INFO value start: %d\n", test_info[0].valueStart);
-  printf("ATTR INFO value end: %d\n", test_info[0].valueEnd);*/
-  
-  struct SheetData *sheetData_callbackdata = callbackdata;
-  if (sheetData_callbackdata->current_sheet == 0) {
+  if (strcmp(name, "c") == 0) {
+    XML_SetElementHandler(xmlparser, cell_item_start_element, cell_end_element);
   }
 }
 
 void cell_end_element(void *callbackdata, const XML_Char *name) {
+  if (strcmp(name, "c") == 0) {
+    XML_SetElementHandler(xmlparser, cell_start_element, col_row_end_element);
+  }
+}
 
+void cell_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  if (strcmp(name, "v") == 0) {
+    XML_SetElementHandler(xmlparser, NULL, cell_item_end_element);
+    XML_SetCharacterDataHandler(xmlparser, content_handler);
+  }
+}
+
+void cell_item_end_element(void *callbackdata, const XML_Char *name) {
+  if (strcmp(name, "v") == 0) {
+    XML_SetElementHandler(xmlparser, NULL, cell_end_element);
+    XML_SetCharacterDataHandler(xmlparser, NULL);
+  }
 }
 
 void content_handler(void *callbackdata, const XML_Char *s, int len) {
