@@ -39,5 +39,5 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 void cell_end_element(void *userData, const XML_Char *name);
 void cell_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
 void cell_item_end_element(void *callbackdata, const XML_Char *name);
-void content_handler(void *callbackdata, const XML_Char *s, int len);
+void worksheet_content_handler(void *callbackdata, const XML_Char *s, int len);
 #endif

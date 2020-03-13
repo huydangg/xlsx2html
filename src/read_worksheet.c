@@ -8,12 +8,48 @@
 #include <sys/types.h>
 
 unsigned int NUM_OF_CELLS;
-unsigned int START_CELL_IN_NUMBER_BY_ROW; //default is 1
+unsigned int START_CELL_IN_NUMBER_BY_ROW = 1; //default is 1
 unsigned int CURRENT_CELL_IN_NUMBER_BY_ROW;
-unsigned int CURRENT_CHUNK;
+unsigned int CURRENT_CHUNK = 0;
 unsigned short NUM_OF_CHUNKS;
 unsigned int COUNT_CELLS = 0;
+unsigned int CELLS_REMAIN;
 
+size_t get_col_nr (const XML_Char* A1col) {
+  const XML_Char* p = A1col;
+  size_t result = 0;
+  if (p) {
+    while (*p) {
+      if (*p >= 'A' && *p <= 'Z')
+        result = result * 26 + (*p - 'A') + 1;
+      else if (*p >= 'a' && *p <= 'z')
+        result = result * 26 + (*p - 'a') + 1;
+      else if (*p >= '0' && *p <= '9' && p != A1col)
+        return result;
+      else
+        break;
+      p++;
+    }
+  }
+  return 0;
+}
+//determine row number based on cell coordinate (e.g. "A1"), returns 1-based row number or 0 on error
+size_t get_row_nr (const XML_Char* A1col) {
+  const XML_Char* p = A1col;
+  size_t result = 0;
+  if (p) {
+    while (*p) {
+      if ((*p >= 'A' && *p <= 'Z') || (*p >= 'a' && *p <= 'z'))
+        ;
+      else if (*p >= '0' && *p <= '9' && p != A1col)
+        result = result * 10 + (*p - '0');
+      else
+        return 0;
+      p++;
+    }
+  }
+  return result;
+}
 
 unsigned short column_name_to_number(const char *column_name) {
   const char *col_name = column_name;
@@ -136,7 +172,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
 	NUM_OF_CELLS = strtol(_tmp_end_row, NULL, 10) * worksheet_callbackdata->end_col_number;
 	NUM_OF_CHUNKS = NUM_OF_CELLS / CHUNK_SIZE_LIMIT;
 	if (NUM_OF_CELLS % CHUNK_SIZE_LIMIT != 0) {
-          NUM_OF_CHUNKS++;
+          NUM_OF_CHUNKS += 1;
 	}
 	break;
       }
@@ -152,7 +188,6 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
       XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
     }
   } else if (strcmp(name, "sheetData") == 0) {
-    START_CELL_IN_NUMBER_BY_ROW = 1;
     CURRENT_CHUNK = 1;
     struct SheetData *sheetData_callbackdata = malloc(sizeof(struct SheetData));
     sheetData_callbackdata->current_sheet = worksheet_callbackdata->index_sheet;
@@ -249,6 +284,29 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
 
 void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) { 
   if (strcmp(name, "c") == 0) {
+    struct SheetData *sheetData_callbackdata = callbackdata;
+    char *TD_TAG = NULL;
+    for (int i = 0; attrs[i]; i+=2) {
+      if (strcmp(attrs[i], "r") == 0) {
+        // 10: <td id=""> + 1: '\0'
+        int len = 11 + strlen(attrs[i + 1]);
+	TD_TAG = realloc(TD_TAG, len);
+        snprintf(TD_TAG, len, "<td id=\"%s\">", attrs[i + 1]);
+        CURRENT_CELL_IN_NUMBER_BY_ROW = (unsigned int)get_col_nr(attrs[i + 1]);
+      } else if (strcmp(attrs[i], "s") == 0) {
+
+      } else if (strcmp(attrs[i], "t") == 0) {
+
+      }
+    }
+    while (START_CELL_IN_NUMBER_BY_ROW < CURRENT_CELL_IN_NUMBER_BY_ROW) {
+      fputs("<td></td", sheetData_callbackdata->worksheet_file);
+      START_CELL_IN_NUMBER_BY_ROW++;
+      COUNT_CELLS++;
+    }
+    //TODO: Apply styles
+    fputs(TD_TAG, sheetData_callbackdata->worksheet_file);
+    free(TD_TAG);
     XML_SetElementHandler(xmlparser, cell_item_start_element, cell_end_element);
   }
 }
@@ -262,7 +320,7 @@ void cell_end_element(void *callbackdata, const XML_Char *name) {
 void cell_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   if (strcmp(name, "v") == 0) {
     XML_SetElementHandler(xmlparser, NULL, cell_item_end_element);
-    XML_SetCharacterDataHandler(xmlparser, content_handler);
+    XML_SetCharacterDataHandler(xmlparser, worksheet_content_handler);
   }
 }
 
@@ -273,12 +331,18 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
   }
 }
 
-void content_handler(void *callbackdata, const XML_Char *s, int len) {
+void worksheet_content_handler(void *callbackdata, const XML_Char *buf, int len) {
   if (len == 0){
     return;
   }
-  char *value = malloc((len + 1) * sizeof(XML_Char));
-  strncpy(value, s, len);
+
+  struct SheetData *sheetData_callbackdata = callbackdata;
+  XML_Char *value;
+  if ((value = malloc(len + 1)) == NULL) {
+    return;
+  }
+  memcpy(value, buf, len);
+  value[len] = '\0';
+  fputs(value, sheetData_callbackdata->worksheet_file);
   free(value);
 }
-
