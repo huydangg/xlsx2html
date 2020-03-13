@@ -150,7 +150,10 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
       printf("FONT STYLE STRING: %s\n", font_style);
       fprintf(sharedStrings_file_callbackdata, "<p style=\"%s\">", font_style);
       free(font_style);
+    } else {
+      fputs("<p>", sharedStrings_file_callbackdata);
     }
+
     // Set font obj to default
     font = new_font();
     XML_SetElementHandler(xmlparser, NULL, sharedStrings_lv2_end_element);
