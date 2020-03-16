@@ -117,6 +117,9 @@ struct SheetData {
   FILE *worksheet_file;
   unsigned short current_sheet;
   unsigned short end_col_number;
+  char *cell_name;
+  char *type_content;
+  int index_style;
 };
 
 // When tag <row> is empty.
@@ -285,29 +288,139 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
 void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) { 
   if (strcmp(name, "c") == 0) {
     struct SheetData *sheetData_callbackdata = callbackdata;
-    char *TD_TAG = NULL;
     for (int i = 0; attrs[i]; i+=2) {
       if (strcmp(attrs[i], "r") == 0) {
-        // 10: <td id=""> + 1: '\0'
-        int len = 11 + strlen(attrs[i + 1]);
-	TD_TAG = realloc(TD_TAG, len);
-        snprintf(TD_TAG, len, "<td id=\"%s\">", attrs[i + 1]);
+	sheetData_callbackdata->cell_name = malloc(1 + strlen(attrs[i + 1]));
+        memcpy(sheetData_callbackdata->cell_name, attrs[i + 1], 1 + strlen(attrs[i + 1]));
         CURRENT_CELL_IN_NUMBER_BY_ROW = (unsigned int)get_col_nr(attrs[i + 1]);
       } else if (strcmp(attrs[i], "s") == 0) {
-
+        sheetData_callbackdata->index_type = (int)strtol(attrs[i + 1], NULL, 10);
       } else if (strcmp(attrs[i], "t") == 0) {
-
+        sheetData_callbackdata->type_content = malloc(1 + strlen(attrs[i + 1]));
+	memcpy(sheetData_callbackdata->type_content, attrs[i + 1], 1 + strlen(attrs[i + 1]));
       }
     }
-    while (START_CELL_IN_NUMBER_BY_ROW < CURRENT_CELL_IN_NUMBER_BY_ROW) {
-      fputs("<td></td", sheetData_callbackdata->worksheet_file);
-      START_CELL_IN_NUMBER_BY_ROW++;
-      COUNT_CELLS++;
-    }
     //TODO: Apply styles
-    fputs(TD_TAG, sheetData_callbackdata->worksheet_file);
-    free(TD_TAG);
-    XML_SetElementHandler(xmlparser, cell_item_start_element, cell_end_element);
+    XML_SetElementHandler(xmlparser, cell_item_start_element, cell_empty_end_element);
+  }
+}
+
+void cell_empty_end_element(void *callbackdata, const XML_Char *name) {
+  struct SheetData *sheetData_callbackdata = callbackdata;
+  while (START_CELL_IN_NUMBER_BY_ROW < CURRENT_CELL_IN_NUMBER_BY_ROW) {
+    fputs("<td></td", sheetData_callbackdata->worksheet_file);
+    START_CELL_IN_NUMBER_BY_ROW++;
+    COUNT_CELLS++;
+  }
+  char *style = NULL;
+  char *horizontal_style = NULL;
+  char *vertical_style = NULL;
+  char *border_style = NULL;
+  char *wraptext_style = NULL;
+  char *horizontal = NULL;
+  char *vertical = NULL;
+  if (array_cellXfs.Xfs[sheetData_callbackdata->index_style].isApplyAlignment == '1') {
+    int len_horizontal = strlen(array_cellXfs.Xfs[sheetData_callbackdata->index_style].alignment.horizontal);
+    horizontal = realloc(horizontal, 1 + len_horizontal);
+    memcpy(horizontal, array_cellXfs.Xfs[sheetData_callbackdata->index_style].alignment.horizontal, 1 + len_horizontal);
+    int len_vertical = strlen(array_cellXfs.Xfs[sheetData_callbackdata->index_style].alignment.vertical);
+    vertical = realloc(vertical, 1 + len_vertical);
+    memcpy(vertical, array_cellXfs.Xfs[sheetData_callbackdata->index_style].alignment.vertical, 1 + len_vertical);
+    
+  } else {
+    int id_cellXfs = array_cellXfs.Xfs[sheetData_callbackdata->index_style].xfId;
+    int len_horizontal = strlen(array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal);
+    horizontal = realloc(horizontal, 1 + len_horizontal);
+    memcpy(horizontal, array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal, 1 + len_horizontal);
+    int len_vertical = strlen(array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical);
+    vertical = realloc(vertical, 1 + len_vertical);
+    memcpy(vertical, array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical, 1 + len_vertical);
+    
+    if (array_cellXfs.Xfs[sheetData_callbackdata->index_style].alignment.isWrapText == '1') {
+      //19: white-space:normal;
+      wraptext_style = malloc(19 + 1);
+      memcpy(wraptext_style, "white-space:normal;", 19 + 1);
+    } else {
+      //19: white-space:nowrap;
+      wraptext_style = malloc(19 + 1);
+      memcpy(wraptext_style, "white-space:nowrap;", 19 + 1);
+    }
+  }
+  if (strcmp(horizontal, "center") == 0) {
+    //18: text-align:center;
+    horizontal_style = malloc(18 + 1);
+    memcpy(horizontal_style, "text-align:center;", 18 + 1);
+  } else if (strcmp(horizontal, "general") == 0) {
+    //16: text-align:left;
+    horizontal_style = malloc(16 + 1);
+    memcpy(horizontal_style, "text-align:left;", 16 + 1);
+  } else {
+    //12: text-align:;
+    horizontal_style = malloc(strlen(horizontal) + 1);
+    snprintf(horizontal_style, strlen(horizontal) + 12 + 1, "text-align:%s;", horizontal_style);
+  }
+  if (strcmp(vertical, "center") == 0) {
+    //22: vertical-align:center;
+    vertical_style = malloc(22 + 1);
+    memcpy(vertical_style, "vertical-align:center;", 22 + 1);
+  } else {
+    //16: vertical-align:;
+    vertical_style = malloc(strlen(vertical) + 1);
+    snprintf(vertical_style, strlen(vertical) + 16 + 1, "vertical-align:%s;", vertical_style);
+  }
+  if (array_cellXfs.Xfs[sheetData_callbackdata->index_style].alignment.isWrapText == '1') {
+    //19: white-space:normal;
+    wraptext_style = malloc(19 + 1);
+    memcpy(wraptext_style, "white-space:normal;", 19 + 1);
+  } else {
+    //19: white-space:nowrap;
+    wraptext_style = malloc(19 + 1);
+    memcpy(wraptext_style, "white-space:nowrap;", 19 + 1);
+  }
+  if (array_cellXfs.Xfs[sheetData_callbackdata->index_style].isApplyBorder == '1') {
+    char *border_left = NULL;
+    char *border_right = NULL;
+    char *border_top = NULL;
+    char *border_bottom = NULL;
+    int border_id = array_cellXfs.Xfs[sheetData_callbackdata->index_style].borderId;
+    if (array_borders.borders[border_id].left.style != NULL) {
+      //25: border-left-style:solid;
+      border_left = malloc(25 + 1);
+      memcpy(border_left, "border-left-style:solid;", 25 + 1);
+      //TODO: If border_left == 'medium', then set border_width to 2px.
+    } else {
+      border_left = malloc(26 + 1);
+      memcpy(border_left, "border-left-style:hidden;", 26 + 1);
+    }
+    if (array_borders.borders[border_id].right.style != NULL) {
+      //26: border-right-style:solid;
+      border_right = malloc(26 + 1);
+      memcpy(border_right, "border-right-style:solid;", 26 + 1);
+      //TODO: If border_right == 'medium', then set border_width to 2px.
+    } else {
+      border_right = malloc(27 + 1);
+      memcpy(border_left, "border-right-style:hidden;", 27 + 1);
+    }
+    if (array_borders.borders[border_id].top.style != NULL) {
+      //24: border-top-style:solid;
+      border_top = malloc(24 + 1);
+      memcpy(border_top, "border-top-style:solid;", 24 + 1);
+      //TODO: If border_top == 'medium', then set border_width to 2px.
+    } else {
+      border_top = malloc(25 + 1);
+      memcpy(border_top, "border-top-style:hidden;", 25 + 1);
+    }
+    if (array_borders.borders[border_id].left.style != NULL) {
+      //27: border-bottom-style:solid;
+      border_bottom = malloc(27 + 1);
+      memcpy(border_bottom, "border-bottom-style:solid;", 27 + 1);
+      //TODO: If border_bottom == 'medium', then set border_width to 2px.
+    } else {
+      border_bottom = malloc(28 + 1);
+      memcpy(border_bottom, "border-bottom-style:hidden;", 28 + 1);
+    }
+  } else {
+
   }
 }
 
