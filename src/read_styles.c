@@ -331,20 +331,15 @@ void xf_main_start_element(void *callbackdata, const XML_Char *name, const XML_C
     xfs_callbackdata[_tmp_count - 1].isApplyBorder = '0';
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "borderId") == 0) {
-        xfs_callbackdata[_tmp_count - 1].borderId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(xfs_callbackdata[_tmp_count - 1].borderId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        xfs_callbackdata[_tmp_count - 1].borderId = (unsigned short)strtol(attrs[i + 1], NULL, 10);
       } else if (strcmp(attrs[i], "fillId") == 0) {
-        xfs_callbackdata[_tmp_count - 1].fillId	= malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(xfs_callbackdata[_tmp_count - 1].fillId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        xfs_callbackdata[_tmp_count - 1].fillId	= (unsigned short)strtol(attrs[i + 1], NULL, 10);
       } else if (strcmp(attrs[i], "fontId") == 0) {
-        xfs_callbackdata[_tmp_count - 1].fontId	= malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(xfs_callbackdata[_tmp_count - 1].fontId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        xfs_callbackdata[_tmp_count - 1].fontId	= (unsigned short)strtol(attrs[i + 1], NULL, 10);
       } else if (strcmp(attrs[i], "numFmtId") == 0) {
-        xfs_callbackdata[_tmp_count - 1].numFmtId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(xfs_callbackdata[_tmp_count - 1].numFmtId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        xfs_callbackdata[_tmp_count - 1].numFmtId = (unsigned short)strtol(attrs[i + 1], NULL, 10);
       } else if (strcmp(attrs[i], "xfId") == 0) {
-        xfs_callbackdata[_tmp_count - 1].xfId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(xfs_callbackdata[_tmp_count - 1].xfId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	xfs_callbackdata[_tmp_count - 1].xfId = (unsigned short)strtol(attrs[i + 1], NULL, 10);
       } else if (strcmp(attrs[i], "applyAlignment") == 0) {
         xfs_callbackdata[_tmp_count - 1].isApplyAlignment = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0';
       } else if (strcmp(attrs[i], "applyNumberFormat") == 0) {

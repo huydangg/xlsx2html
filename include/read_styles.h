@@ -12,14 +12,14 @@ struct NumFMT {
 };
 
 struct ArrayNumFMTs {
-  unsigned short int length;
+  unsigned short length;
   struct NumFMT *numfmts;
 };
 
 
 
 struct ArrayFonts {
-  unsigned short int length;
+  unsigned short length;
   struct Font *fonts;
 };
 
@@ -34,7 +34,7 @@ struct Fill {
 };
 
 struct ArrayFills {
-  unsigned short int length;
+  unsigned short length;
   struct Fill *fills;
 };
 
@@ -51,7 +51,7 @@ struct BorderCell {
 };
 
 struct ArrayBorderCells {
-  unsigned short int length;
+  unsigned short length;
   struct BorderCell *borders;
 };
 
@@ -64,11 +64,11 @@ struct Alignment {
 
 
 struct Xf {
-  XML_Char *borderId;
-  XML_Char *fillId;
-  XML_Char *fontId;
-  XML_Char *numFmtId;
-  XML_Char *xfId; // CellStyleXfs
+  unsigned short borderId;
+  unsigned short fillId;
+  unsigned short fontId;
+  unsigned short numFmtId;
+  unsigned short xfId; // CellStyleXfs || CellXfs
   char isApplyAlignment;
   char isApplyBorder;
   char isApplyFont;
@@ -77,7 +77,7 @@ struct Xf {
 };
 
 struct ArrayXfs {
-  unsigned short int length;
+  unsigned short length;
   struct Xf *Xfs;
 };
   

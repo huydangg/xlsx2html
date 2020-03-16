@@ -81,18 +81,14 @@ int load_styles(zip_t *zip) {
   free(array_borders.borders);
   for (int i = 0; i < array_cellStyleXfs.length; i++) {
     printf("---------------------------------------------------------\n");
-    printf("Xf borderId: %s\n", array_cellStyleXfs.Xfs[i].borderId);
-    printf("Xf fillId: %s\n", array_cellStyleXfs.Xfs[i].fillId);
-    printf("Xf fontId: %s\n", array_cellStyleXfs.Xfs[i].fontId);
-    printf("Xf numFmtId: %s\n", array_cellStyleXfs.Xfs[i].numFmtId);
+    printf("Xf borderId: %d\n", array_cellStyleXfs.Xfs[i].borderId);
+    printf("Xf fillId: %d\n", array_cellStyleXfs.Xfs[i].fillId);
+    printf("Xf fontId: %d\n", array_cellStyleXfs.Xfs[i].fontId);
+    printf("Xf numFmtId: %d\n", array_cellStyleXfs.Xfs[i].numFmtId);
     printf("Xf alignment horizontal: %s\n", array_cellStyleXfs.Xfs[i].alignment.horizontal);
     printf("Xf alignment vertical: %s\n", array_cellStyleXfs.Xfs[i].alignment.vertical);
     printf("Xf alignment textRotation: %s\n", array_cellStyleXfs.Xfs[i].alignment.textRotation);
     printf("Xf alignment isWrapText: %c\n", array_cellStyleXfs.Xfs[i].alignment.isWrapText);
-    free(array_cellStyleXfs.Xfs[i].borderId);
-    free(array_cellStyleXfs.Xfs[i].fillId);
-    free(array_cellStyleXfs.Xfs[i].fontId);
-    free(array_cellStyleXfs.Xfs[i].numFmtId);
     free(array_cellStyleXfs.Xfs[i].alignment.horizontal);
     free(array_cellStyleXfs.Xfs[i].alignment.vertical);
     free(array_cellStyleXfs.Xfs[i].alignment.textRotation);
@@ -105,7 +101,7 @@ int load_styles(zip_t *zip) {
     printf("Xf fillId: %s\n", array_cellXfs.Xfs[i].fillId);
     printf("Xf fontId: %s\n", array_cellXfs.Xfs[i].fontId);
     printf("Xf numFmtId: %s\n", array_cellXfs.Xfs[i].numFmtId);
-    printf("Xf xfId: %s\n", array_cellXfs.Xfs[i].xfId);
+    printf("Xf xfId: %d\n", array_cellXfs.Xfs[i].xfId);
     printf("Xf alignment horizontal: %s\n", array_cellXfs.Xfs[i].alignment.horizontal);
     printf("Xf alignment vertical: %s\n", array_cellXfs.Xfs[i].alignment.vertical);
     printf("Xf alignment textRotation: %s\n", array_cellXfs.Xfs[i].alignment.textRotation);
@@ -114,7 +110,6 @@ int load_styles(zip_t *zip) {
     free(array_cellXfs.Xfs[i].fillId);
     free(array_cellXfs.Xfs[i].fontId);
     free(array_cellXfs.Xfs[i].numFmtId);
-    free(array_cellXfs.Xfs[i].xfId);
     free(array_cellXfs.Xfs[i].alignment.horizontal);
     free(array_cellXfs.Xfs[i].alignment.vertical);
     free(array_cellXfs.Xfs[i].alignment.textRotation);
