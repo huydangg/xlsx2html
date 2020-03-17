@@ -23,52 +23,25 @@ int load_workbook(zip_t *zip) {
   return status;
 }
 
-int load_styles(zip_t *zip) {
-  const char *zip_file_name = "xl/styles.xml";
-  zip_file_t *archive = open_zip_file(zip, zip_file_name);
-  // Load NumFMT first
-  int status = process_zip_file(archive, NULL, NULL, styles_start_element, styles_end_element);
+void destroy_styles() {
   for (int i = 0; i < array_numfmts.length; i++) {
-    printf("Format code: %s\n", array_numfmts.numfmts[i].formatCode);
-    printf("Format id: %s\n", array_numfmts.numfmts[i].numFmtId);
     free(array_numfmts.numfmts[i].formatCode);
     free(array_numfmts.numfmts[i].numFmtId);
   }
   free(array_numfmts.numfmts);
-  printf("Count font: %d\n", array_fonts.length);
   for (int i = 0; i < array_fonts.length; i++) {
-    printf("Font size: %f\n", array_fonts.fonts[i].sz);
-    printf("Font name: %s\n", array_fonts.fonts[i].name);
-    printf("Font is bold: %c\n", array_fonts.fonts[i].isBold);
-    printf("Font is italic: %c\n", array_fonts.fonts[i].isItalic);
-    printf("Font underline: %s\n", array_fonts.fonts[i].underline);
-    printf("Font color rgb: %s\n", array_fonts.fonts[i].color.rgb);
     free(array_fonts.fonts[i].name);
     free(array_fonts.fonts[i].underline);
     free(array_fonts.fonts[i].color.rgb);
   }
   free(array_fonts.fonts);
-  printf("Count fills: %d\n", array_fills.length);
   for (int i = 0; i < array_fills.length; i++) {
-    printf("Fill pattern type: %s\n", array_fills.fills[i].patternFill.patternType);
-    printf("Fill bg_color rgb: %s\n", array_fills.fills[i].patternFill.bgColor.rgb);
-    printf("Fill fg_color rgb: %s\n", array_fills.fills[i].patternFill.fgColor.rgb);
     free(array_fills.fills[i].patternFill.patternType);
     free(array_fills.fills[i].patternFill.bgColor.rgb);
     free(array_fills.fills[i].patternFill.fgColor.rgb);
   }
   free(array_fills.fills);
-  printf("Count border: %d\n", array_borders.length);
   for (int i = 0; i < array_borders.length; i++) {
-    printf("---------------------------------------------------------\n");
-    printf("Border left style: %s\n", array_borders.borders[i].left.style);
-    printf("Border left color rgb: %s\n", array_borders.borders[i].left.color.rgb);
-    printf("Border right style: %s\n", array_borders.borders[i].right.style);
-    printf("Border right color rgb: %s\n", array_borders.borders[i].right.color.rgb);
-    printf("Border top style: %s\n", array_borders.borders[i].top.style);
-    printf("Border top color rgb: %s\n", array_borders.borders[i].top.color.rgb);
-    printf("Border bottom style: %s\n", array_borders.borders[i].bottom.style);
-    printf("Border bottom color rgb: %s\n", array_borders.borders[i].bottom.color.rgb);
     free(array_borders.borders[i].left.style);
     free(array_borders.borders[i].left.color.rgb);
     free(array_borders.borders[i].right.style);
@@ -80,6 +53,56 @@ int load_styles(zip_t *zip) {
   }
   free(array_borders.borders);
   for (int i = 0; i < array_cellStyleXfs.length; i++) {
+    free(array_cellStyleXfs.Xfs[i].alignment.horizontal);
+    free(array_cellStyleXfs.Xfs[i].alignment.vertical);
+    free(array_cellStyleXfs.Xfs[i].alignment.textRotation);
+  }
+  free(array_cellStyleXfs.Xfs);
+  for (int i = 0; i < array_cellXfs.length; i++) {
+    free(array_cellXfs.Xfs[i].alignment.horizontal);
+    free(array_cellXfs.Xfs[i].alignment.vertical);
+    free(array_cellXfs.Xfs[i].alignment.textRotation);
+  }
+  free(array_cellXfs.Xfs);
+}
+
+int load_styles(zip_t *zip) {
+  const char *zip_file_name = "xl/styles.xml";
+  zip_file_t *archive = open_zip_file(zip, zip_file_name);
+  // Load NumFMT first
+  int status = process_zip_file(archive, NULL, NULL, styles_start_element, styles_end_element);
+  for (int i = 0; i < array_numfmts.length; i++) {
+    printf("Format code: %s\n", array_numfmts.numfmts[i].formatCode);
+    printf("Format id: %s\n", array_numfmts.numfmts[i].numFmtId);
+  }
+  printf("Count font: %d\n", array_fonts.length);
+  for (int i = 0; i < array_fonts.length; i++) {
+    printf("Font size: %f\n", array_fonts.fonts[i].sz);
+    printf("Font name: %s\n", array_fonts.fonts[i].name);
+    printf("Font is bold: %c\n", array_fonts.fonts[i].isBold);
+    printf("Font is italic: %c\n", array_fonts.fonts[i].isItalic);
+    printf("Font underline: %s\n", array_fonts.fonts[i].underline);
+    printf("Font color rgb: %s\n", array_fonts.fonts[i].color.rgb);
+  }
+  printf("Count fills: %d\n", array_fills.length);
+  for (int i = 0; i < array_fills.length; i++) {
+    printf("Fill pattern type: %s\n", array_fills.fills[i].patternFill.patternType);
+    printf("Fill bg_color rgb: %s\n", array_fills.fills[i].patternFill.bgColor.rgb);
+    printf("Fill fg_color rgb: %s\n", array_fills.fills[i].patternFill.fgColor.rgb);
+  }
+  printf("Count border: %d\n", array_borders.length);
+  for (int i = 0; i < array_borders.length; i++) {
+    printf("---------------------------------------------------------\n");
+    printf("Border left style: %s\n", array_borders.borders[i].left.style);
+    printf("Border left color rgb: %s\n", array_borders.borders[i].left.color.rgb);
+    printf("Border right style: %s\n", array_borders.borders[i].right.style);
+    printf("Border right color rgb: %s\n", array_borders.borders[i].right.color.rgb);
+    printf("Border top style: %s\n", array_borders.borders[i].top.style);
+    printf("Border top color rgb: %s\n", array_borders.borders[i].top.color.rgb);
+    printf("Border bottom style: %s\n", array_borders.borders[i].bottom.style);
+    printf("Border bottom color rgb: %s\n", array_borders.borders[i].bottom.color.rgb);
+  }
+  for (int i = 0; i < array_cellStyleXfs.length; i++) {
     printf("---------------------------------------------------------\n");
     printf("Xf borderId: %d\n", array_cellStyleXfs.Xfs[i].borderId);
     printf("Xf fillId: %d\n", array_cellStyleXfs.Xfs[i].fillId);
@@ -89,32 +112,20 @@ int load_styles(zip_t *zip) {
     printf("Xf alignment vertical: %s\n", array_cellStyleXfs.Xfs[i].alignment.vertical);
     printf("Xf alignment textRotation: %s\n", array_cellStyleXfs.Xfs[i].alignment.textRotation);
     printf("Xf alignment isWrapText: %c\n", array_cellStyleXfs.Xfs[i].alignment.isWrapText);
-    free(array_cellStyleXfs.Xfs[i].alignment.horizontal);
-    free(array_cellStyleXfs.Xfs[i].alignment.vertical);
-    free(array_cellStyleXfs.Xfs[i].alignment.textRotation);
   }
-  free(array_cellStyleXfs.Xfs);
   printf("Count cellXfs: %d\n", array_cellXfs.length);
   for (int i = 0; i < array_cellXfs.length; i++) {
     printf("---------------------------------------------------------\n");
-    printf("Xf borderId: %s\n", array_cellXfs.Xfs[i].borderId);
-    printf("Xf fillId: %s\n", array_cellXfs.Xfs[i].fillId);
-    printf("Xf fontId: %s\n", array_cellXfs.Xfs[i].fontId);
-    printf("Xf numFmtId: %s\n", array_cellXfs.Xfs[i].numFmtId);
+    printf("Xf borderId: %d\n", array_cellXfs.Xfs[i].borderId);
+    printf("Xf fillId: %d\n", array_cellXfs.Xfs[i].fillId);
+    printf("Xf fontId: %d\n", array_cellXfs.Xfs[i].fontId);
+    printf("Xf numFmtId: %d\n", array_cellXfs.Xfs[i].numFmtId);
     printf("Xf xfId: %d\n", array_cellXfs.Xfs[i].xfId);
     printf("Xf alignment horizontal: %s\n", array_cellXfs.Xfs[i].alignment.horizontal);
     printf("Xf alignment vertical: %s\n", array_cellXfs.Xfs[i].alignment.vertical);
     printf("Xf alignment textRotation: %s\n", array_cellXfs.Xfs[i].alignment.textRotation);
     printf("Xf alignment isWrapText: %c\n", array_cellXfs.Xfs[i].alignment.isWrapText);
-    free(array_cellXfs.Xfs[i].borderId);
-    free(array_cellXfs.Xfs[i].fillId);
-    free(array_cellXfs.Xfs[i].fontId);
-    free(array_cellXfs.Xfs[i].numFmtId);
-    free(array_cellXfs.Xfs[i].alignment.horizontal);
-    free(array_cellXfs.Xfs[i].alignment.vertical);
-    free(array_cellXfs.Xfs[i].alignment.textRotation);
   }
-  free(array_cellXfs.Xfs);
   return status;
 }
 
@@ -345,7 +356,7 @@ int main(void) {
     zip_close(zip);
     return 0;
   }
-
+  destroy_styles();
   pre_process();
 //  test_read_sharedStrings();
   zip_close(zip);
