@@ -5,7 +5,7 @@ SOURCES =  src/read_main.c src/read_styles.c src/read_worksheet.c src/read_workb
 EXE = result
 
 # Flags for compilation (adding warnings are always good)
-CFLAGS = -Wall -Iinclude
+CFLAGS = -g -Wall -Iinclude
 
 # Flags for linking (none for the moment)
 LDFLAGS =
