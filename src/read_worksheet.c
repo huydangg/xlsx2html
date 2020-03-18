@@ -7,14 +7,30 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <read_styles.h>
+#include <read_sharedstrings.h>
 
 unsigned int NUM_OF_CELLS;
-unsigned int START_CELL_IN_NUMBER_BY_ROW = 1; //default is 1
+unsigned int START_CELL_IN_NUMBER_BY_ROW; //default is 1
 unsigned int CURRENT_CELL_IN_NUMBER_BY_ROW;
 unsigned int CURRENT_CHUNK = 0;
 unsigned short NUM_OF_CHUNKS;
 unsigned int COUNT_CELLS = 0;
 unsigned int CELLS_REMAIN;
+
+char *int_to_column_name(int n) {
+  char *column_name = malloc(4);
+  column_name[0] = '\0';
+  while (n > 0) {
+    n--;
+    char _tmp_column_name[2];
+    _tmp_column_name[0] = (char)('A' + n%26);
+    _tmp_column_name[1] = '\0';
+    strcat(column_name, _tmp_column_name);
+    n /= 26;
+  }
+  column_name[ptr_strlen(column_name)] = '\0';
+  return column_name;
+}
 
 size_t get_col_nr (const XML_Char* A1col) {
   const XML_Char* p = A1col;
@@ -103,7 +119,7 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
     }
     fputs(TH_STRING, fchunk0);
      
-  fputs("\n", fchunk0);
+    fputs("\n", fchunk0);
     char *column_name = int_to_column_name(i);
     printf("COLUMN_NAME: %s\n", column_name);
     fputs(column_name, fchunk0);
@@ -277,6 +293,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
         fputs("\n", sheetData_callbackdata->worksheet_file);  
       }
     }
+    START_CELL_IN_NUMBER_BY_ROW = 1;
     free(ROW_NUMBER);
     XML_SetElementHandler(xmlparser, cell_start_element, generate_cells);
   }
@@ -287,6 +304,12 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
   } else if (strcmp(name, "row") == 0) {
     struct SheetData *sheetData_callbackdata = callbackdata;
+    while (CURRENT_CELL_IN_NUMBER_BY_ROW < sheetData_callbackdata->end_col_number) {
+      fputs("<td></td>", sheetData_callbackdata->worksheet_file);
+      fputs("\n", sheetData_callbackdata->worksheet_file);
+      CURRENT_CELL_IN_NUMBER_BY_ROW++;
+      COUNT_CELLS++;
+    }
     fputs("</tr>", sheetData_callbackdata->worksheet_file);
     fputs("\n", sheetData_callbackdata->worksheet_file);  
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
@@ -310,15 +333,6 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	memcpy(sheetData_callbackdata->type_content, attrs[i + 1], 1 + strlen(attrs[i + 1]));
       }
     }
-    //TODO: Apply styles
-    XML_SetElementHandler(xmlparser, cell_item_start_element, cell_empty_end_element);
-  }
-}
-
-void cell_empty_end_element(void *callbackdata, const XML_Char *name) {
-  printf("NAMEEEEEEEEEEEEEEEEEEEE: %s\n", name);
-  if (strcmp(name, "c") == 0) {
-    struct SheetData *sheetData_callbackdata = callbackdata;
     while (START_CELL_IN_NUMBER_BY_ROW < CURRENT_CELL_IN_NUMBER_BY_ROW) {
       fputs("<td></td>", sheetData_callbackdata->worksheet_file);
       fputs("\n", sheetData_callbackdata->worksheet_file);
@@ -455,31 +469,28 @@ void cell_empty_end_element(void *callbackdata, const XML_Char *name) {
     //24: <td id="" style=""></td>
     int len_cellname = strlen(sheetData_callbackdata->cell_name);
     TD_TAG = realloc(TD_TAG, 24 + len_styles + len_cellname + 1);
-    snprintf(TD_TAG, 24 + len_styles + len_cellname + 1, "<td id=\"%s\" style=\"%s\"></td>", sheetData_callbackdata->cell_name, styles);
+    snprintf(TD_TAG, 24 + len_styles + len_cellname + 1, "<td id=\"%s\" style=\"%s\">", sheetData_callbackdata->cell_name, styles);
     fputs(TD_TAG, sheetData_callbackdata->worksheet_file);
     fputs("\n", sheetData_callbackdata->worksheet_file);
     START_CELL_IN_NUMBER_BY_ROW++;
     COUNT_CELLS++;
     free(styles);
     free(TD_TAG);
-    free(sheetData_callbackdata->cell_name);
-    if (sheetData_callbackdata->type_content != NULL) {
-      free(sheetData_callbackdata->type_content);
-    }
-    //printf("COUNT_CELLSSSSSSSSSSSS: %d\n", COUNT_CELLS);
-    sheetData_callbackdata->cell_name = NULL;
-    sheetData_callbackdata->type_content = NULL;
+    XML_SetElementHandler(xmlparser, cell_item_start_element, cell_end_element);
   }
-  XML_SetElementHandler(xmlparser, cell_start_element, col_row_end_element);
 }
 
 void cell_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "c") == 0) {
     struct SheetData *sheetData_callbackdata = callbackdata;
+    fputs("</td>", sheetData_callbackdata->worksheet_file);
+    fputs("\n", sheetData_callbackdata->worksheet_file);
     free(sheetData_callbackdata->cell_name);
     sheetData_callbackdata->cell_name = NULL;
-    free(sheetData_callbackdata->type_content);
-    sheetData_callbackdata->type_content = NULL;
+    if (sheetData_callbackdata->type_content != NULL) {
+      free(sheetData_callbackdata->type_content);
+      sheetData_callbackdata->type_content = NULL;
+    }
     XML_SetElementHandler(xmlparser, cell_start_element, col_row_end_element);
   } else if (strcmp(name, "f") == 0){
     struct SheetData *sheetData_callbackdata = callbackdata;
@@ -522,6 +533,34 @@ void worksheet_content_handler(void *callbackdata, const XML_Char *buf, int len)
   }
   memcpy(value, buf, len);
   value[len] = '\0';
-  //fputs(value, sheetData_callbackdata->worksheet_file);
+  if (strcmp(sheetData_callbackdata->type_content, "s") != 0) {
+    fputs("<p>", sheetData_callbackdata->worksheet_file);
+    fputs(value, sheetData_callbackdata->worksheet_file);
+    fputs("</p>", sheetData_callbackdata->worksheet_file);
+    fputs("\n", sheetData_callbackdata->worksheet_file);
+  } else if (strcmp(sheetData_callbackdata->type_content, "s") == 0) {
+    FILE *sharedStrings_file = fopen("/media/huydang/HuyDang1/xlsxmagic/output/sharedStrings.html", "rb");
+    if (sharedStrings_file == NULL) {
+      fprintf(stderr, "Cannot open sharedStrings.html file to read");
+      return;
+    }
+    int len_pos_arr = sharedStrings_position.length;
+    int index_sharedStrings_current = (int)strtol(value, NULL, 10);
+    unsigned long start_pos = sharedStrings_position.positions[index_sharedStrings_current];
+    unsigned long end_pos = -1;
+    if (index_sharedStrings_current + 1 != len_pos_arr - 1) {
+      end_pos = sharedStrings_position.positions[index_sharedStrings_current + 1];
+    }
+    fseek(sharedStrings_file, start_pos, SEEK_SET);
+    char c;
+    while((c = fgetc(sharedStrings_file)) != EOF) {
+      fputc(c, sheetData_callbackdata->worksheet_file);
+      //printf("START_POS: %ld | END_POS: %ld\n", ftell(sharedStrings_file), end_pos);
+      if (end_pos != -1 && ftell(sharedStrings_file) == end_pos) {
+	break;
+      }
+    }
+    fclose(sharedStrings_file);
+  }
   free(value);
 }

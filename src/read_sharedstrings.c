@@ -1,7 +1,7 @@
 #include <read_sharedstrings.h>
 #include <string.h>
 
-long int *sharedStrings_position;
+struct SharedStringsPosition sharedStrings_position;
 
 struct Font new_font() {
   struct Font font;
@@ -34,7 +34,7 @@ void sharedStrings_main_start_element(void *callbackdata, const XML_Char *name, 
   if (strcmp(name, "sst") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "uniqueCount") == 0) {
-	sharedStrings_position = malloc(strtol(attrs[i + 1], NULL, 10) * sizeof(long int));
+	sharedStrings_position.positions = malloc((int)strtol(attrs[i + 1], NULL, 10) * sizeof(long int));
 	current_index = -1;
       }
     }
@@ -45,6 +45,7 @@ void sharedStrings_main_start_element(void *callbackdata, const XML_Char *name, 
 
 void sharedStrings_main_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "sst") == 0) {
+    sharedStrings_position.length = current_index;
     XML_SetElementHandler(xmlparser, sharedStrings_main_start_element, NULL);
   }
 }
@@ -54,8 +55,8 @@ void sharedStrings_lv1_start_element(void *callbackdata, const XML_Char *name, c
   FILE *sharedStrings_file_callbackdata = callbackdata;
   if (strcmp(name, "si") == 0) {
     current_index++;
-    fprintf(sharedStrings_file_callbackdata, "<td>");
-    sharedStrings_position[current_index] = ftell(sharedStrings_file_callbackdata);
+    fflush(sharedStrings_file_callbackdata);
+    sharedStrings_position.positions[current_index] = ftell(sharedStrings_file_callbackdata);
     XML_SetElementHandler(xmlparser, sharedStrings_lv2_start_element, sharedStrings_main_end_element);
   }
 }
@@ -63,7 +64,6 @@ void sharedStrings_lv1_start_element(void *callbackdata, const XML_Char *name, c
 void sharedStrings_lv1_end_element(void *callbackdata, const XML_Char *name) {
   FILE *sharedStrings_file_callbackdata = callbackdata;
   if (strcmp(name, "si") == 0) {
-    fprintf(sharedStrings_file_callbackdata, "</td>");
     XML_SetElementHandler(xmlparser, sharedStrings_lv1_start_element, sharedStrings_main_end_element);
   }
 }

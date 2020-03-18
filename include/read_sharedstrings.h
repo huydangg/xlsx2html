@@ -7,7 +7,11 @@
 
 extern XML_Parser xmlparser;
 struct Font new_font();
-extern long int *sharedStrings_position;
+struct SharedStringsPosition {
+  long int *positions;
+  int length;
+};
+extern struct SharedStringsPosition sharedStrings_position;
 
 void sharedStrings_main_start_element(void *, const XML_Char *, const XML_Char **);
 void sharedStrings_main_end_element(void *, const XML_Char *);
