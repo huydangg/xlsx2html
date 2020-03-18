@@ -160,7 +160,7 @@ int load_worksheets(zip_t *zip) {
     free(worksheet.end_row);
     free(worksheet.end_col);
   }
-  free(sharedStrings_position);
+  free(sharedStrings_position.positions);
   return 1;
 }
 
@@ -234,20 +234,7 @@ size_t ptr_strlen(const char *s) {
 }
 
 
-char *int_to_column_name(int n) {
-  char *column_name = malloc(4);
-  column_name[0] = '\0';
-  while (n > 0) {
-    n--;
-    char _tmp_column_name[2];
-    _tmp_column_name[0] = (char)('A' + n%26);
-    _tmp_column_name[1] = '\0';
-    strcat(column_name, _tmp_column_name);
-    n /= 26;
-  }
-  column_name[ptr_strlen(column_name)] = '\0';
-  return column_name;
-}
+
 
 //The first chunk (chunk_%d_0.html).
 
@@ -315,15 +302,6 @@ void pre_process() {
   fclose(findexhtml);
 }
 
-void test_read_sharedStrings() {
-  FILE *sharedStrings_file;
-  sharedStrings_file = fopen("/media/huydang/HuyDang1/xlsxmagic/output/sharedStrings.dat", "r");
-  char line[256];
-  while (fgets(line, sizeof(line), sharedStrings_file)) {
-    printf("TEST READ SHARED STRING: %s\n", line);
-  }
-  fclose(sharedStrings_file);
-}
 
 int main(void) {
   const char *file_name = "/home/huydang/Downloads/excelsample/Project_Management__codestringers.xlsx";
