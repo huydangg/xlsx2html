@@ -227,18 +227,6 @@ void embed_css(FILE *f, const char *css_path) {
   fclose(fcss);
 }
 
-size_t ptr_strlen(const char *s) {
-  const char *p = s;
-  for (; *p != '\0'; p++);
-  return p - s;
-}
-
-
-
-
-//The first chunk (chunk_%d_0.html).
-
-
 // Generate index html file
 void pre_process() {
   const char *BASE_CSS_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/base.css";
@@ -336,7 +324,6 @@ int main(void) {
   }
   destroy_styles();
   pre_process();
-//  test_read_sharedStrings();
   zip_close(zip);
   return 0; 
 }

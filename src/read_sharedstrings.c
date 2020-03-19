@@ -62,7 +62,6 @@ void sharedStrings_lv1_start_element(void *callbackdata, const XML_Char *name, c
 }
 
 void sharedStrings_lv1_end_element(void *callbackdata, const XML_Char *name) {
-  FILE *sharedStrings_file_callbackdata = callbackdata;
   if (strcmp(name, "si") == 0) {
     XML_SetElementHandler(xmlparser, sharedStrings_lv1_start_element, sharedStrings_main_end_element);
   }
