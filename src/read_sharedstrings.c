@@ -134,7 +134,6 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
 	  char *tmp_font_style = strdup(font_style);
 	  free(font_style);
 	  font_style = concat(tmp_font_style, font_text_decoration_style);
-	  free(font_text_decoration_style);
         } else if(strcmp(font.underline, "double") == 0) {
 	  const int LEN_FONT_TEXT_DECORATION_STYLE = 30;
           char font_text_decoration_style[LEN_FONT_TEXT_DECORATION_STYLE];
@@ -152,7 +151,6 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
     } else {
       fputs("<p>", sharedStrings_file_callbackdata);
     }
-
     // Set font obj to default
     font = new_font();
     XML_SetElementHandler(xmlparser, NULL, sharedStrings_lv2_end_element);
