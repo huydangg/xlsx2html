@@ -17,6 +17,7 @@ unsigned short NUM_OF_CHUNKS;
 unsigned int COUNT_CELLS = 0;
 unsigned int CELLS_REMAIN;
 
+
 char *int_to_column_name(int n) {
   char *column_name = malloc(4);
   column_name[0] = '\0';
@@ -28,7 +29,7 @@ char *int_to_column_name(int n) {
     strcat(column_name, _tmp_column_name);
     n /= 26;
   }
-  column_name[ptr_strlen(column_name)] = '\0';
+  column_name[strlen(column_name)] = '\0';
   return column_name;
 }
 
@@ -317,6 +318,7 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
 }
 
 void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) { 
+  (void)attrs;
   if (strcmp(name, "c") == 0) {
     struct SheetData *sheetData_callbackdata = callbackdata;
     sheetData_callbackdata->cell_name = NULL;
@@ -492,13 +494,6 @@ void cell_end_element(void *callbackdata, const XML_Char *name) {
       sheetData_callbackdata->type_content = NULL;
     }
     XML_SetElementHandler(xmlparser, cell_start_element, col_row_end_element);
-  } else if (strcmp(name, "f") == 0){
-    struct SheetData *sheetData_callbackdata = callbackdata;
-    free(sheetData_callbackdata->cell_name);
-    sheetData_callbackdata->cell_name = NULL;
-    free(sheetData_callbackdata->type_content);
-    sheetData_callbackdata->type_content = NULL;
-    XML_SetElementHandler(xmlparser, cell_start_element, col_row_end_element);
   }
 }
 
@@ -506,9 +501,9 @@ void cell_item_start_element(void *callbackdata, const XML_Char *name, const XML
   if (strcmp(name, "v") == 0) {
     XML_SetElementHandler(xmlparser, NULL, cell_item_end_element);
     XML_SetCharacterDataHandler(xmlparser, worksheet_content_handler);
-  }
-  else if (strcmp(name, "f") == 0) {
+  } else if (strcmp(name, "f") == 0) {
     XML_SetElementHandler(xmlparser, NULL, cell_item_end_element);
+    XML_SetCharacterDataHandler(xmlparser, NULL);
   }
 }
 
@@ -517,7 +512,8 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
     XML_SetElementHandler(xmlparser, NULL, cell_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   } else if (strcmp(name, "f") == 0) {
-    XML_SetElementHandler(xmlparser, cell_item_start_element, NULL);
+    XML_SetElementHandler(xmlparser, NULL, cell_item_end_element);
+    XML_SetCharacterDataHandler(xmlparser, NULL);
   }
 }
 
@@ -525,20 +521,15 @@ void worksheet_content_handler(void *callbackdata, const XML_Char *buf, int len)
   if (len == 0){
     return;
   }
-
-  struct SheetData *sheetData_callbackdata = callbackdata;
   XML_Char *value;
   if ((value = malloc(len + 1)) == NULL) {
     return;
   }
   memcpy(value, buf, len);
   value[len] = '\0';
-  if (strcmp(sheetData_callbackdata->type_content, "s") != 0) {
-    fputs("<p>", sheetData_callbackdata->worksheet_file);
-    fputs(value, sheetData_callbackdata->worksheet_file);
-    fputs("</p>", sheetData_callbackdata->worksheet_file);
-    fputs("\n", sheetData_callbackdata->worksheet_file);
-  } else if (strcmp(sheetData_callbackdata->type_content, "s") == 0) {
+
+  struct SheetData *sheetData_callbackdata = callbackdata;
+  if (strcmp(sheetData_callbackdata->type_content, "s") == 0) {
     FILE *sharedStrings_file = fopen("/media/huydang/HuyDang1/xlsxmagic/output/sharedStrings.html", "rb");
     if (sharedStrings_file == NULL) {
       fprintf(stderr, "Cannot open sharedStrings.html file to read");
@@ -548,19 +539,23 @@ void worksheet_content_handler(void *callbackdata, const XML_Char *buf, int len)
     int index_sharedStrings_current = (int)strtol(value, NULL, 10);
     unsigned long start_pos = sharedStrings_position.positions[index_sharedStrings_current];
     unsigned long end_pos = -1;
-    if (index_sharedStrings_current + 1 != len_pos_arr - 1) {
+    if (index_sharedStrings_current + 1 <= len_pos_arr) {
       end_pos = sharedStrings_position.positions[index_sharedStrings_current + 1];
     }
     fseek(sharedStrings_file, start_pos, SEEK_SET);
     char c;
     while((c = fgetc(sharedStrings_file)) != EOF) {
       fputc(c, sheetData_callbackdata->worksheet_file);
-      //printf("START_POS: %ld | END_POS: %ld\n", ftell(sharedStrings_file), end_pos);
       if (end_pos != -1 && ftell(sharedStrings_file) == end_pos) {
 	break;
       }
     }
     fclose(sharedStrings_file);
+  } else {
+    fputs("<p>", sheetData_callbackdata->worksheet_file);
+    fputs(value, sheetData_callbackdata->worksheet_file);
+    fputs("</p>", sheetData_callbackdata->worksheet_file);
+    fputs("\n", sheetData_callbackdata->worksheet_file);
   }
   free(value);
 }
