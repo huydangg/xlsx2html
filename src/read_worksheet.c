@@ -51,6 +51,7 @@ size_t get_col_nr (const XML_Char* A1col) {
   }
   return 0;
 }
+
 //determine row number based on cell coordinate (e.g. "A1"), returns 1-based row number or 0 on error
 size_t get_row_nr (const XML_Char* A1col) {
   const XML_Char* p = A1col;
@@ -83,7 +84,7 @@ unsigned short column_name_to_number(const char *column_name) {
 }
 
 int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number, unsigned short index_worksheet) {
-  const char *OUTPUT_ROOT_DIR = "/media/huydang/HuyDang1/xlsxmagic/output";
+  const char *OUTPUT_ROOT_DIR = "/media/huydang/HuyDang/xlsxmagic/output";
   const char *CHUNKS_DIR_NAME = "chunks";
   char THE_FIRST_CHUNK_DIR[256];
   snprintf(THE_FIRST_CHUNK_DIR, sizeof(THE_FIRST_CHUNK_DIR), "%s/%s", OUTPUT_ROOT_DIR, CHUNKS_DIR_NAME);
@@ -219,7 +220,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     sheetData_callbackdata->current_sheet = worksheet_callbackdata->index_sheet;
     sheetData_callbackdata->end_col_number = worksheet_callbackdata->end_col_number;
     char CHUNK_PATH[256];
-    snprintf(CHUNK_PATH, sizeof(CHUNK_PATH), "/media/huydang/HuyDang1/xlsxmagic/output/chunks/chunk_%d_%d.html", sheetData_callbackdata->current_sheet, CURRENT_CHUNK);
+    snprintf(CHUNK_PATH, sizeof(CHUNK_PATH), "/media/huydang/HuyDang/xlsxmagic/output/chunks/chunk_%d_%d.html", sheetData_callbackdata->current_sheet, CURRENT_CHUNK);
     sheetData_callbackdata->worksheet_file = fopen(CHUNK_PATH, "wb+");
     XML_SetUserData(xmlparser, sheetData_callbackdata);
     XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
@@ -530,7 +531,7 @@ void worksheet_content_handler(void *callbackdata, const XML_Char *buf, int len)
 
   struct SheetData *sheetData_callbackdata = callbackdata;
   if (strcmp(sheetData_callbackdata->type_content, "s") == 0) {
-    FILE *sharedStrings_file = fopen("/media/huydang/HuyDang1/xlsxmagic/output/sharedStrings.html", "rb");
+    FILE *sharedStrings_file = fopen("/media/huydang/HuyDang/xlsxmagic/output/sharedStrings.html", "rb");
     if (sharedStrings_file == NULL) {
       fprintf(stderr, "Cannot open sharedStrings.html file to read");
       return;

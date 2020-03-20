@@ -1,5 +1,8 @@
 #include <read_main.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 XML_Parser xmlparser;
 
@@ -10,9 +13,7 @@ zip_t *open_zip(const char *file_name) {
 zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name) {
   return zip_fopen(zip, zip_file_name, ZIP_FL_UNCHANGED);
 }
-
-int load_workbook(zip_t *zip) {
-  const char *zip_file_name = "xl/workbook.xml";
+int load_workbook(zip_t *zip) { const char *zip_file_name = "xl/workbook.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   int status = process_zip_file(archive, NULL, NULL, workbook_start_element, workbook_end_element);
   for(int i = 0; i < array_sheets.length; i++) {
@@ -166,7 +167,7 @@ int load_worksheets(zip_t *zip) {
 
 int load_sharedStrings(zip_t *zip) {
   const char *file_name = "xl/sharedStrings.xml";
-  const char *_tmp_sharedStrings_path = "/media/huydang/HuyDang1/xlsxmagic/output/sharedStrings.html";
+  const char *_tmp_sharedStrings_path = "/media/huydang/HuyDang/xlsxmagic/output/sharedStrings.html";
   zip_file_t *archive = open_zip_file(zip, file_name);
   FILE *sharedStrings_file;
   sharedStrings_file = fopen(_tmp_sharedStrings_path, "wb+");
@@ -215,7 +216,8 @@ int process_zip_file(zip_file_t *archive, void *callbackdata, XML_CharacterDataH
 }
 
 void embed_css(FILE *f, const char *css_path) {
-  const char *_css_path = css_path; FILE *fcss;
+  const char *_css_path = css_path;
+  FILE *fcss;
   fcss = fopen(_css_path, "rb");
   if (fcss == NULL) {
     fprintf(stderr, "Cannot open css file to read");
@@ -227,11 +229,26 @@ void embed_css(FILE *f, const char *css_path) {
   fclose(fcss);
 }
 
+void embed_js(FILE *f, const char *js_path) {
+  const char *_js_path = js_path;
+  FILE *fjs;
+  fjs = fopen(_js_path, "rb");
+  if (fjs == NULL) {
+    fprintf(stderr, "Cannot open js file to read");
+  }
+  char line[256];
+  while (fgets(line, sizeof(line), fjs)) {
+    fputs(line, f);
+  }
+  fclose(fjs);
+}
+
 // Generate index html file
 void pre_process() {
-  const char *BASE_CSS_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/base.css";
-  const char *INDEX_HTML_PATH = "/media/huydang/HuyDang1/xlsxmagic/output/index.html";
-  const char *MANIFEST_PATH = "/media/huydang/HuyDang1/xlsxmagic/templates/manifest";
+  const char *BASE_CSS_PATH = "/media/huydang/HuyDang/xlsxmagic/templates/base.css";
+  const char *BASE_JS_PATH = "/media/huydang/HuyDang/xlsxmagic/templates/xlsxmagic.js";
+  const char *INDEX_HTML_PATH = "/media/huydang/HuyDang/xlsxmagic/output/index.html";
+  const char *MANIFEST_PATH = "/media/huydang/HuyDang/xlsxmagic/templates/manifest";
   FILE *fmanifest;
   fmanifest = fopen(MANIFEST_PATH, "rb");
   if (fmanifest == NULL) {
@@ -252,28 +269,43 @@ void pre_process() {
       continue;
     } else if (line[0] == '@') {
       if (strcmp(line, "@base.min.css\n") == 0) {
-	fputs("<styles>", findexhtml);
+	fputs("<style>", findexhtml);
         embed_css(findexhtml, BASE_CSS_PATH);
-	fputs("</styles>", findexhtml);
+	fputs("</style>", findexhtml);
+      } else if (strcmp(line, "@xlsxmagic.min.js\n") == 0) {
+	fputs("<script>", findexhtml);
+        embed_js(findexhtml, BASE_JS_PATH);
+	fputs("</script>", findexhtml);
       }
     } else if (line[0] == '$') {
       if (strcmp(line, "$tables\n") == 0) {
 	for (int i = 0; i < array_sheets.length; i++) {
 	  char div_table[256]; // Warning: Need to allocte dynamic
-	  snprintf(div_table, sizeof(div_table), "<div name=\"%s\" style=\"position: relative; overflow: auto; width: 100%%; height: 95vh\"; display: none>", array_sheets.sheets[i]->name);
+	  snprintf(div_table, sizeof(div_table), "<div id=\"%d\" name=\"%s\" style=\"position: relative; overflow: auto; width: 100%%; height: 95vh\;display: none;\">", i, array_sheets.sheets[i]->name);
           fputs(div_table, findexhtml);
+	  fputs("\n", findexhtml);
 	  fputs("<table>", findexhtml);
+	  fputs("\n", findexhtml);
 	  fputs("<thead>", findexhtml);
+	  fputs("\n", findexhtml);
 	  fputs("<tr>", findexhtml);
+	  fputs("\n", findexhtml);
           char div_thead[256]; // Warning: Need to allocte dynamic
-          snprintf(div_thead, sizeof(div_thead), "<div data-chunk-no=\"0\" data-chunk-url=\"https://webstg.filestring.net/preview/320401b6-2150-11ea-a956-060ffd2d73c2/chunk/chunk_%d_0.html\"", i);
+          snprintf(div_thead, sizeof(div_thead), "<div data-chunk-no=\"0\" data-chunk-url=\"https://webstg.filestring.net/preview/320401b6-2150-11ea-a956-060ffd2d73c2/chunk/chunk_%d_0.html\"/>", i);
 	  fputs(div_thead, findexhtml);
-	  fputs("</tr", findexhtml);
+	  fputs("\n", findexhtml);
+	  fputs("</tr>", findexhtml);
+	  fputs("\n", findexhtml);
 	  fputs("</thead>", findexhtml);
+	  fputs("\n", findexhtml);
 	  fputs("<tbody>", findexhtml);
+	  fputs("\n", findexhtml);
 	  fputs("</tbody>", findexhtml);
+	  fputs("\n", findexhtml);
 	  fputs("</table>", findexhtml);
+	  fputs("\n", findexhtml);
 	  fputs("</div>", findexhtml);
+	  fputs("\n", findexhtml);
           free(array_sheets.sheets[i]->name);
           free(array_sheets.sheets[i]->sheetId);
           free(array_sheets.sheets[i]->path_name);
@@ -292,11 +324,24 @@ void pre_process() {
 
 
 int main(void) {
-  const char *file_name = "/home/huydang/Downloads/excelsample/Project_Management__codestringers.xlsx";
+  const char *file_name = "/home/huydang/Downloads/excelsample/VDA-ISA_EN_4.xlsx";
   zip_t *zip = open_zip(file_name);
   if (zip == NULL){
     fprintf(stderr, "File not found");
     return 0;
+  }
+  const char *OUTPUT_ROOT_DIR = "/media/huydang/HuyDang/xlsxmagic";
+  const char *CHUNKS_DIR_NAME = "output";
+  char THE_FIRST_CHUNK_DIR[256];
+  snprintf(THE_FIRST_CHUNK_DIR, sizeof(THE_FIRST_CHUNK_DIR), "%s/%s", OUTPUT_ROOT_DIR, CHUNKS_DIR_NAME);
+  struct stat st = {0};
+  printf("%s\n", THE_FIRST_CHUNK_DIR);
+  if (stat(THE_FIRST_CHUNK_DIR, &st) == -1) {
+    int status = mkdir(THE_FIRST_CHUNK_DIR, 0777);
+    if (status != 0) {
+      fprintf(stderr, "Error when create a output dir with status is %d\n", status);
+      return -1;
+    }
   }
   int status_workbook = load_workbook(zip);
   if (!status_workbook) {

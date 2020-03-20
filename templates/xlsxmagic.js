@@ -1,10 +1,17 @@
 const TIME_OUT_FOR_EACH_CHUNKS = 5000
+const DELAY_TIME_FOR_EACH_LOOP = 1000
+const BASE_URL = 'file:///media/huydang/HuyDang/xlsxmagic/output'
+const originFileName = ''
+var indexCurrentSheet = 0
+var tempSetTimeOut = null
 
 google.charts.load('current', {'packages':['corechart']})
 
+
+
 function loadAllChunksForPrint(){
   countJsonFile++
-  for(countJsonFile; countJsonFile <= chunkSize; countJsonFile++){
+  for(indexCurrentChunk; indexCurrentChunk <= chunkSize; indexCurrentChunk++){
     loadChunks(indexCurrentSheet, new Date().getTime())
   }
 }
@@ -20,16 +27,49 @@ function readTextFile(file, callback) {
       console.log("rawFile.send err " + err)
       return "";
     }
+  }
 }
 
-function loadChunks(){
-  var jsonFileName = "json__" + indexCurrentSheet + "__" + countJsonFile
-  var URL_JSON = BASE_URL + originFileName + "/json/" + jsonFileName + "?access_token=" + accessToken
-  readTextFile(URL_JSON, function(text){
-    var data = JSON.parse(text)
+function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
+  var indexCurrentChunk = indexCurrentChunk;
+  var startTime = startTime
+  var isFailed = false
+  var isDone = false
+  var htmlFileName = "chunk__" + indexCurrentSheet + "__" + indexCurrentChunk 
+  var URL_HTML_CHUNK = BASE_URL + originFileName + "/chunks/" + htmlFileName  + '.html'
+
+  readTextFile(URL_HTML, function(data){
     if(typeof data != 'undefinded') {
+      startTime = new Date().getTime()
+      if (indexCurrentChunk === 0) {
+
+
+      } else {
+	
+      }
+      indexCurrentChunk++
+      loadChunks(indexCurrentSheet, indexCurrentChunk, startTime)
     } else {
+      var endTime = new Date().getTime()
+      if (endTime - startTime  >= TIME_OUT_FOR_EACH_CHUNKS) {
+        isFailed = true
+      }
+      else{
+        tempSetTimeOut = setTimeout(function(){loadChunks(indexCurrentSheet, startTime)}, DELAY_TIME_FOR_EACH_LOOP)
+      }
     }
   })
+  if (isFailed || isDone) {
+    return;
+  }
 }
-loadChunks()
+
+function Viewer() {
+  var current_sheet_ele = document.getElementById(indexCurrentSheet + '')
+  current_sheet_ele.style.display = 'inline'
+  loadChunks(indexCurrentSheet, 0, new Date().getTime())
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  Viewer()
+  }, false);
