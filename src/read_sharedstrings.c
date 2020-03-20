@@ -134,6 +134,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
 	  char *tmp_font_style = strdup(font_style);
 	  free(font_style);
 	  font_style = concat(tmp_font_style, font_text_decoration_style);
+	  free(tmp_font_style);
         } else if(strcmp(font.underline, "double") == 0) {
 	  const int LEN_FONT_TEXT_DECORATION_STYLE = 30;
           char font_text_decoration_style[LEN_FONT_TEXT_DECORATION_STYLE];
