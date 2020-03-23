@@ -86,29 +86,37 @@ unsigned short column_name_to_number(const char *column_name) {
 int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number, unsigned short index_worksheet) {
   const char *OUTPUT_ROOT_DIR = "/media/huydang/HuyDang/xlsxmagic/output";
   const char *CHUNKS_DIR_NAME = "chunks";
-  char THE_FIRST_CHUNK_DIR[256];
-  snprintf(THE_FIRST_CHUNK_DIR, sizeof(THE_FIRST_CHUNK_DIR), "%s/%s", OUTPUT_ROOT_DIR, CHUNKS_DIR_NAME);
+  int LEN_THE_FIRST_CHUNK_DIR = strlen(OUTPUT_ROOT_DIR) + strlen(CHUNKS_DIR_NAME) + 1 + 1;
+  char *THE_FIRST_CHUNK_DIR = malloc(LEN_THE_FIRST_CHUNK_DIR);
+  snprintf(THE_FIRST_CHUNK_DIR, LEN_THE_FIRST_CHUNK_DIR, "%s/%s", OUTPUT_ROOT_DIR, CHUNKS_DIR_NAME);
   struct stat st = {0};
   printf("%s\n", THE_FIRST_CHUNK_DIR);
   if (stat(THE_FIRST_CHUNK_DIR, &st) == -1) {
     int status = mkdir(THE_FIRST_CHUNK_DIR, 0777);
     if (status != 0) {
       fprintf(stderr, "Error when create a chunk dir with status is %d\n", status);
+      free(THE_FIRST_CHUNK_DIR);
       return -1; 
     }
   }
-  char THE_FIRST_CHUNK_PATH[256];
-  snprintf(THE_FIRST_CHUNK_PATH, sizeof(THE_FIRST_CHUNK_PATH), "%s/chunk_%d_0.html", THE_FIRST_CHUNK_DIR, index_worksheet);
+  int len_index_worksheet = snprintf(NULL, 0, "%d", index_worksheet);
+  int LEN_THE_FIRST_CHUNK_PATH = LEN_THE_FIRST_CHUNK_DIR + len_index_worksheet + 14;
+  char *THE_FIRST_CHUNK_PATH = malloc(LEN_THE_FIRST_CHUNK_PATH);
+  snprintf(THE_FIRST_CHUNK_PATH, LEN_THE_FIRST_CHUNK_PATH, "%s/chunk_%d_0.html", THE_FIRST_CHUNK_DIR, index_worksheet);
   FILE *fchunk0;
   fchunk0 = fopen(THE_FIRST_CHUNK_PATH, "ab+");
   if (fchunk0 == NULL) {
     fprintf(stderr, "Cannot open chunk0 file to read\n");
+    free(THE_FIRST_CHUNK_PATH);
     return -1;
   }
   if (end_col_number == -1) {
     fprintf(stderr, "Error when convert column name to number\n");
+    free(THE_FIRST_CHUNK_PATH);
     return -1;
   }
+  free(THE_FIRST_CHUNK_DIR);
+  free(THE_FIRST_CHUNK_PATH);
   fputs("<th width: 35px; height: 15px;></th>", fchunk0);
   fputs("\n", fchunk0);
   for (int i = 1; i <= end_col_number; i++) {

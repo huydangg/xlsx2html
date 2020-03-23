@@ -281,7 +281,7 @@ void pre_process() {
       if (strcmp(line, "$tables\n") == 0) {
 	for (int i = 0; i < array_sheets.length; i++) {
 	  char div_table[256]; // Warning: Need to allocte dynamic
-	  snprintf(div_table, sizeof(div_table), "<div id=\"%d\" name=\"%s\" style=\"position: relative; overflow: auto; width: 100%%; height: 95vh\;display: none;\">", i, array_sheets.sheets[i]->name);
+	  snprintf(div_table, sizeof(div_table), "<div id=\"%d\" name=\"%s\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display: none;\">", i, array_sheets.sheets[i]->name);
           fputs(div_table, findexhtml);
 	  fputs("\n", findexhtml);
 	  fputs("<table>", findexhtml);
@@ -331,18 +331,21 @@ int main(void) {
     return 0;
   }
   const char *OUTPUT_ROOT_DIR = "/media/huydang/HuyDang/xlsxmagic";
-  const char *CHUNKS_DIR_NAME = "output";
-  char THE_FIRST_CHUNK_DIR[256];
-  snprintf(THE_FIRST_CHUNK_DIR, sizeof(THE_FIRST_CHUNK_DIR), "%s/%s", OUTPUT_ROOT_DIR, CHUNKS_DIR_NAME);
+  const char *OUTPUT_DIR_NAME = "output";
+  // +1 for "/" +1 for '\0'
+  int LEN_OUTPUT_DIR = strlen(OUTPUT_ROOT_DIR) + strlen(OUTPUT_DIR_NAME) + 1 + 1;
+  char *OUTPUT_DIR = malloc(LEN_OUTPUT_DIR);
+  snprintf(OUTPUT_DIR, LEN_OUTPUT_DIR, "%s/%s", OUTPUT_ROOT_DIR, OUTPUT_DIR_NAME);
   struct stat st = {0};
-  printf("%s\n", THE_FIRST_CHUNK_DIR);
-  if (stat(THE_FIRST_CHUNK_DIR, &st) == -1) {
-    int status = mkdir(THE_FIRST_CHUNK_DIR, 0777);
+  if (stat(OUTPUT_DIR, &st) == -1) {
+    int status = mkdir(OUTPUT_DIR, 0777);
     if (status != 0) {
       fprintf(stderr, "Error when create a output dir with status is %d\n", status);
+      free(OUTPUT_DIR);
       return -1;
     }
   }
+  free(OUTPUT_DIR);
   int status_workbook = load_workbook(zip);
   if (!status_workbook) {
     fprintf(stderr, "Failed to read workbook");
