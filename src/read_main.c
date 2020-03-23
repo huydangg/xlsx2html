@@ -288,13 +288,9 @@ void pre_process() {
 	  fputs("\n", findexhtml);
 	  fputs("<thead>", findexhtml);
 	  fputs("\n", findexhtml);
-	  fputs("<tr>", findexhtml);
-	  fputs("\n", findexhtml);
           char div_thead[256]; // Warning: Need to allocte dynamic
           snprintf(div_thead, sizeof(div_thead), "<div data-chunk-no=\"0\" data-chunk-url=\"https://webstg.filestring.net/preview/320401b6-2150-11ea-a956-060ffd2d73c2/chunk/chunk_%d_0.html\"/>", i);
 	  fputs(div_thead, findexhtml);
-	  fputs("\n", findexhtml);
-	  fputs("</tr>", findexhtml);
 	  fputs("\n", findexhtml);
 	  fputs("</thead>", findexhtml);
 	  fputs("\n", findexhtml);

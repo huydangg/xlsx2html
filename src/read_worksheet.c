@@ -117,6 +117,7 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
   }
   free(THE_FIRST_CHUNK_DIR);
   free(THE_FIRST_CHUNK_PATH);
+  fputs("<tr>", fchunk0);
   fputs("<th width: 35px; height: 15px;></th>", fchunk0);
   fputs("\n", fchunk0);
   for (int i = 1; i <= end_col_number; i++) {
@@ -137,6 +138,7 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
     free(column_name);
     fputs("</th>", fchunk0);
     fputs("\n", fchunk0);
+    fputs("</tr>", fchunk0);
   }
   fclose(fchunk0);
   return 1;

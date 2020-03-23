@@ -35,10 +35,10 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
   var startTime = startTime
   var isFailed = false
   var isDone = false
-  var htmlFileName = "chunk__" + indexCurrentSheet + "__" + indexCurrentChunk 
+  var htmlFileName = "chunk_" + indexCurrentSheet + "_" + indexCurrentChunk
   var URL_HTML_CHUNK = BASE_URL + originFileName + "/chunks/" + htmlFileName  + '.html'
 
-  readTextFile(URL_HTML, function(data){
+  readTextFile(URL_HTML_CHUNK, function(data){
     if(typeof data != 'undefinded') {
       startTime = new Date().getTime()
       if (indexCurrentChunk === 0) {
