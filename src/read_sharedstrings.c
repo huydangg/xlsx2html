@@ -233,14 +233,22 @@ void sharedStrings_content_handler(void *callbackdata, const XML_Char *buf, int 
   if (len == 0){
     return;
   }
-
   FILE *sharedStrings_file_callbackdata = callbackdata;
   XML_Char *value;
-  if ((value = malloc(len + 1)) == NULL) {
+  int len_value = len;
+  if ((value = malloc(len_value + 1)) == NULL) {
     return;
-  } 
-  memcpy(value, buf, len);
-  value[len] = '\0';
+  }
+  memcpy(value, buf, len_value);
+  if (value[len_value - 1] == '\n') {
+    //5: <br/>
+    len_value = len_value + 4;
+    if ((value = realloc(value, len_value + 1)) == NULL) {
+      return;
+    }
+    memcpy(value + len - 1, "<br/>", 5);
+  }
+  value[len_value] = '\0';
   fputs(value, sharedStrings_file_callbackdata);
   free(value);
 }
