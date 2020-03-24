@@ -118,13 +118,14 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
   free(THE_FIRST_CHUNK_DIR);
   free(THE_FIRST_CHUNK_PATH);
   fputs("<tr>", fchunk0);
-  fputs("<th width: 35px; height: 15px;></th>", fchunk0);
+  fputs("<th style=\"width:35px;height:15px;\"></th>", fchunk0);
   fputs("\n", fchunk0);
   for (int i = 1; i <= end_col_number; i++) {
     char TH_STRING[256];
     for (int index_col = 0; index_col < array_cols.length; index_col++) {
       if (i >= array_cols.cols[index_col]->min && i <= array_cols.cols[index_col]->max) {
-	snprintf(TH_STRING, sizeof(TH_STRING), "<th style=\"width: %gpx;\">", array_cols.cols[index_col]->width);
+	float column_width_in_px = array_cols.cols[index_col]->width * (64 / 8.43);
+	snprintf(TH_STRING, sizeof(TH_STRING), "<th style=\"width:%gpx;\">", column_width_in_px);
         break;
       }
     }
@@ -138,8 +139,8 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
     free(column_name);
     fputs("</th>", fchunk0);
     fputs("\n", fchunk0);
-    fputs("</tr>", fchunk0);
   }
+  fputs("</tr>", fchunk0);
   fclose(fchunk0);
   return 1;
 }
@@ -300,7 +301,8 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	//<th style="height:px;"
         int LEN_TH_TAG = 29 + strlen(attrs[i + 1]) + strlen(ROW_NUMBER);
 	char TH_TAG[LEN_TH_TAG];
-	snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%spx;\">%s</th>", attrs[i + 1], ROW_NUMBER);
+	float row_height_in_px = strtof(attrs[i + 1], NULL) * (20 / 15);
+	snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%gpx;\">%s</th>", row_height_in_px, ROW_NUMBER);
 	fputs(TH_TAG, sheetData_callbackdata->worksheet_file);
         fputs("\n", sheetData_callbackdata->worksheet_file);  
       }
