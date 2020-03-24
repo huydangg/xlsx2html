@@ -124,7 +124,7 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
     char TH_STRING[256];
     for (int index_col = 0; index_col < array_cols.length; index_col++) {
       if (i >= array_cols.cols[index_col]->min && i <= array_cols.cols[index_col]->max) {
-	float column_width_in_px = array_cols.cols[index_col]->width * (64 / 8.43);
+	float column_width_in_px = array_cols.cols[index_col]->width * (64 * 1.0 / 8.43);
 	snprintf(TH_STRING, sizeof(TH_STRING), "<th style=\"width:%gpx;\">", column_width_in_px);
         break;
       }
@@ -299,9 +299,10 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
         fputs("\n", sheetData_callbackdata->worksheet_file);  
       } else if (strcmp(attrs[i], "ht") == 0) {
 	//<th style="height:px;"
-        int LEN_TH_TAG = 29 + strlen(attrs[i + 1]) + strlen(ROW_NUMBER);
+	float row_height_in_px = strtof((char *)attrs[i + 1], NULL) * (20 * 1.0 / 15);
+	int len_row_height_in_px = snprintf(NULL, 0, "%.2f", row_height_in_px);
+        int LEN_TH_TAG = 29 + len_row_height_in_px + strlen(ROW_NUMBER);
 	char TH_TAG[LEN_TH_TAG];
-	float row_height_in_px = strtof(attrs[i + 1], NULL) * (20 / 15);
 	snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%gpx;\">%s</th>", row_height_in_px, ROW_NUMBER);
 	fputs(TH_TAG, sheetData_callbackdata->worksheet_file);
         fputs("\n", sheetData_callbackdata->worksheet_file);  
