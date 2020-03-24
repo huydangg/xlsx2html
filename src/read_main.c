@@ -281,25 +281,14 @@ void pre_process() {
       if (strcmp(line, "$tables\n") == 0) {
 	for (int i = 0; i < array_sheets.length; i++) {
 	  char div_table[256]; // Warning: Need to allocte dynamic
-	  snprintf(div_table, sizeof(div_table), "<div id=\"%d\" name=\"%s\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display: none;\">", i, array_sheets.sheets[i]->name);
+	  snprintf(div_table, sizeof(div_table), "<div id=\"sheet_%d\" name=\"%s\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display: none;\">", i, array_sheets.sheets[i]->name);
           fputs(div_table, findexhtml);
 	  fputs("\n", findexhtml);
-	  fputs("<table>", findexhtml);
-	  fputs("\n", findexhtml);
-	  fputs("<thead>", findexhtml);
-	  fputs("\n", findexhtml);
           char div_thead[256]; // Warning: Need to allocte dynamic
-          snprintf(div_thead, sizeof(div_thead), "<div data-chunk-no=\"0\" data-chunk-url=\"https://webstg.filestring.net/preview/320401b6-2150-11ea-a956-060ffd2d73c2/chunk/chunk_%d_0.html\"/>", i);
-	  fputs(div_thead, findexhtml);
-	  fputs("\n", findexhtml);
-	  fputs("</thead>", findexhtml);
-	  fputs("\n", findexhtml);
-	  fputs("<tbody>", findexhtml);
-	  fputs("\n", findexhtml);
-	  fputs("</tbody>", findexhtml);
-	  fputs("\n", findexhtml);
-	  fputs("</table>", findexhtml);
-	  fputs("\n", findexhtml);
+	  for (int index_chunk = 0; index_chunk < 2; index_chunk++) {
+            snprintf(div_thead, sizeof(div_thead), "<div id=\"chunk_%d_%d\" data-chunk-url=\"file:///media/huydang/HuyDang/xlsxmagic/output/chunks/chunk_%d_%d.html\"></div>", i, index_chunk, i, index_chunk);
+	    fputs(div_thead, findexhtml);
+	  }
 	  fputs("</div>", findexhtml);
 	  fputs("\n", findexhtml);
           free(array_sheets.sheets[i]->name);
