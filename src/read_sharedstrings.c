@@ -105,11 +105,21 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
 	free(font_style);
 	font_style = concat(tmp_font_style, "font-weight:bold;");
 	free(tmp_font_style);
+      } else {
+	char *tmp_font_style = strdup(font_style);
+	free(font_style);
+	font_style = concat(tmp_font_style, "font-weight:normal;");
+	free(tmp_font_style);
       }
       if (font.isItalic != '0') {
 	char *tmp_font_style = strdup(font_style);
 	free(font_style);
 	font_style = concat(tmp_font_style, "font-style:italic;");
+	free(tmp_font_style);
+      } else {
+        char *tmp_font_style = strdup(font_style);
+	free(font_style);
+	font_style = concat(tmp_font_style, "font-style:normal;");
 	free(tmp_font_style);
       }
       if (font.color.rgb != NULL) {
