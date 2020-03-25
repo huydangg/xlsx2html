@@ -161,8 +161,8 @@ void font_item_start_element(void *callbackdata, const XML_Char *name, const XML
   } else if (strcmp(name, "color") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
-	fonts_callbackdata[array_fonts.length - 1].color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(fonts_callbackdata[array_fonts.length - 1].color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	fonts_callbackdata[array_fonts.length - 1].color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) - 1 + 1));
+	snprintf(fonts_callbackdata[array_fonts.length - 1].color.rgb, (strlen(attrs[i + 1]) - 1 + 1), "#%s", attrs[i + 1] + 2);
       }
     }
   } else if(strcmp(name, "family") == 0){
@@ -220,15 +220,15 @@ void fill_item_lv2_start_element(void *callbackdata, const XML_Char *name, const
   if (strcmp(name, "bgColor") == 0)  {
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "rgb") == 0) {
-        fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) - 1 + 1));
+	snprintf(fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb, strlen(attrs[i + 1]) - 1 + 1, "#%s", attrs[i + 1] + 2);
       }
     }
   } else if (strcmp(name, "fgColor") == 0) {
      for (int i = 0; attrs[i]; i += 2) {
        if (strcmp(attrs[i], "rgb") == 0) {
          fills_callbackdata[array_fills.length - 1].patternFill.fgColor.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-         memcpy(fills_callbackdata[array_fills.length - 1].patternFill.fgColor.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	 snprintf(fills_callbackdata[array_fills.length - 1].patternFill.fgColor.rgb, strlen(attrs[i + 1]) - 1 + 1, "#%s", attrs[i + 1] + 2);
        }
      }   
   }
