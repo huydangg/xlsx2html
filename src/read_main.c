@@ -6,8 +6,7 @@
 
 XML_Parser xmlparser;
 
-zip_t *open_zip(const char *file_name) {
-  return zip_open(file_name, ZIP_RDONLY, NULL);
+zip_t *open_zip(const char *file_name) { return zip_open(file_name, ZIP_RDONLY, NULL);
 }
 
 zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name) {
@@ -290,6 +289,14 @@ void pre_process() {
 	    fputs(div_thead, findexhtml);
 	  }
 	  fputs("</div>", findexhtml);
+	  fputs("\n", findexhtml);
+        }
+      } else if (strcmp(line, "$buttons\n") == 0) {
+        //<button id="btn-Form Responses 1">Form Responses 1</button>
+	for (int i = 0; i < array_sheets.length; i++) {
+	  char button_html[256];
+	  snprintf(button_html, sizeof(button_html), "<button id=\"btn-%s\">%s</button>", array_sheets.sheets[i]->name, array_sheets.sheets[i]->name);
+	  fputs(button_html, findexhtml);
 	  fputs("\n", findexhtml);
           free(array_sheets.sheets[i]->name);
           free(array_sheets.sheets[i]->sheetId);
