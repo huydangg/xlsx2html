@@ -23,7 +23,6 @@ function readTextFile(file, callback, callbackfail) {
   var rawFile = new XMLHttpRequest()
   rawFile.overrideMimeType("text/plain")
   rawFile.open("GET", file, false)
-  console.log("AAAAAAAAAA")
   rawFile.onreadystatechange = function() {
     if (rawFile.readyState === 4) {
       callback(rawFile.responseText);
@@ -92,12 +91,28 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
 function Viewer() {
   currentSheetEle = document.getElementById('sheet_' + indexCurrentSheet)
   currentSheetEle.style.display = 'inline'
-  currentTableChunkEle = currentSheetEle.appendChild(document.createElement('table'))
-  currentTheadChunkEle = currentTableChunkEle.appendChild(document.createElement('thead'))
-  currentTbodyChunkEle = currentTableChunkEle.appendChild(document.createElement('tbody'))
-  loadChunks(indexCurrentSheet, 0, new Date().getTime())
+  if (!document.getElementById('tb_' + indexCurrentSheet)) {
+    currentTableChunkEle = currentSheetEle.appendChild(document.createElement('table'))
+    currentTableChunkEle.id = "tb_" + indexCurrentSheet
+    currentTheadChunkEle = currentTableChunkEle.appendChild(document.createElement('thead'))
+    currentTbodyChunkEle = currentTableChunkEle.appendChild(document.createElement('tbody'))
+    loadChunks(indexCurrentSheet, 0, new Date().getTime())
+  }
+}
+
+function handleButtonClick(event) {
+  var btnClicked = document.getElementById(event.srcElement.id)
+  if ('btn_' + indexCurrentSheet == btnClicked.id) {
+    return
+  }
+  currentSheetEle.style.display = 'none'
+  var preBtn = document.getElementById('btn_' + indexCurrentSheet)
+  preBtn.style.fontWeight = 'normal'
+  indexCurrentSheet = btnClicked.id.split("btn_")[1]
+  btnClicked.style.fontWeight = 'bold'
+  Viewer()
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   Viewer()
-  }, false);
+}, false);

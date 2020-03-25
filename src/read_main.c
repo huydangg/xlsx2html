@@ -6,12 +6,14 @@
 
 XML_Parser xmlparser;
 
-zip_t *open_zip(const char *file_name) { return zip_open(file_name, ZIP_RDONLY, NULL);
+zip_t *open_zip(const char *file_name) {
+  return zip_open(file_name, ZIP_RDONLY, NULL);
 }
 
 zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name) {
   return zip_fopen(zip, zip_file_name, ZIP_FL_UNCHANGED);
 }
+
 int load_workbook(zip_t *zip) { const char *zip_file_name = "xl/workbook.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   int status = process_zip_file(archive, NULL, NULL, workbook_start_element, workbook_end_element);
@@ -295,7 +297,11 @@ void pre_process() {
         //<button id="btn-Form Responses 1">Form Responses 1</button>
 	for (int i = 0; i < array_sheets.length; i++) {
 	  char button_html[256];
-	  snprintf(button_html, sizeof(button_html), "<button id=\"btn-%s\">%s</button>", array_sheets.sheets[i]->name, array_sheets.sheets[i]->name);
+	  if (i == 0) {
+	    snprintf(button_html, sizeof(button_html), "<button id=\"btn_%d\" style=\"font-weight:bold;\"onclick=\"handleButtonClick(event)\">%s</button>", i, array_sheets.sheets[i]->name);
+	  } else {
+	    snprintf(button_html, sizeof(button_html), "<button id=\"btn_%d\" onclick=\"handleButtonClick(event)\">%s</button>", i, array_sheets.sheets[i]->name);
+	  }
 	  fputs(button_html, findexhtml);
 	  fputs("\n", findexhtml);
           free(array_sheets.sheets[i]->name);
@@ -314,6 +320,9 @@ void pre_process() {
   fclose(findexhtml);
 }
 
+void post_process() {
+  //TODO: To handle merged cells, remove redunant rows, columns, condition formating
+}
 
 int main(void) {
   const char *file_name = "/home/huydang/Downloads/excelsample/VDA-ISA_EN_4.xlsx";
