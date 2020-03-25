@@ -362,6 +362,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     char *wraptext_style = NULL;
     char *horizontal = NULL;
     char *vertical = NULL;
+    char *font_style = NULL;
     char wrapText;
     if (array_cellXfs.Xfs[sheetData_callbackdata->index_style].isApplyAlignment == '1') {
       int len_horizontal = strlen(array_cellXfs.Xfs[sheetData_callbackdata->index_style].alignment.horizontal);
@@ -474,25 +475,99 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     free(border_right);
     free(border_top);
     free(border_bottom);
-    int len_styles = strlen(horizontal_style) + strlen(vertical_style) + strlen(wraptext_style) + strlen(border_style);
-    styles = realloc(styles, len_styles + 1);
-    snprintf(styles, len_styles + 1, "%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style);
-    free(horizontal_style);
-    free(vertical_style);
-    free(wraptext_style);
-    free(border_style);
-    char *TD_TAG = NULL;
-    //24: <td id="" style=""></td>
-    int len_cellname = strlen(sheetData_callbackdata->cell_name);
-    TD_TAG = realloc(TD_TAG, 24 + len_styles + len_cellname + 1);
-    snprintf(TD_TAG, 24 + len_styles + len_cellname + 1, "<td id=\"%s\" style=\"%s\">", sheetData_callbackdata->cell_name, styles);
-    fputs(TD_TAG, sheetData_callbackdata->worksheet_file);
-    fputs("\n", sheetData_callbackdata->worksheet_file);
-    START_CELL_IN_NUMBER_BY_ROW++;
-    COUNT_CELLS++;
-    free(styles);
-    free(TD_TAG);
-    XML_SetElementHandler(xmlparser, cell_item_start_element, cell_end_element);
+
+    unsigned short font_id = -1;
+    if (array_cellXfs.Xfs[sheetData_callbackdata->index_style].isApplyFont == '1') {
+      font_id = array_cellXfs.Xfs[sheetData_callbackdata->index_style].fontId;
+    } else if (array_cellXfs.Xfs[sheetData_callbackdata->index_style].isApplyFont == '0') {
+      int id_cellXfs = array_cellXfs.Xfs[sheetData_callbackdata->index_style].xfId;
+      font_id = array_cellStyleXfs.Xfs[id_cellXfs].fontId;
+    }
+    if (font_id != -1 && array_fonts.fonts[font_id].name != NULL) {
+      //12: "font-family:" | 1: ';'
+      const int LEN_FONT_NAME = 14 + strlen(array_fonts.fonts[font_id].name); //ex
+      char font_name[LEN_FONT_NAME];
+      snprintf(font_name, LEN_FONT_NAME, "font-family:%s;", array_fonts.fonts[font_id].name);
+      font_style = strdup(font_name);
+      if (array_fonts.fonts[font_id].sz != 0.0) {
+        // 13: "font-size:px;" + 1: '\0' = 14
+        const int LEN_FONT_SIZE = snprintf(NULL, 0, "%.2f", array_fonts.fonts[font_id].sz) + 14;
+        char font_size[LEN_FONT_SIZE];
+        snprintf(font_size, LEN_FONT_SIZE, "font-size:%.2fpx;", array_fonts.fonts[font_id].sz);
+        char *tmp_font_style = strdup(font_style);
+	free(font_style);
+	font_style = concat(tmp_font_style, font_size);
+	free(tmp_font_style);
+      }
+      if (array_fonts.fonts[font_id].isBold != '0') {
+        char *tmp_font_style = strdup(font_style);
+	free(font_style);
+	font_style = concat(tmp_font_style, "font-weight:bold;");
+	free(tmp_font_style);
+      }
+      if (array_fonts.fonts[font_id].isItalic != '0') {
+	char *tmp_font_style = strdup(font_style);
+	free(font_style);
+	font_style = concat(tmp_font_style, "font-style:italic;");
+	free(tmp_font_style);
+      }
+      if (array_fonts.fonts[font_id].color.rgb != NULL) {
+	const int LEN_FONT_COLOR_RGB = 8 + strlen(array_fonts.fonts[font_id].color.rgb);
+        char font_color_rgb[LEN_FONT_COLOR_RGB];
+        // 6: "color:" | 1: ';'
+        snprintf(font_color_rgb, LEN_FONT_COLOR_RGB, "color:%s;", array_fonts.fonts[font_id].color.rgb);
+	char *tmp_font_style = strdup(font_style);
+	free(font_style);
+	font_style = concat(tmp_font_style, font_color_rgb);
+	free(tmp_font_style);
+      }
+      if (array_fonts.fonts[font_id].underline != NULL && strcmp(array_fonts.fonts[font_id].underline, "none") != 0) {
+	const int LEN_FONT_TEXT_DECORATION_LINE = 32;
+        char font_text_decoration_line[LEN_FONT_TEXT_DECORATION_LINE];
+	memcpy(font_text_decoration_line, "text-decoration-line:underline;", LEN_FONT_TEXT_DECORATION_LINE);
+	char *tmp_font_style = strdup(font_style);
+	free(font_style);
+	font_style = concat(tmp_font_style, font_text_decoration_line);
+	free(tmp_font_style);
+        if (strcmp(array_fonts.fonts[font_id].underline, "single") == 0) {
+	  const int LEN_FONT_TEXT_DECORATION_STYLE = 30;
+          char font_text_decoration_style[LEN_FONT_TEXT_DECORATION_STYLE];
+	  memcpy(font_text_decoration_style, "text-decoration-style:single;", LEN_FONT_TEXT_DECORATION_STYLE);
+	  char *tmp_font_style = strdup(font_style);
+	  free(font_style);
+	  font_style = concat(tmp_font_style, font_text_decoration_style);
+	  free(tmp_font_style);
+        } else if(strcmp(array_fonts.fonts[font_id].underline, "double") == 0) {
+	  const int LEN_FONT_TEXT_DECORATION_STYLE = 30;
+          char font_text_decoration_style[LEN_FONT_TEXT_DECORATION_STYLE];
+	  memcpy(font_text_decoration_style, "text-decoration-style:double;", LEN_FONT_TEXT_DECORATION_STYLE);
+	  char *tmp_font_style = strdup(font_style);
+	  free(font_style);
+	  font_style = concat(tmp_font_style, font_text_decoration_style);
+	  free(tmp_font_style);
+        }
+      }
+      int len_styles = strlen(horizontal_style) + strlen(vertical_style) + strlen(wraptext_style) + strlen(border_style) + strlen(font_style);
+      styles = realloc(styles, len_styles + 1);
+      snprintf(styles, len_styles + 1, "%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style);
+      free(horizontal_style);
+      free(vertical_style);
+      free(wraptext_style);
+      free(border_style);
+      free(font_style);
+      char *TD_TAG = NULL;
+      //24: <td id="" style=""></td>
+      int len_cellname = strlen(sheetData_callbackdata->cell_name);
+      TD_TAG = realloc(TD_TAG, 24 + len_styles + len_cellname + 1);
+      snprintf(TD_TAG, 24 + len_styles + len_cellname + 1, "<td id=\"%s\" style=\"%s\">", sheetData_callbackdata->cell_name, styles);
+      fputs(TD_TAG, sheetData_callbackdata->worksheet_file);
+      fputs("\n", sheetData_callbackdata->worksheet_file);
+      START_CELL_IN_NUMBER_BY_ROW++;
+      COUNT_CELLS++;
+      free(styles);
+      free(TD_TAG);
+      XML_SetElementHandler(xmlparser, cell_item_start_element, cell_end_element);
+    }
   }
 }
 

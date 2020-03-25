@@ -17,11 +17,14 @@ struct Font new_font() {
 struct Font font;
 int current_index;
 
-char* concat(const char *s1, const char *s2)
-{
+char* concat(const char *s1, const char *s2) {
     const size_t len1 = strlen(s1);
     const size_t len2 = strlen(s2);
     char *result = malloc(len1 + len2 + 1); // +1 for the null-terminator
+    if (result == NULL) {
+      fprintf(stderr, "Cannot concat()");
+      return NULL;
+    }
     // in real code you would check for errors in malloc here
     memcpy(result, s1, len1);
     memcpy(result + len1, s2, len2 + 1); // +1 to copy the null-terminator
@@ -80,6 +83,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
       printf("FONT IS ITALIC: %c\n", font.isItalic);
       printf("FONT UNDERLINE: %s\n", font.underline);
       printf("FONT COLOR RGB: %s\n", font.color.rgb);
+
       //12: "font-family:" | 1: ';'
       const int LEN_FONT_NAME = 14 + strlen(font.name); //ex
       char font_name[LEN_FONT_NAME];

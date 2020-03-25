@@ -23,4 +23,5 @@ void sharedStrings_lv2_end_element(void *userData, const XML_Char *name);
 void sharedStrings_rPritem_start_element(void *, const XML_Char *, const XML_Char **);
 void sharedStrings_rPritem_end_element(void *userData, const XML_Char *name);
 void sharedStrings_content_handler(void *, const XML_Char *, int);
+char* concat(const char *s1, const char *s2);
 #endif
