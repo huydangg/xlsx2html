@@ -15,7 +15,7 @@ google.charts.load('current', {'packages':['corechart']})
 function loadAllChunksForPrint(){
   countJsonFile++
   for(indexCurrentChunk; indexCurrentChunk <= chunkSize; indexCurrentChunk++){
-    loadChunks(indexCurrentSheet, new Date().getTime())
+    loadChunks(indexCurrentSheet, indexCurrentChunk, new Date().getTime())
   }
 }
 
@@ -90,7 +90,7 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
 
 function Viewer() {
   currentSheetEle = document.getElementById('sheet_' + indexCurrentSheet)
-  currentSheetEle.style.display = 'inline'
+  currentSheetEle.style.removeProperty("display")
   if (!document.getElementById('tb_' + indexCurrentSheet)) {
     currentTableChunkEle = currentSheetEle.appendChild(document.createElement('table'))
     currentTableChunkEle.id = "tb_" + indexCurrentSheet
