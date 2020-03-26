@@ -161,10 +161,10 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
         free(font.underline);
       }
       printf("FONT STYLE STRING: %s\n", font_style);
-      fprintf(sharedStrings_file_callbackdata, "<p style=\"%s\">", font_style);
+      fprintf(sharedStrings_file_callbackdata, "<span style=\"%s\">", font_style);
       free(font_style);
     } else {
-      fputs("<p>", sharedStrings_file_callbackdata);
+      fputs("<span>", sharedStrings_file_callbackdata);
     }
     // Set font obj to default
     font = new_font();
@@ -180,7 +180,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
 void sharedStrings_lv2_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "t") == 0) {
     FILE *sharedStrings_file_callbackdata = callbackdata;
-    fprintf(sharedStrings_file_callbackdata, "</p>");
+    fprintf(sharedStrings_file_callbackdata, "</span>");
     XML_SetElementHandler(xmlparser, sharedStrings_lv2_start_element, sharedStrings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   } else if (strcmp(name, "rPr") == 0){

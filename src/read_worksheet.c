@@ -641,9 +641,9 @@ void worksheet_content_handler(void *callbackdata, const XML_Char *buf, int len)
     }
     fclose(sharedStrings_file);
   } else {
-    fputs("<p>", sheetData_callbackdata->worksheet_file);
+    fputs("<span>", sheetData_callbackdata->worksheet_file);
     fputs(value, sheetData_callbackdata->worksheet_file);
-    fputs("</p>", sheetData_callbackdata->worksheet_file);
+    fputs("</span>", sheetData_callbackdata->worksheet_file);
     fputs("\n", sheetData_callbackdata->worksheet_file);
   }
   free(value);
