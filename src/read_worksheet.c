@@ -74,7 +74,9 @@ unsigned short column_name_to_number(const char *column_name) {
   const char *col_name = column_name;
   char *base = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   int i, j, result = 0;
-  for (i = 0, j = strlen(col_name) - 1; i < strlen(col_name); i += 1, j -= 1) { const char *ptr = strchr(base, col_name[i]); if (!ptr) {
+  for (i = 0, j = strlen(col_name) - 1; i < strlen(col_name); i += 1, j -= 1) {
+    const char *ptr = strchr(base, col_name[i]);
+    if (!ptr) {
       return -1;
     }
     int index = ptr - base;
@@ -130,7 +132,6 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
       }
     }
     fputs(TH_STRING, fchunk0);
-     
     fputs("\n", fchunk0);
     char *column_name = int_to_column_name(i);
     printf("COLUMN_NAME: %s\n", column_name);
@@ -303,7 +304,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	int len_row_height_in_px = snprintf(NULL, 0, "%.2f", row_height_in_px);
         int LEN_TH_TAG = 29 + len_row_height_in_px + strlen(ROW_NUMBER);
 	char TH_TAG[LEN_TH_TAG];
-	snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%gpx;\">%s</th>", row_height_in_px, ROW_NUMBER);
+	snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%.2fpx;\">%s</th>", row_height_in_px, ROW_NUMBER);
 	fputs(TH_TAG, sheetData_callbackdata->worksheet_file);
         fputs("\n", sheetData_callbackdata->worksheet_file);  
       }
@@ -363,6 +364,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     char *horizontal = NULL;
     char *vertical = NULL;
     char *font_style = NULL;
+    char *fill_style = NULL;
     char wrapText;
     if (array_cellXfs.Xfs[sheetData_callbackdata->index_style].isApplyAlignment == '1') {
       int len_horizontal = strlen(array_cellXfs.Xfs[sheetData_callbackdata->index_style].alignment.horizontal);
@@ -547,9 +549,22 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	  free(tmp_font_style);
         }
       }
-      int len_styles = strlen(horizontal_style) + strlen(vertical_style) + strlen(wraptext_style) + strlen(border_style) + strlen(font_style);
+      unsigned short fill_id = array_cellXfs.Xfs[sheetData_callbackdata->index_style].fillId;
+      int LEN_FILL_FGCOLOR_RGB = 0;
+      if (array_fills.fills[fill_id].patternFill.fgColor.rgb != NULL) {
+        // 18: "background-color:;"
+	LEN_FILL_FGCOLOR_RGB = 18 + strlen(array_fills.fills[fill_id].patternFill.fgColor.rgb);
+	fill_style = realloc(fill_style, LEN_FILL_FGCOLOR_RGB + 1);
+        snprintf(fill_style, LEN_FILL_FGCOLOR_RGB + 1, "background-color:%s;", array_fills.fills[fill_id].patternFill.fgColor.rgb);
+      }
+      int len_styles = strlen(horizontal_style) + strlen(vertical_style) + strlen(wraptext_style) + strlen(border_style) + strlen(font_style) + LEN_FILL_FGCOLOR_RGB;
       styles = realloc(styles, len_styles + 1);
-      snprintf(styles, len_styles + 1, "%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style);
+      if (LEN_FILL_FGCOLOR_RGB == 0) {
+        snprintf(styles, len_styles + 1, "%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style);
+      } else {
+        snprintf(styles, len_styles + 1, "%s%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style, fill_style);
+        free(fill_style);
+      }
       free(horizontal_style);
       free(vertical_style);
       free(wraptext_style);
@@ -638,7 +653,6 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
     }
     XML_SetElementHandler(xmlparser, NULL, cell_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
-
   } else if (strcmp(name, "f") == 0) {
     XML_SetElementHandler(xmlparser, cell_item_start_element, cell_item_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);

@@ -5,7 +5,6 @@
 # # - comment
 # @ - embed or link to a file from data dir
 # $ - embed string from xlsxmagic
-
 <!DOCTYPE html>
 <html lang="en" style="overflow: hidden; height: 100%; scroll-behavior: smooth;">
 <head>
