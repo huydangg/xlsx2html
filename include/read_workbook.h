@@ -9,6 +9,7 @@ struct Sheet {
    XML_Char *sheetId;
    XML_Char *path_name;
    char isHidden;
+   char hasMergedCells;
 };
 
 struct ArraySheets {

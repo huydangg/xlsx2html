@@ -141,10 +141,13 @@ int load_worksheets(zip_t *zip) {
     worksheet.start_col = 'A';
     worksheet.start_row = '1';
     worksheet.index_sheet = i;
+    worksheet.hasMergedCells = '0';
     int status_worksheet = process_zip_file(archive, &worksheet, NULL, worksheet_start_element, worksheet_end_element);
     if (!status_worksheet){
       return status_worksheet;
     }
+    array_sheets.sheets[i]->hasMergedCells = worksheet.hasMergedCells;
+    printf("HAS MERGED CELLS: %c\n", worksheet.hasMergedCells);
     printf("START_ROW: %c\n", worksheet.start_row);
     printf("START_COL: %c\n", worksheet.start_col);
     printf("END_ROW: %s\n", worksheet.end_row);
@@ -152,13 +155,6 @@ int load_worksheets(zip_t *zip) {
     printf("END_COL_IN_NUMBER: %d\n", worksheet.end_col_number);
     printf("Length cols: %d\n", worksheet.array_cols.length);
 
-    for (int index_col = 0; index_col < worksheet.array_cols.length; index_col++) {
-      printf("Col isHidden: %c\n", worksheet.array_cols.cols[index_col]->isHidden);
-      printf("Col min: %d | max : %d\n", worksheet.array_cols.cols[index_col]->min, worksheet.array_cols.cols[index_col]->max);
-      printf("Col width: %f\n", worksheet.array_cols.cols[index_col]->width);
-      free(worksheet.array_cols.cols[index_col]);
-    }
-    free(worksheet.array_cols.cols);
     free(worksheet.end_row);
     free(worksheet.end_col);
   }
@@ -289,7 +285,13 @@ void pre_process() {
 	  for (int index_chunk = 0; index_chunk < 2; index_chunk++) {
             snprintf(div_thead, sizeof(div_thead), "<div id=\"chunk_%d_%d\" data-chunk-url=\"file:///media/huydang/HuyDang/xlsxmagic/output/chunks/chunk_%d_%d.html\"></div>", i, index_chunk, i, index_chunk);
 	    fputs(div_thead, findexhtml);
+	    fputs("\n", findexhtml);
 	  }
+          if (array_sheets.sheets[i]->hasMergedCells == '1') {
+            snprintf(div_thead, sizeof(div_thead), "<div id=\"chunk_%d_mc\" data-chunk-url=\"file:///media/huydang/HuyDang/xlsxmagic/output/chunks/chunk_%d_mc.json\"></div>", i, i);
+            fputs(div_thead, findexhtml);
+	    fputs("\n", findexhtml);
+          }
 	  fputs("</div>", findexhtml);
 	  fputs("\n", findexhtml);
         }

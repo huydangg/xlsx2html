@@ -23,6 +23,13 @@ struct WorkSheet {
   char start_row; // 1
   char *end_row;
   unsigned short index_sheet;
+  char hasMergedCells;
+  FILE *worksheet_file;
+  char *cell_name;
+  char *type_content;
+  unsigned short index_style;
+  XML_Char *worksheet_content;
+  int len_worksheet_content;
   struct ArrayCols array_cols;
 };
 
