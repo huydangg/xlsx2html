@@ -87,25 +87,23 @@ unsigned short column_name_to_number(const char *column_name) {
 }
 
 int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number, unsigned short index_worksheet) {
-  const char *OUTPUT_ROOT_DIR = "/media/huydang/HuyDang/xlsxmagic/output";
-  const char *CHUNKS_DIR_NAME = "chunks";
-  int LEN_THE_FIRST_CHUNK_DIR = strlen(OUTPUT_ROOT_DIR) + strlen(CHUNKS_DIR_NAME) + 1 + 1;
-  char *THE_FIRST_CHUNK_DIR = malloc(LEN_THE_FIRST_CHUNK_DIR);
-  snprintf(THE_FIRST_CHUNK_DIR, LEN_THE_FIRST_CHUNK_DIR, "%s/%s", OUTPUT_ROOT_DIR, CHUNKS_DIR_NAME);
+  int LEN_CHUNKS_DIR_PATH = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1 + 1;
+  char *CHUNKS_DIR_PATH = malloc(LEN_CHUNKS_DIR_PATH);
+  snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
   struct stat st = {0};
-  printf("%s\n", THE_FIRST_CHUNK_DIR);
-  if (stat(THE_FIRST_CHUNK_DIR, &st) == -1) {
-    int status = mkdir(THE_FIRST_CHUNK_DIR, 0777);
+  printf("%s\n", CHUNKS_DIR_PATH);
+  if (stat(CHUNKS_DIR_PATH, &st) == -1) {
+    int status = mkdir(CHUNKS_DIR_PATH, 0777);
     if (status != 0) {
       fprintf(stderr, "Error when create a chunk dir with status is %d\n", status);
-      free(THE_FIRST_CHUNK_DIR);
+      free(CHUNKS_DIR_PATH);
       return -1; 
     }
   }
   int len_index_worksheet = snprintf(NULL, 0, "%d", index_worksheet);
-  int LEN_THE_FIRST_CHUNK_PATH = LEN_THE_FIRST_CHUNK_DIR + len_index_worksheet + 14;
+  int LEN_THE_FIRST_CHUNK_PATH = LEN_CHUNKS_DIR_PATH + len_index_worksheet + 14;
   char *THE_FIRST_CHUNK_PATH = malloc(LEN_THE_FIRST_CHUNK_PATH);
-  snprintf(THE_FIRST_CHUNK_PATH, LEN_THE_FIRST_CHUNK_PATH, "%s/chunk_%d_0.html", THE_FIRST_CHUNK_DIR, index_worksheet);
+  snprintf(THE_FIRST_CHUNK_PATH, LEN_THE_FIRST_CHUNK_PATH, "%s/chunk_%d_0.html", CHUNKS_DIR_PATH, index_worksheet);
   FILE *fchunk0;
   fchunk0 = fopen(THE_FIRST_CHUNK_PATH, "ab+");
   if (fchunk0 == NULL) {
@@ -118,7 +116,7 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
     free(THE_FIRST_CHUNK_PATH);
     return -1;
   }
-  free(THE_FIRST_CHUNK_DIR);
+  free(CHUNKS_DIR_PATH);
   free(THE_FIRST_CHUNK_PATH);
   fputs("<tr>", fchunk0);
   fputs("<th style=\"width:35px;height:15px;\"></th>", fchunk0);
@@ -221,19 +219,29 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     }
   } else if (strcmp(name, "sheetData") == 0) {
     CURRENT_CHUNK = 1;
-    char CHUNK_PATH[256];
-    snprintf(CHUNK_PATH, sizeof(CHUNK_PATH), "/media/huydang/HuyDang/xlsxmagic/output/chunks/chunk_%d_%d.html", INDEX_CURRENT_SHEET, CURRENT_CHUNK);
-    worksheet_callbackdata->worksheet_file = fopen(CHUNK_PATH, "wb+");
+    int LEN_CHUNKS_DIR_PATH = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1 + 1;
+    char *CHUNKS_DIR_PATH = malloc(LEN_CHUNKS_DIR_PATH);
+    snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
+    //12: chunk_%d_%d.html
+    int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET) + snprintf(NULL, 0, "%d", CURRENT_CHUNK) + 12;
+    char *CHUNK_FILE_PATH = malloc(len_chunk_file_path + 1);
+    snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.html", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, CURRENT_CHUNK);
+    free(CHUNKS_DIR_PATH);
+    worksheet_callbackdata->worksheet_file = fopen(CHUNK_FILE_PATH, "wb+");
+    free(CHUNK_FILE_PATH);
     XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
   } else if (strcmp(name, "mergeCells") == 0) {
     worksheet_callbackdata->hasMergedCells = '1';
+    int LEN_CHUNKS_DIR_PATH = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1 + 1;
+    char *CHUNKS_DIR_PATH = malloc(LEN_CHUNKS_DIR_PATH);
+    snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
+
     int len_index_worksheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
-    char *ROOT_CHUNKS_DIR = "/media/huydang/HuyDang/xlsxmagic/output/chunks";
-    int len_root_chunks_dir = strlen(ROOT_CHUNKS_DIR);
-    //1: /  14: chunk__mc.json
-    int len_json_file_path = len_root_chunks_dir + 1 + 14 + len_index_worksheet;
+    //1: /  14: chunk_%d_mc.json
+    int len_json_file_path = LEN_CHUNKS_DIR_PATH + 1 + 14 + len_index_worksheet;
     char JSON_FILE_PATH[len_json_file_path + 1];
-    snprintf(JSON_FILE_PATH, len_json_file_path + 1, "%s/chunk_%d_mc.json", ROOT_CHUNKS_DIR, INDEX_CURRENT_SHEET);
+    snprintf(JSON_FILE_PATH, len_json_file_path + 1, "%s/chunk_%d_mc.json", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET);
+    free(CHUNKS_DIR_PATH);
     FILE *fmergecell;
     fmergecell = fopen(JSON_FILE_PATH, "wb");
     if (fmergecell == NULL) {
@@ -680,11 +688,16 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     if (worksheet_callbackdata->worksheet_content != NULL) {
       if (strcmp(worksheet_callbackdata->type_content, "s") == 0) {
-        FILE *sharedStrings_file = fopen("/media/huydang/HuyDang/xlsxmagic/output/sharedStrings.html", "rb");
+        int len_sharedStrings_file_path = strlen(OUTPUT_DIR) + strlen(SHAREDSTRINGS_HTML_FILE_NAME);
+        char *SHAREDSTRINGS_HTML_FILE_PATH = malloc(len_sharedStrings_file_path + 1 + 1);
+        snprintf(SHAREDSTRINGS_HTML_FILE_PATH, len_sharedStrings_file_path + 1 + 1, "%s/%s", OUTPUT_DIR, SHAREDSTRINGS_HTML_FILE_NAME);
+        FILE *sharedStrings_file = fopen(SHAREDSTRINGS_HTML_FILE_PATH, "rb");
         if (sharedStrings_file == NULL) {
-          fprintf(stderr, "Cannot open sharedStrings.html file to read");
+          fprintf(stderr, "Cannot open %s file to read\n", SHAREDSTRINGS_HTML_FILE_PATH);
+	  free(SHAREDSTRINGS_HTML_FILE_PATH);
           return;
         }
+	free(SHAREDSTRINGS_HTML_FILE_PATH);
         int len_pos_arr = sharedStrings_position.length;
         int index_sharedStrings_current = (int)strtol(worksheet_callbackdata->worksheet_content, NULL, 10);
         unsigned long start_pos = sharedStrings_position.positions[index_sharedStrings_current];

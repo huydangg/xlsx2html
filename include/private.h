@@ -30,4 +30,15 @@ struct Font {
   XML_Char *underline;
   struct Color color;
 };
+
+extern const char *OUTPUT_FILE_NAME;
+extern const char *OUTPUT_DIR;
+extern const char *ORIGIN_FILE_PATH;
+
+# define CHUNKS_DIR_NAME "chunks"
+# define BASE_CSS_FILE_NAME "base.css"
+# define BASE_JS_FILE_NAME "xlsxmagic.js"
+# define MANIFEST_FILE_NAME "manifest"
+# define TEMPLATES_DIR_NAME "templates"
+
 #endif

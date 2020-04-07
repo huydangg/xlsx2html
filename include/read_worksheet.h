@@ -1,8 +1,7 @@
 #ifndef INCLUDED_READ_WORKSHEET_H
 #define INCLUDED_READ_WORKSHEET_H
 
-#include <expat.h>
-
+#include <private.h>
 
 struct Col {
   unsigned short int min;
