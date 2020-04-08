@@ -151,7 +151,7 @@ int load_worksheets(zip_t *zip) {
     worksheet.index_sheet = i;
     worksheet.hasMergedCells = '0';
     int status_worksheet = process_zip_file(archive, &worksheet, NULL, worksheet_start_element, worksheet_end_element);
-    if (!status_worksheet){
+    if (status_worksheet != 1){
       return status_worksheet;
     }
     array_sheets.sheets[i]->hasMergedCells = worksheet.hasMergedCells;
@@ -255,6 +255,16 @@ void embed_js(FILE *f, const char *js_path) {
     fputs(line, f);
   }
   fclose(fjs);
+}
+
+void destroy_workbook() {
+  for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
+    free(array_sheets.sheets[index_sheet]->name);
+    free(array_sheets.sheets[index_sheet]->sheetId);
+    free(array_sheets.sheets[index_sheet]->path_name);
+    free(array_sheets.sheets[index_sheet]);
+  }
+  free(array_sheets.sheets);
 }
 
 // Generate index html file
@@ -506,16 +516,21 @@ int main(int argc, char **argv) {
   int status_styles = load_styles(zip);
   if (status_styles != 1) {
     fprintf(stderr, "Failed to read styles");
+    destroy_workbook();
     goto LOAD_RESOURCES_FAILED;
   }
   int status_sharedStrings = load_sharedStrings(zip);
   if (status_sharedStrings != 1) {
     fprintf(stderr, "Failed to read sharedStrings");
+    destroy_styles();
+    destroy_workbook();
     goto LOAD_RESOURCES_FAILED;
   }
   int status_worksheets = load_worksheets(zip);
   if (status_worksheets != 1) {
     fprintf(stderr, "Failed to read worksheets");
+    destroy_styles();
+    destroy_workbook();
     goto LOAD_RESOURCES_FAILED;
   }
   destroy_styles();
