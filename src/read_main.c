@@ -11,6 +11,7 @@ XML_Parser xmlparser;
 const char *ORIGIN_FILE_PATH;
 const char *OUTPUT_DIR;
 const char *OUTPUT_FILE_NAME;
+const char *TEMP_DIR;
 
 
 zip_t *open_zip(const char *file_name) {
@@ -171,25 +172,29 @@ int load_worksheets(zip_t *zip) {
 
 int load_sharedStrings(zip_t *zip) {
   const char *file_name = "xl/sharedStrings.xml";
-  int len_sharedStrings_file_path = strlen(OUTPUT_DIR) + strlen(SHAREDSTRINGS_HTML_FILE_NAME);
-  char *SHAREDSTRING_HTML_FILE_PATH = malloc(len_sharedStrings_file_path + 1 + 1);
-  snprintf(SHAREDSTRING_HTML_FILE_PATH, len_sharedStrings_file_path + 1 + 1, "%s/%s", OUTPUT_DIR, SHAREDSTRINGS_HTML_FILE_NAME);
-  zip_file_t *archive = open_zip_file(zip, file_name);
+  int len_sharedStrings_html_file_name = strlen(OUTPUT_FILE_NAME) + strlen(SHAREDSTRINGS_HTML_FILE_PATTERN);
+  char *SHAREDSTRINGS_HTML_FILE_NAME = malloc(len_sharedStrings_html_file_name + 1);
+  snprintf(SHAREDSTRINGS_HTML_FILE_NAME, len_sharedStrings_html_file_name + 1, "%s%s", OUTPUT_FILE_NAME, SHAREDSTRINGS_HTML_FILE_PATTERN);
+  int len_sharedStrings_file_path = strlen(TEMP_DIR) + 1 + len_sharedStrings_html_file_name;
+  char *SHAREDSTRINGS_HTML_FILE_PATH = malloc(len_sharedStrings_file_path + 1);
+  snprintf(SHAREDSTRINGS_HTML_FILE_PATH, len_sharedStrings_file_path + 1, "%s/%s", TEMP_DIR, SHAREDSTRINGS_HTML_FILE_NAME);
+  free(SHAREDSTRINGS_HTML_FILE_NAME);
   FILE *sharedStrings_file;
-  sharedStrings_file = fopen(SHAREDSTRING_HTML_FILE_PATH, "wb+");
+  sharedStrings_file = fopen(SHAREDSTRINGS_HTML_FILE_PATH, "wb+");
   if (sharedStrings_file == NULL) {
-    fprintf(stderr, "Cannot open _tmp_sharedStrings html file to write");
-    free(SHAREDSTRING_HTML_FILE_PATH);
+    fprintf(stderr, "Cannot open %s to write\n", SHAREDSTRINGS_HTML_FILE_PATH);
+    free(SHAREDSTRINGS_HTML_FILE_PATH);
     return -1;
   }
+  zip_file_t *archive = open_zip_file(zip, file_name);
   int status_sharedStrings = process_zip_file(archive, sharedStrings_file, NULL, sharedStrings_main_start_element, sharedStrings_main_end_element);
   if (status_sharedStrings == -1) {
     fprintf(stderr, "Error when load sharedStrings\n");
     fclose(sharedStrings_file);
-    free(SHAREDSTRING_HTML_FILE_PATH);
+    free(SHAREDSTRINGS_HTML_FILE_PATH);
     return -1;
   }
-  free(SHAREDSTRING_HTML_FILE_PATH);
+  free(SHAREDSTRINGS_HTML_FILE_PATH);
   fclose(sharedStrings_file);
   return 1;
 }
@@ -273,9 +278,10 @@ void pre_process() {
   int len_manifest_path = len_templates_dir_path + strlen(MANIFEST_FILE_NAME) + 1;
   char *MANIFEST_PATH = malloc(len_manifest_path + 1);
   snprintf(MANIFEST_PATH, len_manifest_path + 1, "%s/%s", TEMPLATES_DIR_PATH, MANIFEST_FILE_NAME);
-  int len_index_html_path = strlen(OUTPUT_DIR) + strlen(OUTPUT_FILE_NAME) + 1;
+  //5: .html
+  int len_index_html_path = strlen(OUTPUT_DIR) + strlen(OUTPUT_FILE_NAME) + 5 + 1;
   char *INDEX_HTML_PATH = malloc(len_index_html_path + 1);
-  snprintf(INDEX_HTML_PATH, len_index_html_path + 1, "%s/%s", OUTPUT_DIR, OUTPUT_FILE_NAME);
+  snprintf(INDEX_HTML_PATH, len_index_html_path + 1, "%s/%s.html", OUTPUT_DIR, OUTPUT_FILE_NAME);
   FILE *fmanifest;
   fmanifest = fopen(MANIFEST_PATH, "rb");
   if (fmanifest == NULL) {
@@ -310,10 +316,10 @@ void pre_process() {
       }
     } else if (line[0] == '$') {
       if (strcmp(line, "$tables\n") == 0) {
-	for (int i = 0; i < array_sheets.length; i++) {
-	  int len_index_sheet = snprintf(NULL, 0, "%d", i);
+	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
+	  int len_index_sheet = snprintf(NULL, 0, "%d", index_sheet);
 	  char div_table[256]; // Warning: Need to allocte dynamic
-	  snprintf(div_table, sizeof(div_table), "<div id=\"sheet_%d\" name=\"%s\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display:none;\">", i, array_sheets.sheets[i]->name);
+	  snprintf(div_table, sizeof(div_table), "<div id=\"sheet_%d\" name=\"%s\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display:none;\">", index_sheet, array_sheets.sheets[index_sheet]->name);
           fputs(div_table, findexhtml);
 	  fputs("\n", findexhtml);
           char div_thead[256]; // Warning: Need to allocte dynamic
@@ -321,17 +327,17 @@ void pre_process() {
 	    //7: chunk_%d_%d
 	    int len_chunk_html_file_name = snprintf(NULL, 0, "%d", index_chunk) + len_index_sheet + 7;
 	    char *CHUNK_HTML_FILE_NAME = malloc(len_chunk_html_file_name + 1);
-	    snprintf(CHUNK_HTML_FILE_NAME, len_chunk_html_file_name + 1, "chunk_%d_%d", i, index_chunk);
+	    snprintf(CHUNK_HTML_FILE_NAME, len_chunk_html_file_name + 1, "chunk_%d_%d", index_sheet, index_chunk);
             snprintf(div_thead, sizeof(div_thead), "<div id=\"%s\" data-chunk-url=\"file://%s/%s.html\"></div>", CHUNK_HTML_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME);
 	    fputs(div_thead, findexhtml);
 	    fputs("\n", findexhtml);
 	    free(CHUNK_HTML_FILE_NAME);
 	  }
 
-          if (array_sheets.sheets[i]->hasMergedCells == '1') {
+          if (array_sheets.sheets[index_sheet]->hasMergedCells == '1') {
 	    int len_chunk_mc_file_name = len_index_sheet + 9;
 	    char *CHUNK_MC_FILE_NAME = malloc(len_chunk_mc_file_name + 1);
-	    snprintf(CHUNK_MC_FILE_NAME, len_chunk_mc_file_name + 1, "chunk_%d_mc", i);
+	    snprintf(CHUNK_MC_FILE_NAME, len_chunk_mc_file_name + 1, "chunk_%d_mc", index_sheet);
             snprintf(div_thead, sizeof(div_thead), "<div id=\"%s\" data-chunk-url=\"file://%s/%s.json\"></div>", CHUNK_MC_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_MC_FILE_NAME);
             fputs(div_thead, findexhtml);
 	    fputs("\n", findexhtml);
@@ -342,19 +348,19 @@ void pre_process() {
         }
       } else if (strcmp(line, "$buttons\n") == 0) {
         //<button id="btn-Form Responses 1">Form Responses 1</button>
-	for (int i = 0; i < array_sheets.length; i++) {
+	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
 	  char button_html[256];
-	  if (i == 0) {
-	    snprintf(button_html, sizeof(button_html), "<button id=\"btn_%d\" style=\"font-weight:bold;\"onclick=\"handleButtonClick(event)\">%s</button>", i, array_sheets.sheets[i]->name);
+	  if (index_sheet == 0) {
+	    snprintf(button_html, sizeof(button_html), "<button id=\"btn_%d\" style=\"font-weight:bold;\"onclick=\"handleButtonClick(event)\">%s</button>", index_sheet, array_sheets.sheets[index_sheet]->name);
 	  } else {
-	    snprintf(button_html, sizeof(button_html), "<button id=\"btn_%d\" onclick=\"handleButtonClick(event)\">%s</button>", i, array_sheets.sheets[i]->name);
+	    snprintf(button_html, sizeof(button_html), "<button id=\"btn_%d\" onclick=\"handleButtonClick(event)\">%s</button>", index_sheet, array_sheets.sheets[index_sheet]->name);
 	  }
 	  fputs(button_html, findexhtml);
 	  fputs("\n", findexhtml);
-          free(array_sheets.sheets[i]->name);
-          free(array_sheets.sheets[i]->sheetId);
-          free(array_sheets.sheets[i]->path_name);
-          free(array_sheets.sheets[i]);
+          free(array_sheets.sheets[index_sheet]->name);
+          free(array_sheets.sheets[index_sheet]->sheetId);
+          free(array_sheets.sheets[index_sheet]->path_name);
+          free(array_sheets.sheets[index_sheet]);
         }
         free(array_sheets.sheets);
       }
@@ -387,10 +393,12 @@ int main(int argc, char **argv) {
          {"origin-file-path", required_argument, 0, 0},
          {"output-dir",  required_argument, 0, 0},
          {"output-file-name", required_argument, 0, 0},
+         {"tmp-dir", required_argument, 0, 0},
+         {"help", no_argument, 0, 'h'},
          {0, 0, 0, 0}
     };
 
-    c = getopt_long(argc, argv, "abc:d:012",
+    c = getopt_long(argc, argv, "h",
              long_options, &option_index);
     if (c == -1)
        break;
@@ -403,16 +411,19 @@ int main(int argc, char **argv) {
 	    ORIGIN_FILE_PATH = strdup(optarg);
             printf(" with arg %s", optarg);
 	  }
-	}
-	if (strcmp(long_options[option_index].name, "output-dir") == 0) {
+	} else if (strcmp(long_options[option_index].name, "output-dir") == 0) {
 	  if (optarg) {
 	    OUTPUT_DIR = strdup(optarg);
             printf(" with arg %s", optarg);
 	  }
-	}
-	if (strcmp(long_options[option_index].name, "output-file-name") == 0) {
+	} else if (strcmp(long_options[option_index].name, "output-file-name") == 0) {
 	  if (optarg) {
 	    OUTPUT_FILE_NAME = strdup(optarg);
+            printf(" with arg %s", optarg);
+	  }
+	} else if (strcmp(long_options[option_index].name, "tmp-dir") == 0) {
+	  if (optarg) {
+	    TEMP_DIR = strdup(optarg);
             printf(" with arg %s", optarg);
 	  }
 	}
@@ -428,23 +439,13 @@ int main(int argc, char **argv) {
         printf("option %c\n", c);
         break;
 
-      case 'a':
-        printf("option a\n");
-        break;
-
-      case 'b':
-        printf("option b\n");
-        break;
-
-      case 'c':
-        printf("option c with value '%s'\n", optarg);
-        break;
-
-      case 'd':
-        printf("option d with value '%s'\n", optarg);
-        break;
-
+      case 'h':
       case '?':
+	printf("%s%50s\n", "--origin-file-path", "Path to xlsx file to be converted");
+	printf("%s%40s\n", "--output-dir", "Path to ouput dir");
+	printf("%s%58s\n", "--output-file-name", "File index html (include .html extension)");
+	printf("%s%42s\n", "--tmp-dir", "Path to temp dir");
+	printf("%s%48s\n", "-h, --help", "Print usage information");
         break;
 
       default:
@@ -502,6 +503,7 @@ int main(int argc, char **argv) {
   free((char *)OUTPUT_DIR);
   free((char *)ORIGIN_FILE_PATH);
   free((char *)OUTPUT_FILE_NAME);
+  free((char *)TEMP_DIR);
   zip_close(zip);
   return 0; 
 }
