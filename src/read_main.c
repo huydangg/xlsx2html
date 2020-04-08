@@ -386,6 +386,11 @@ void post_process() {
 int main(int argc, char **argv) {
   int c;
   int digit_optind = 0;
+  char has_origin_file_path = '0';
+  char has_output_dir = '0';
+  char has_output_file_name = '0';
+  char has_tmp_dir = '0';
+
   while (1) {
     int this_option_optind = optind ? optind : 1;
     int option_index = 0;
@@ -400,6 +405,7 @@ int main(int argc, char **argv) {
 
     c = getopt_long(argc, argv, "h",
              long_options, &option_index);
+
     if (c == -1)
        break;
 
@@ -409,21 +415,25 @@ int main(int argc, char **argv) {
 	if (strcmp(long_options[option_index].name, "origin-file-path") == 0) {
 	  if (optarg) {
 	    ORIGIN_FILE_PATH = strdup(optarg);
+	    has_origin_file_path = '1';
             printf(" with arg %s", optarg);
 	  }
 	} else if (strcmp(long_options[option_index].name, "output-dir") == 0) {
 	  if (optarg) {
 	    OUTPUT_DIR = strdup(optarg);
+	    has_output_dir = '1';
             printf(" with arg %s", optarg);
 	  }
 	} else if (strcmp(long_options[option_index].name, "output-file-name") == 0) {
 	  if (optarg) {
 	    OUTPUT_FILE_NAME = strdup(optarg);
+	    has_output_file_name = '1';
             printf(" with arg %s", optarg);
 	  }
 	} else if (strcmp(long_options[option_index].name, "tmp-dir") == 0) {
 	  if (optarg) {
 	    TEMP_DIR = strdup(optarg);
+	    has_tmp_dir = '1';
             printf(" with arg %s", optarg);
 	  }
 	}
@@ -446,7 +456,7 @@ int main(int argc, char **argv) {
 	printf("%s%58s\n", "--output-file-name", "File index html (include .html extension)");
 	printf("%s%42s\n", "--tmp-dir", "Path to temp dir");
 	printf("%s%48s\n", "-h, --help", "Print usage information");
-        break;
+        goto LOAD_RESOURCES_FAILED;
 
       default:
         printf("?? getopt returned character code 0%o ??\n", c);
@@ -458,12 +468,26 @@ int main(int argc, char **argv) {
     while (optind < argc)
       printf("%s ", argv[optind++]);
     printf("\n");
-   }
+    goto LOAD_RESOURCES_FAILED;
+  }
+  //Set default to test on local
+  if (has_origin_file_path == '0') {
+    ORIGIN_FILE_PATH = "/home/huydang/Downloads/excelsample/VDA-ISA_EN_4.xlsx";
+  }
+  if (has_output_file_name == '0') {
+    OUTPUT_FILE_NAME = "index";
+  }
+  if (has_output_dir == '0') {
+    OUTPUT_DIR = "/media/huydang/HuyDang/xlsxmagic/output";
+  }
+  if (has_tmp_dir == '0') {
+    TEMP_DIR = "/tmp";
+  }
 
   zip_t *zip = open_zip(ORIGIN_FILE_PATH);
   if (zip == NULL){
     fprintf(stderr, "File not found");
-    return 0;
+    goto OPEN_ZIP_FAILED;
   }
   // +1 for "/" +1 for '\0'
   struct stat st = {0};
@@ -471,39 +495,41 @@ int main(int argc, char **argv) {
     int status = mkdir(OUTPUT_DIR, 0777);
     if (status != 0) {
       fprintf(stderr, "Error when create a output dir with status is %d\n", status);
-      return -1;
+      goto LOAD_RESOURCES_FAILED;
     }
   }
   int status_workbook = load_workbook(zip);
-  if (!status_workbook) {
+  if (status_workbook != 1) {
     fprintf(stderr, "Failed to read workbook");
-    zip_close(zip);
-    return 0;
+    goto LOAD_RESOURCES_FAILED;
   }
   int status_styles = load_styles(zip);
-  if (!status_styles) {
+  if (status_styles != 1) {
     fprintf(stderr, "Failed to read styles");
-    zip_close(zip);
-    return 0;
+    goto LOAD_RESOURCES_FAILED;
   }
   int status_sharedStrings = load_sharedStrings(zip);
-  if (!status_sharedStrings) {
+  if (status_sharedStrings != 1) {
     fprintf(stderr, "Failed to read sharedStrings");
-    zip_close(zip);
-    return 0;
+    goto LOAD_RESOURCES_FAILED;
   }
   int status_worksheets = load_worksheets(zip);
-  if (!status_worksheets) {
+  if (status_worksheets != 1) {
     fprintf(stderr, "Failed to read worksheets");
-    zip_close(zip);
-    return 0;
+    goto LOAD_RESOURCES_FAILED;
   }
   destroy_styles();
   pre_process();
-  free((char *)OUTPUT_DIR);
-  free((char *)ORIGIN_FILE_PATH);
-  free((char *)OUTPUT_FILE_NAME);
-  free((char *)TEMP_DIR);
+LOAD_RESOURCES_FAILED:
   zip_close(zip);
-  return 0; 
+OPEN_ZIP_FAILED:
+  if (has_output_dir == '1')
+    free((char *)OUTPUT_DIR);
+  if (has_origin_file_path == '1')
+    free((char *)ORIGIN_FILE_PATH);
+  if (has_output_file_name == '1')
+    free((char *)OUTPUT_FILE_NAME);
+  if (has_tmp_dir == '1')
+    free((char *)TEMP_DIR);
+  exit(EXIT_SUCCESS);
 }
