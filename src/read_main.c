@@ -328,18 +328,31 @@ void pre_process() {
       if (strcmp(line, "$tables\n") == 0) {
 	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
 	  int len_index_sheet = snprintf(NULL, 0, "%d", index_sheet);
-	  char div_table[256]; // Warning: Need to allocte dynamic
-	  snprintf(div_table, sizeof(div_table), "<div id=\"sheet_%d\" name=\"%s\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display:none;\">", index_sheet, array_sheets.sheets[index_sheet]->name);
-          fputs(div_table, findexhtml);
+	  int len_div_table = 102 + len_index_sheet + strlen(array_sheets.sheets[index_sheet]->name);
+	  char *DIV_TABLE = malloc(len_div_table + 1);
+	  snprintf(
+            DIV_TABLE, len_div_table + 1,
+            "<div id=\"sheet_%d\" name=\"%s\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display:none;\">",
+	    index_sheet, array_sheets.sheets[index_sheet]->name
+	  );
+          fputs(DIV_TABLE, findexhtml);
+	  free(DIV_TABLE);
 	  fputs("\n", findexhtml);
-          char div_thead[256]; // Warning: Need to allocte dynamic
 	  for (int index_chunk = 0; index_chunk < 2; index_chunk++) {
 	    //7: chunk_%d_%d
 	    int len_chunk_html_file_name = snprintf(NULL, 0, "%d", index_chunk) + len_index_sheet + 7;
 	    char *CHUNK_HTML_FILE_NAME = malloc(len_chunk_html_file_name + 1);
 	    snprintf(CHUNK_HTML_FILE_NAME, len_chunk_html_file_name + 1, "chunk_%d_%d", index_sheet, index_chunk);
-            snprintf(div_thead, sizeof(div_thead), "<div id=\"%s\" data-chunk-url=\"file://%s/%s.html\"></div>", CHUNK_HTML_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME);
-	    fputs(div_thead, findexhtml);
+
+	    int len_div_chunk = (len_chunk_html_file_name * 2) + len_chunks_dir_path + 48;
+            char *DIV_CHUNK = malloc(len_div_chunk + 1);
+	    snprintf(
+              DIV_CHUNK, len_div_chunk + 1,
+	      "<div id=\"%s\" data-chunk-url=\"file://%s/%s.html\"></div>",
+	      CHUNK_HTML_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME
+	    );
+            fputs(DIV_CHUNK, findexhtml);
+	    free(DIV_CHUNK);
 	    fputs("\n", findexhtml);
 	    free(CHUNK_HTML_FILE_NAME);
 	  }
@@ -348,8 +361,16 @@ void pre_process() {
 	    int len_chunk_mc_file_name = len_index_sheet + 9;
 	    char *CHUNK_MC_FILE_NAME = malloc(len_chunk_mc_file_name + 1);
 	    snprintf(CHUNK_MC_FILE_NAME, len_chunk_mc_file_name + 1, "chunk_%d_mc", index_sheet);
-            snprintf(div_thead, sizeof(div_thead), "<div id=\"%s\" data-chunk-url=\"file://%s/%s.json\"></div>", CHUNK_MC_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_MC_FILE_NAME);
-            fputs(div_thead, findexhtml);
+
+	    int len_div_chunk = (len_chunk_mc_file_name * 2) + len_chunks_dir_path + 48;
+            char *DIV_CHUNK = malloc(len_div_chunk + 1);
+	    snprintf(
+              DIV_CHUNK, len_div_chunk + 1,
+	      "<div id=\"%s\" data-chunk-url=\"file://%s/%s.json\"></div>",
+	      CHUNK_MC_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_MC_FILE_NAME
+	    );
+            fputs(DIV_CHUNK, findexhtml);
+	    free(DIV_CHUNK);
 	    fputs("\n", findexhtml);
 	    free(CHUNK_MC_FILE_NAME);
           }
@@ -359,13 +380,27 @@ void pre_process() {
       } else if (strcmp(line, "$buttons\n") == 0) {
         //<button id="btn-Form Responses 1">Form Responses 1</button>
 	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
-	  char button_html[256];
+	  char *BUTTON_HTML = NULL;
 	  if (index_sheet == 0) {
-	    snprintf(button_html, sizeof(button_html), "<button id=\"btn_%d\" style=\"font-weight:bold;\"onclick=\"handleButtonClick(event)\">%s</button>", index_sheet, array_sheets.sheets[index_sheet]->name);
+	    int len_button_html = 1 + strlen(array_sheets.sheets[index_sheet]->name) + 87;
+	    BUTTON_HTML = realloc(BUTTON_HTML, len_button_html + 1);
+	    snprintf(
+              BUTTON_HTML, len_button_html + 1,
+	      "<button id=\"btn_%d\" style=\"font-weight:bold;\"onclick=\"handleButtonClick(event)\">%s</button>",
+	      index_sheet, array_sheets.sheets[index_sheet]->name
+	    );
 	  } else {
-	    snprintf(button_html, sizeof(button_html), "<button id=\"btn_%d\" onclick=\"handleButtonClick(event)\">%s</button>", index_sheet, array_sheets.sheets[index_sheet]->name);
+	    int len_index_sheet = snprintf(NULL, 0, "%d", index_sheet);
+	    int len_button_html = len_index_sheet + strlen(array_sheets.sheets[index_sheet]->name) + 62;
+	    BUTTON_HTML = realloc(BUTTON_HTML, len_button_html + 1);
+	    snprintf(
+              BUTTON_HTML , len_button_html + 1,
+	      "<button id=\"btn_%d\" onclick=\"handleButtonClick(event)\">%s</button>",
+	      index_sheet, array_sheets.sheets[index_sheet]->name
+	    );
 	  }
-	  fputs(button_html, findexhtml);
+	  fputs(BUTTON_HTML, findexhtml);
+	  free(BUTTON_HTML);
 	  fputs("\n", findexhtml);
           free(array_sheets.sheets[index_sheet]->name);
           free(array_sheets.sheets[index_sheet]->sheetId);
