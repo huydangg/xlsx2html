@@ -4,7 +4,7 @@
 #include <private.h>
 
 //Mapping index with position.
-#define SHAREDSTRINGS_HTML_FILE_NAME "sharedStrings.html"
+# define SHAREDSTRINGS_HTML_FILE_PATTERN "_ss.html"
 
 extern XML_Parser xmlparser;
 struct Font new_font();

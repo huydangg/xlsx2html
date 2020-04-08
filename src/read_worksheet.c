@@ -688,9 +688,13 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     if (worksheet_callbackdata->worksheet_content != NULL) {
       if (strcmp(worksheet_callbackdata->type_content, "s") == 0) {
-        int len_sharedStrings_file_path = strlen(OUTPUT_DIR) + strlen(SHAREDSTRINGS_HTML_FILE_NAME);
-        char *SHAREDSTRINGS_HTML_FILE_PATH = malloc(len_sharedStrings_file_path + 1 + 1);
-        snprintf(SHAREDSTRINGS_HTML_FILE_PATH, len_sharedStrings_file_path + 1 + 1, "%s/%s", OUTPUT_DIR, SHAREDSTRINGS_HTML_FILE_NAME);
+        int len_sharedStrings_html_file_name = strlen(OUTPUT_FILE_NAME) + strlen(SHAREDSTRINGS_HTML_FILE_PATTERN);
+        char *SHAREDSTRINGS_HTML_FILE_NAME = malloc(len_sharedStrings_html_file_name + 1);
+        snprintf(SHAREDSTRINGS_HTML_FILE_NAME, len_sharedStrings_html_file_name + 1, "%s%s", OUTPUT_FILE_NAME, SHAREDSTRINGS_HTML_FILE_PATTERN);
+        int len_sharedStrings_file_path = strlen(TEMP_DIR) + 1 + len_sharedStrings_html_file_name;
+        char *SHAREDSTRINGS_HTML_FILE_PATH = malloc(len_sharedStrings_file_path + 1);
+        snprintf(SHAREDSTRINGS_HTML_FILE_PATH, len_sharedStrings_file_path + 1, "%s/%s", TEMP_DIR, SHAREDSTRINGS_HTML_FILE_NAME);
+	free(SHAREDSTRINGS_HTML_FILE_NAME);
         FILE *sharedStrings_file = fopen(SHAREDSTRINGS_HTML_FILE_PATH, "rb");
         if (sharedStrings_file == NULL) {
           fprintf(stderr, "Cannot open %s file to read\n", SHAREDSTRINGS_HTML_FILE_PATH);
