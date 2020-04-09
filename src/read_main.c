@@ -22,7 +22,8 @@ zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name) {
   return zip_fopen(zip, zip_file_name, ZIP_FL_UNCHANGED);
 }
 
-int load_workbook(zip_t *zip) { const char *zip_file_name = "xl/workbook.xml";
+int load_workbook(zip_t *zip) {
+  const char *zip_file_name = "xl/workbook.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   int status = process_zip_file(archive, NULL, NULL, workbook_start_element, workbook_end_element);
   for(int i = 0; i < array_sheets.length; i++) {
@@ -498,7 +499,7 @@ int main(int argc, char **argv) {
       case '?':
 	printf("%s%50s\n", "--origin-file-path", "Path to xlsx file to be converted");
 	printf("%s%40s\n", "--output-dir", "Path to ouput dir");
-	printf("%s%58s\n", "--output-file-name", "File index html (include .html extension)");
+	printf("%s%58s\n", "--output-file-name", "File index html (exclude .html extension)");
 	printf("%s%42s\n", "--tmp-dir", "Path to temp dir");
 	printf("%s%48s\n", "-h, --help", "Print usage information");
         goto LOAD_RESOURCES_FAILED;

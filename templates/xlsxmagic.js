@@ -1,6 +1,5 @@
-const TIME_OUT_FOR_EACH_CHUNKS = 5000
-const DELAY_TIME_FOR_EACH_LOOP = 1000
-const originFileName = ''
+const TIME_OUT_FOR_EACH_CHUNKS = 2000
+const DELAY_TIME_FOR_EACH_LOOP = 500
 var indexCurrentSheet = 0
 var tempSetTimeOut = null
 var currentSheetEle = null
@@ -15,7 +14,7 @@ function readTextFile(file, file_type, callback, callbackfail) {
   } else {
     rawFile.overrideMimeType("text/plain")
   }
-  rawFile.open("GET", file, false)
+  rawFile.open("GET", file, true)
   rawFile.onreadystatechange = function() {
     if (rawFile.readyState === 4) {
       callback(rawFile.responseText);
@@ -116,6 +115,33 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
     return;
   }
 }
+function applyMergedCells(mergedCellsData) {
+  for (var key in mergedCellsData) {
+    var mergedCellEle = document.getElementById(indexCurrentSheet + '_' + key)
+    mergedCellEle.colSpan = mergedCellsData[key].colspan
+    mergedCellEle.rowSpan = mergedCellsData[key].rowspan
+    var countColSpan = mergedCellsData[key].colspan
+    var rowEle = mergedCellEle.parentNode
+    while (countColSpan > 1) {
+      var removedMergeCellEle = mergedCellEle.nextElementSibling
+      rowEle.removeChild(removedMergeCellEle)
+      countColSpan--
+    }
+    var indexMergedCellEle = Array.prototype.indexOf.call(rowEle.children, mergedCellEle)
+    var countRowSpan = mergedCellsData[key].rowspan
+    while (countRowSpan > 1) {
+      var countColSpan = mergedCellsData[key].colspan
+      rowEle = rowEle.nextElementSibling
+      rowEle.children[indexMergedCellEle].colspan = mergedCellsData[key].colspan
+      while (countColSpan > 1) {
+        var removedMergeCellEle = rowEle.children[indexMergedCellEle + 1]
+        rowEle.removeChild(removedMergeCellEle)
+	countColSpan--
+      }
+      countRowSpan--
+    }
+  }
+}
 function Viewer() {
   currentSheetEle = document.getElementById('sheet_' + indexCurrentSheet)
   currentSheetEle.style.removeProperty("display")
@@ -126,34 +152,8 @@ function Viewer() {
     currentTbodyChunkEle = currentTableChunkEle.appendChild(document.createElement('tbody'))
     var mergedCellsData = loadMergedCells(indexCurrentSheet, new Date().getTime())
     loadChunks(indexCurrentSheet, 0, new Date().getTime())
-    console.log(mergedCellsData)
     if (mergedCellsData) {
-      for (var key in mergedCellsData) {
-        console.log(key)
-        var mergedCellEle = document.getElementById(indexCurrentSheet + '_' + key)
-	mergedCellEle.colSpan = mergedCellsData[key].colspan
-	mergedCellEle.rowSpan = mergedCellsData[key].rowspan
-	var countColSpan = mergedCellsData[key].colspan
-	var rowEle = mergedCellEle.parentNode
-	while (countColSpan > 1) {
-	  var removedMergeCellEle = mergedCellEle.nextElementSibling
-	  rowEle.removeChild(removedMergeCellEle)
-	  countColSpan--
-	}
-	var indexMergedCellEle = Array.prototype.indexOf.call(rowEle.children, mergedCellEle)
-	var countRowSpan = mergedCellsData[key].rowspan
-        while (countRowSpan > 1) {
-	  var countColSpan = mergedCellsData[key].colspan
-	  rowEle = rowEle.nextElementSibling
-          rowEle.children[indexMergedCellEle].colspan = mergedCellsData[key].colspan
-	  while (countColSpan > 1) {
-	    var removedMergeCellEle = rowEle.children[indexMergedCellEle + 1]
-	    rowEle.removeChild(removedMergeCellEle)
-	    countColSpan--
-	  }
-	  countRowSpan--
-        }
-      }
+      applyMergedCells(mergedCellsData)
     }
   }
 }
