@@ -14,7 +14,7 @@ function readTextFile(file, file_type, callback, callbackfail) {
   } else {
     rawFile.overrideMimeType("text/plain")
   }
-  rawFile.open("GET", file, true)
+  rawFile.open("GET", file, false)
   rawFile.onreadystatechange = function() {
     if (rawFile.readyState === 4) {
       callback(rawFile.responseText);
