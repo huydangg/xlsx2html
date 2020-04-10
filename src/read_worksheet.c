@@ -18,6 +18,15 @@ unsigned int COUNT_CELLS = 0;
 unsigned short INDEX_CURRENT_SHEET;
 
 
+void reversed(char *input) {
+  int length = strlen(input);
+  int last_pos = length - 1;
+  for (int i = 0; i < length/2; i++) {
+    char tmp = input[i];
+    input[i] = input[last_pos - i];
+    input[last_pos - i] = tmp;
+  }
+}
 
 char *int_to_column_name(int n) {
   char *column_name = malloc(4);
@@ -30,6 +39,7 @@ char *int_to_column_name(int n) {
     strcat(column_name, _tmp_column_name);
     n /= 26;
   }
+  reversed(column_name);
   column_name[strlen(column_name)] = '\0';
   return column_name;
 }
