@@ -33,7 +33,6 @@ function loadMergedCells(indexCurrentSheet, startTime) {
   var isFailed = false
   var isDone = false
   var mergedCellsFileName = "chunk_" + indexCurrentSheet + "_mc"
-  console.log(mergedCellsFileName)
   var currentDivChunkEle = document.getElementById(mergedCellsFileName)
   if (currentDivChunkEle === null) {
     return
@@ -119,7 +118,6 @@ function applyMergedCells(mergedCellsData) {
   for (var key in mergedCellsData) {
     var mergedCellEle = document.getElementById(indexCurrentSheet + '_' + key)
     mergedCellEle.colSpan = mergedCellsData[key].colspan
-    mergedCellEle.rowSpan = mergedCellsData[key].rowspan
     var countColSpan = mergedCellsData[key].colspan
     var rowEle = mergedCellEle.parentNode
     while (countColSpan > 1) {
@@ -127,19 +125,26 @@ function applyMergedCells(mergedCellsData) {
       rowEle.removeChild(removedMergeCellEle)
       countColSpan--
     }
-    var indexMergedCellEle = Array.prototype.indexOf.call(rowEle.children, mergedCellEle)
+    var splitKey = key.match(/([A-Z]+)([0-9]+)/)
+    var columnName = splitKey[1]
     var countRowSpan = mergedCellsData[key].rowspan
     while (countRowSpan > 1) {
       var countColSpan = mergedCellsData[key].colspan
       rowEle = rowEle.nextElementSibling
-      rowEle.children[indexMergedCellEle].colspan = mergedCellsData[key].colspan
+      var mergedCellEleNextRow = document.getElementById(indexCurrentSheet + '_' + columnName + rowEle.id) 
       while (countColSpan > 1) {
-        var removedMergeCellEle = rowEle.children[indexMergedCellEle + 1]
+        var removedMergeCellEle = mergedCellEleNextRow.nextElementSibling
+        if (!removedMergeCellEle) {
+	  break
+        }
         rowEle.removeChild(removedMergeCellEle)
 	countColSpan--
       }
+      rowEle.removeChild(mergedCellEleNextRow)
       countRowSpan--
     }
+    mergedCellEle.rowSpan = mergedCellsData[key].rowspan
+
   }
 }
 function Viewer() {
