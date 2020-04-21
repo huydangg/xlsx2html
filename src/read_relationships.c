@@ -9,7 +9,10 @@ void rels_start_element(void *callbackdata, const XML_Char *name, const XML_Char
   struct ArrayRelationships *array_rels_callbackdata = callbackdata;
   if (strcmp(name, "Relationship") == 0) {
     array_rels_callbackdata->length++;
-    array_rels_callbackdata->relationships = realloc(array_rels_callbackdata->relationships, array_rels_callbackdata->length * sizeof(struct Relationship *));
+    array_rels_callbackdata->relationships = realloc(
+      array_rels_callbackdata->relationships,
+      array_rels_callbackdata->length * sizeof(struct Relationship *)
+    );
     array_rels_callbackdata->relationships[array_rels_callbackdata->length-1] = malloc(sizeof(struct Relationship));
     for (int i = 0; attrs[i]; i+=2) {
       if (strcmp(attrs[i], "Id") == 0) {
