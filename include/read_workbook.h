@@ -2,14 +2,15 @@
 #define INCLUDED_READ_WORKBOOK_H
 
 #include <expat.h>
-
+#include <read_relationships.h>
 
 struct Sheet {
-   XML_Char *name;
-   XML_Char *sheetId;
-   XML_Char *path_name;
-   char isHidden;
-   char hasMergedCells;
+  XML_Char *name;
+  XML_Char *sheetId;
+  XML_Char *path_name;
+  char isHidden;
+  char hasMergedCells;
+  struct ArrayRelationships array_rels;
 };
 
 struct ArraySheets {

@@ -252,15 +252,26 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     char JSON_FILE_PATH[len_json_file_path + 1];
     snprintf(JSON_FILE_PATH, len_json_file_path + 1, "%s/chunk_%d_mc.json", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET);
     free(CHUNKS_DIR_PATH);
-    FILE *fmergecell;
-    fmergecell = fopen(JSON_FILE_PATH, "wb");
-    if (fmergecell == NULL) {
+    worksheet_callbackdata->fmergecell = fopen(JSON_FILE_PATH, "wb");
+    if (worksheet_callbackdata->fmergecell == NULL) {
       fprintf(stderr, "Can not open chunk_%d_mc.json for write", INDEX_CURRENT_SHEET);
       return;
     }
-    fputs("{", fmergecell);
-    XML_SetUserData(xmlparser, fmergecell);
+    fputs("{", worksheet_callbackdata->fmergecell);
     XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
+  } else if (strcmp(name, "drawing") == 0) {
+    worksheet_callbackdata->array_drawingids.length++;
+    worksheet_callbackdata->array_drawingids.drawing_ids = realloc(
+      worksheet_callbackdata->array_drawingids.drawing_ids,
+      worksheet_callbackdata->array_drawingids.length * sizeof(char *)
+    );
+    for (int i = 0; attrs[i]; i+=2) {
+      if (strcmp(attrs[i], "r:id") == 0) {
+        worksheet_callbackdata->array_drawingids.drawing_ids[worksheet_callbackdata->array_drawingids.length - 1] = strdup(attrs[i + 1]);
+      }
+      printf("ID DRAWING: %s\n", attrs[i]);
+    }
+    XML_SetElementHandler(xmlparser, NULL, worksheet_end_element);
   }
 }
 
@@ -281,11 +292,12 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
     free(worksheet_callbackdata->array_cols.cols);
 
   } else if (strcmp(name, "mergeCells") == 0) {
-    FILE *fmergecell_callbackdata = callbackdata;
-    fseek(fmergecell_callbackdata, -1, SEEK_CUR);
-    fputs("}", fmergecell_callbackdata);
-    fclose(fmergecell_callbackdata);
-    XML_SetUserData(xmlparser, NULL);
+    struct WorkSheet *worksheet_callbackdata = callbackdata;
+    fseek(worksheet_callbackdata->fmergecell, -1, SEEK_CUR);
+    fputs("}", worksheet_callbackdata->fmergecell);
+    fclose(worksheet_callbackdata->fmergecell);
+  } else if (strcmp(name, "drawing") == 0) {
+
   }
 
   XML_SetElementHandler(xmlparser, worksheet_start_element, NULL);
@@ -347,7 +359,8 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     free(ROW_NUMBER);
     XML_SetElementHandler(xmlparser, cell_start_element, generate_cells);
   } else if (strcmp(name, "mergeCell") == 0) {
-    FILE *fmergecell_callbackdata = callbackdata;
+
+    struct WorkSheet *worksheet_callbackdata = callbackdata;
     for (int i = 0; attrs[i]; i+=2) {
       if (strcmp(attrs[i], "ref") == 0) {
 	char **mergecell_range = malloc(2 * sizeof(char *));
@@ -378,8 +391,8 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	int len_mergecell_json_str = len_start_cell + len_colspan + len_rowspan + 30;
         char mergecell_json_str[len_mergecell_json_str + 1];
         snprintf(mergecell_json_str, len_mergecell_json_str + 1, "\"%s\":{\"colspan\":\"%d\",\"rowspan\":\"%d\"}", mergecell_range[0], colspan, rowspan);
-	fputs(mergecell_json_str, fmergecell_callbackdata);
-        fputs(",", fmergecell_callbackdata);
+	fputs(mergecell_json_str, worksheet_callbackdata->fmergecell);
+        fputs(",", worksheet_callbackdata->fmergecell);
 	free(mergecell_range[0]);
 	free(mergecell_range[1]);
 	free(mergecell_range);

@@ -13,13 +13,26 @@ const char *OUTPUT_DIR;
 const char *OUTPUT_FILE_NAME;
 const char *TEMP_DIR;
 
+int err;
 
 zip_t *open_zip(const char *file_name) {
-  return zip_open(file_name, ZIP_RDONLY, NULL);
+  return zip_open(file_name, ZIP_RDONLY, &err);
 }
 
 zip_file_t *open_zip_file(zip_t *zip, const char *zip_file_name) {
   return zip_fopen(zip, zip_file_name, ZIP_FL_UNCHANGED);
+}
+
+int load_relationships(zip_t *zip, char *zip_file_name, void *callbackdata) {
+  zip_file_t *archive = open_zip_file(zip, zip_file_name);
+  zip_error_t *err_zip = zip_get_error(zip);
+  if (archive == NULL) {
+    printf("%s\n", zip_error_strerror(err_zip));
+    return -1;
+  }
+
+  int status = process_zip_file(archive, callbackdata, NULL, rels_start_element, rels_end_element);
+  return status;
 }
 
 int load_workbook(zip_t *zip) {
@@ -30,6 +43,23 @@ int load_workbook(zip_t *zip) {
     printf("Name %s\n", array_sheets.sheets[i]->name);
     printf("sheetID: %s\n", array_sheets.sheets[i]->sheetId);
     printf("Path name: %s\n", array_sheets.sheets[i]->path_name);
+    //35: xl/worksheets/_rels/sheet%d.xml.rels
+    int len_zip_file_name = strlen(array_sheets.sheets[i]->sheetId) + 35;
+    char *zip_file_name = malloc(len_zip_file_name + 1);
+    snprintf(zip_file_name, len_zip_file_name + 1, "xl/worksheets/_rels/sheet%s.xml.rels", array_sheets.sheets[i]->sheetId);
+    printf("ZIP FILE NAME RELS: %s\n", zip_file_name);
+    array_sheets.sheets[i]->array_rels.length = 0;
+    array_sheets.sheets[i]->array_rels.relationships = NULL;
+    int status_rels = load_relationships(zip, zip_file_name, &array_sheets.sheets[i]->array_rels);
+    printf("RELS ARRAY LENGTH: %d\n", array_sheets.sheets[i]->array_rels.length);
+    for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_rels.length; index_rels++) {
+      printf("RELS ID: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->id);
+      printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
+    }
+    free(zip_file_name);
+    if (status_rels != 0) {
+      continue;
+    }
   }
   return status;
 }
@@ -151,6 +181,9 @@ int load_worksheets(zip_t *zip) {
     worksheet.start_row = '1';
     worksheet.index_sheet = i;
     worksheet.hasMergedCells = '0';
+    worksheet.array_drawingids.length = 0;
+    worksheet.array_drawingids.drawing_ids = NULL;
+
     int status_worksheet = process_zip_file(archive, &worksheet, NULL, worksheet_start_element, worksheet_end_element);
     if (status_worksheet != 1){
       return status_worksheet;
@@ -163,7 +196,11 @@ int load_worksheets(zip_t *zip) {
     printf("END_COL: %s\n", worksheet.end_col);
     printf("END_COL_IN_NUMBER: %d\n", worksheet.end_col_number);
     printf("Length cols: %d\n", worksheet.array_cols.length);
-
+    for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
+      printf("DRAWING ID: %s\n", worksheet.array_drawingids.drawing_ids[index_drawingid]);
+      free(worksheet.array_drawingids.drawing_ids[index_drawingid]);
+    }
+    free(worksheet.array_drawingids.drawing_ids);
     free(worksheet.end_row);
     free(worksheet.end_col);
   }
@@ -272,10 +309,10 @@ void destroy_workbook() {
 void pre_process() {
   char cwd[PATH_MAX];
   if (getcwd(cwd, sizeof(cwd)) != NULL) {
-      printf("Current working dir: %s\n", cwd);
+    printf("Current working dir: %s\n", cwd);
   } else {
-      perror("getcwd() error");
-      return;
+    perror("getcwd() error");
+    return;
   }
   int len_templates_dir_path = strlen(cwd) + strlen(TEMPLATES_DIR_NAME) + 1;
   char *TEMPLATES_DIR_PATH = malloc(len_templates_dir_path + 1);
@@ -518,7 +555,7 @@ int main(int argc, char **argv) {
   }
   //Set default to test on local
   if (has_origin_file_path == '0') {
-    ORIGIN_FILE_PATH = "/home/huydang/Downloads/excelsample/VDA-ISA_EN_4.xlsx";
+    ORIGIN_FILE_PATH = "/home/huydang/Downloads/excelsample/Project_Management1-241196.xlsx";
   }
   if (has_output_file_name == '0') {
     OUTPUT_FILE_NAME = "index";

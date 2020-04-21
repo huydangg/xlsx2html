@@ -15,6 +15,12 @@ struct ArrayCols {
   struct Col **cols;
 };
 
+
+struct ArrayDrawingIds {
+  unsigned short int length;
+  char **drawing_ids;
+};
+
 struct WorkSheet {
   char start_col; // A
   char *end_col;
@@ -30,6 +36,8 @@ struct WorkSheet {
   XML_Char *worksheet_content;
   int len_worksheet_content;
   struct ArrayCols array_cols;
+  struct ArrayDrawingIds array_drawingids;
+  FILE *fmergecell;
 };
 
 extern XML_Parser xmlparser;
