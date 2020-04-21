@@ -1,4 +1,4 @@
-#include <read_main.h>
+#include <main.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -34,6 +34,17 @@ int load_relationships(zip_t *zip, char *zip_file_name, void *callbackdata) {
   int status = process_zip_file(archive, callbackdata, NULL, rels_start_element, rels_end_element);
   return status;
 }
+int load_drawings(zip_t *zip, char *zip_file_name) {
+  zip_file_t *archive = open_zip_file(zip, zip_file_name);
+  zip_error_t *err_zip = zip_get_error(zip);
+  if (archive == NULL) {
+    printf("%s\n", zip_error_strerror(err_zip));
+    return -1;
+  }
+
+  int status = process_zip_file(archive, NULL, NULL, drawings_start_element, drawings_end_element);
+  return status;
+}
 
 int load_workbook(zip_t *zip) {
   const char *zip_file_name = "xl/workbook.xml";
@@ -55,6 +66,9 @@ int load_workbook(zip_t *zip) {
     for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_rels.length; index_rels++) {
       printf("RELS ID: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->id);
       printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
+
+      //TODO: IN-PROGRESS
+      int status_drawings = load_drawings(zip, zip_file_name);
     }
     free(zip_file_name);
     if (status_rels != 0) {
