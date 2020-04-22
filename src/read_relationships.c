@@ -27,7 +27,7 @@ void rels_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       }
     }
   }
-  XML_SetElementHandler(xmlparser, NULL, rels_end_element);
+  XML_SetElementHandler(xmlparser, rels_start_element, rels_end_element);
 }
 
 void rels_end_element(void *callbackdata, const XML_Char *name) {
