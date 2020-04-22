@@ -55,25 +55,19 @@ int load_workbook(zip_t *zip) {
     printf("sheetID: %s\n", array_sheets.sheets[i]->sheetId);
     printf("Path name: %s\n", array_sheets.sheets[i]->path_name);
     //35: xl/worksheets/_rels/sheet%d.xml.rels
-    int len_zip_file_name = strlen(array_sheets.sheets[i]->sheetId) + 35;
-    char *zip_file_name = malloc(len_zip_file_name + 1);
-    snprintf(zip_file_name, len_zip_file_name + 1, "xl/worksheets/_rels/sheet%s.xml.rels", array_sheets.sheets[i]->sheetId);
-    printf("ZIP FILE NAME RELS: %s\n", zip_file_name);
+    int len_zip_sheet_rels_file_name = strlen(array_sheets.sheets[i]->sheetId) + 35;
+    char *zip_sheet_rels_file_name = malloc(len_zip_sheet_rels_file_name + 1);
+    snprintf(zip_sheet_rels_file_name, len_zip_sheet_rels_file_name + 1, "xl/worksheets/_rels/sheet%s.xml.rels", array_sheets.sheets[i]->sheetId);
+    printf("ZIP FILE NAME RELS: %s\n", zip_sheet_rels_file_name);
     array_sheets.sheets[i]->array_rels.length = 0;
     array_sheets.sheets[i]->array_rels.relationships = NULL;
-    int status_rels = load_relationships(zip, zip_file_name, &array_sheets.sheets[i]->array_rels);
-    printf("RELS ARRAY LENGTH: %d\n", array_sheets.sheets[i]->array_rels.length);
-    for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_rels.length; index_rels++) {
-      printf("RELS ID: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->id);
-      printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
-
-      //TODO: IN-PROGRESS
-      int status_drawings = load_drawings(zip, zip_file_name);
-    }
-    free(zip_file_name);
-    if (status_rels != 0) {
+    int status_sheet_rels = load_relationships(zip, zip_sheet_rels_file_name, &array_sheets.sheets[i]->array_rels);
+    free(zip_sheet_rels_file_name);
+    printf("STATUSSS: %d\n", status_sheet_rels);
+    if (status_sheet_rels != 1) {
       continue;
     }
+
   }
   return status;
 }
@@ -212,6 +206,38 @@ int load_worksheets(zip_t *zip) {
     printf("Length cols: %d\n", worksheet.array_cols.length);
     for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
       printf("DRAWING ID: %s\n", worksheet.array_drawingids.drawing_ids[index_drawingid]);
+      printf("RELS ARRAY LENGTH: %d\n", array_sheets.sheets[i]->array_rels.length);
+      for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_rels.length; index_rels++) {
+        printf("RELS ID: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->id);
+        printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
+        printf("RELS TYPE: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->type);
+	if (strcmp(worksheet.array_drawingids.drawing_ids[index_drawingid], array_sheets.sheets[i]->array_rels.relationships[index_rels]->id) != 0) {
+	  continue;
+	}
+
+	char *zip_file_name = NULL;
+	if (strcmp(array_sheets.sheets[i]->array_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
+	  //23: xl/drawings/_rels/<token>.rels
+	  int count = 0;
+	  char *token = strtok(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target, "/");
+	  count++;
+	  while (count <= 2) {
+	    token = strtok(NULL, "/");
+	    count++;
+	  }
+	  printf("TOKENNNN: %s\n", token);  //
+          int len_zip_drawing_rels = strlen(token) + 23;
+	  zip_file_name = realloc(zip_file_name, len_zip_drawing_rels + 23 + 1);
+	  snprintf(zip_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
+	} else {
+	  continue;
+	}
+
+
+	int status_drawing_rels = load_relationships(zip, zip_file_name);
+        //TODO: IN-PROGRESS
+        //int status_drawings = load_drawings(zip, zip_file_name);
+      }
       free(worksheet.array_drawingids.drawing_ids[index_drawingid]);
     }
     free(worksheet.array_drawingids.drawing_ids);

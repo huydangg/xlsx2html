@@ -24,6 +24,10 @@ void rels_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	int len_target = strlen(attrs[i + 1]);
         array_rels_callbackdata->relationships[array_rels_callbackdata->length-1]->target = malloc(len_target + 1);
 	memcpy(array_rels_callbackdata->relationships[array_rels_callbackdata->length-1]->target, attrs[i + 1], len_target + 1);
+      } else if (strcmp(attrs[i], "Type") == 0) {
+	int len_type = strlen(attrs[i + 1]);
+	array_rels_callbackdata->relationships[array_rels_callbackdata->length-1]->type = malloc(len_type + 1);
+	memcpy(array_rels_callbackdata->relationships[array_rels_callbackdata->length-1]->type, attrs[i + 1], len_type + 1);
       }
     }
   }

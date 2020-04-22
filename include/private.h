@@ -42,4 +42,6 @@ extern const char *TEMP_DIR;
 # define MANIFEST_FILE_NAME "manifest"
 # define TEMPLATES_DIR_NAME "templates"
 
+#define TYPE_DRAWING "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing"
+
 #endif
