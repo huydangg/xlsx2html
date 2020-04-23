@@ -3,25 +3,34 @@
 
 #include <expat.h>
 
-struct From {
+struct Offset {
   char *col;
   char *colOff;
   char *row;
   char *rowOff;
 };
 
-struct To {
-  char *col;
-  char *colOff;
-  char *row;
-  char *rowOff;
-};
+struct Pic {
+  XML_Char *name;
+  char *hlinkClick_id;
+  char *blip_embed;
+  size_t cx;
+  size_t cy;
+}
 
 struct TwoCellAnchor {
   char *editAs;
-  struct From from;
-  struct To to;
+  struct Offset from;
+  struct Offset to;
+  struct Pic pic;
 };
+
+struct ArrayDrawings {
+  unsigned short length;
+  struct TwoCellAnchor **twocellanchor;
+};
+
+extern struct ArrayDrawings array_drawings;
 
 extern XML_Parser xmlparser;
 

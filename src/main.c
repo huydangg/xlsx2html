@@ -34,6 +34,7 @@ int load_relationships(zip_t *zip, char *zip_file_name, void *callbackdata) {
   int status = process_zip_file(archive, callbackdata, NULL, rels_start_element, rels_end_element);
   return status;
 }
+
 int load_drawings(zip_t *zip, char *zip_file_name) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   zip_error_t *err_zip = zip_get_error(zip);
@@ -235,8 +236,6 @@ int load_worksheets(zip_t *zip) {
 
 
 	int status_drawing_rels = load_relationships(zip, zip_file_name);
-        //TODO: IN-PROGRESS
-        //int status_drawings = load_drawings(zip, zip_file_name);
       }
       free(worksheet.array_drawingids.drawing_ids[index_drawingid]);
     }
