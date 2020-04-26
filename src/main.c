@@ -205,6 +205,7 @@ int load_worksheets(zip_t *zip) {
     printf("END_COL: %s\n", worksheet.end_col);
     printf("END_COL_IN_NUMBER: %d\n", worksheet.end_col_number);
     printf("Length cols: %d\n", worksheet.array_cols.length);
+
     for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
       printf("DRAWING ID: %s\n", worksheet.array_drawingids.drawing_ids[index_drawingid]);
       printf("RELS ARRAY LENGTH: %d\n", array_sheets.sheets[i]->array_rels.length);
@@ -218,6 +219,10 @@ int load_worksheets(zip_t *zip) {
 
 	char *zip_file_name = NULL;
 	if (strcmp(array_sheets.sheets[i]->array_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
+	  //TODO: Load drawings in here.
+
+
+	  // load_drawings(zip, array_sheets.sheets[i]->array_rels.relationships[index_rels]->target)
 	  //23: xl/drawings/_rels/<token>.rels
 	  int count = 0;
 	  char *token = strtok(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target, "/");
@@ -230,16 +235,25 @@ int load_worksheets(zip_t *zip) {
           int len_zip_drawing_rels = strlen(token) + 23;
 	  zip_file_name = realloc(zip_file_name, len_zip_drawing_rels + 23 + 1);
 	  snprintf(zip_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
+	  // TODO: Just load relationships in one time.
+	  /*struct ArrayDrawings {
+            unsigned short length;
+            struct TwoCellAnchor **twocellanchor;
+            struct ArrayRelationships array_relationships;
+          };*/
+	  int status_rels = load_relationships(zip, zip_file_name, )
+	  // Delete current relationship.
+	  // Note: index_rels--
+	  // and break;
+	  break;
 	} else {
 	  continue;
 	}
 
 
-	int status_drawing_rels = load_relationships(zip, zip_file_name);
       }
       free(worksheet.array_drawingids.drawing_ids[index_drawingid]);
     }
-    free(worksheet.array_drawingids.drawing_ids);
     free(worksheet.end_row);
     free(worksheet.end_col);
   }

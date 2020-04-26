@@ -2,6 +2,7 @@
 #define INCLUDED_READ_DRAWINGS_H
 
 #include <expat.h>
+#include <read_relationships.h>
 
 struct Offset {
   char *col;
@@ -16,7 +17,7 @@ struct Pic {
   char *blip_embed;
   size_t cx;
   size_t cy;
-}
+};
 
 struct TwoCellAnchor {
   char *editAs;
@@ -28,6 +29,7 @@ struct TwoCellAnchor {
 struct ArrayDrawings {
   unsigned short length;
   struct TwoCellAnchor **twocellanchor;
+  struct ArrayRelationships array_relationships;
 };
 
 extern struct ArrayDrawings array_drawings;
