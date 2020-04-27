@@ -217,15 +217,11 @@ int load_worksheets(zip_t *zip) {
 	  continue;
 	}
 
-	char *zip_file_name = NULL;
 	if (strcmp(array_sheets.sheets[i]->array_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
-	  //TODO: Load drawings in here.
-
-
-	  int status_drawings = load_drawings(zip, array_sheets.sheets[i]->array_rels.relationships[index_rels]->target)
 	  //23: xl/drawings/_rels/<token>.rels
 	  int count = 0;
-	  char *token = strtok(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target, "/");
+	  char *_tmp_target = strdup(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
+	  char *token = strtok(_tmp_target, "/");
 	  count++;
 	  while (count <= 2) {
 	    token = strtok(NULL, "/");
@@ -233,17 +229,21 @@ int load_worksheets(zip_t *zip) {
 	  }
 	  printf("TOKENNNN: %s\n", token);  //
           int len_zip_drawing_rels = strlen(token) + 23;
-	  zip_file_name = realloc(zip_file_name, len_zip_drawing_rels + 23 + 1);
-	  snprintf(zip_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
-	  /*struct ArrayDrawings {
-            unsigned short length;
-            struct TwoCellAnchor **twocellanchor;
-            struct ArrayRelationships array_relationships;
-          };*/
-	  int status_rels = load_relationships(zip, zip_file_name, )
-	  // Delete current relationship.
-	  // Note: index_rels--
-	  // and break;
+	  char *zip_drawing_rels_file_name = malloc(len_zip_drawing_rels + 23 + 1);
+	  snprintf(zip_drawing_rels_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
+
+
+	  free(zip_drawing_rels_file_name);
+	  free(_tmp_target);
+	  ///////
+
+	  int len_zip_drawing_file_name = strlen(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
+	  char *zip_drawing_file_name = malloc(len_zip_drawing_file_name + 1);
+	  snprintf(zip_drawing_file_name, len_zip_drawing_file_name + 1, "xl%s", array_sheets.sheets[i]->array_rels.relationships[index_rels]->target + 2);
+	  printf("ZIP DRAWING FILE NAME: %s\n", zip_drawing_file_name);
+
+	  int status_drawings = load_drawings(zip, zip_drawing_file_name);
+	  free(zip_drawing_file_name);
 	  break;
 	} else {
 	  continue;

@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <read_drawings.h>
 
-struct TwoCellAnchor *twocellanchor;
+struct TwoCellAnchor *twocellanchor = NULL;
 
 
 void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
   if (strcmp(name,"xdr:twoCellAnchor") == 0) {
-    twocellanchor = malloc(sizeof(TwoCellAnchor));
+    twocellanchor = realloc(twocellanchor, sizeof(struct TwoCellAnchor));
 
     for (int i = 0; attrs[i]; i+=2) {
       int len_editAs = strlen(attrs[i + 1]);
@@ -24,18 +24,37 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name,"xdr:twoCellAnchor") == 0) {
     //TODO: Record image html syntax with data from rels drawings to findexhtml
     //At last, free twocellanchor obj
+    free(twocellanchor->editAs);
+    free(twocellanchor->from.col);
+    free(twocellanchor->from.colOff);
+    free(twocellanchor->from.row);
+    free(twocellanchor->from.rowOff);
+    free(twocellanchor->to.col);
+    free(twocellanchor->to.colOff);
+    free(twocellanchor->to.row);
+    free(twocellanchor->to.rowOff);
+    free(twocellanchor);
+    twocellanchor = NULL;
     XML_SetElementHandler(xmlparser, drawings_start_element, drawings_end_element);
   }
 }
 
 
 void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
-  (void)atts;
+  (void)attrs;
   if (strcmp(name, "xdr:from") == 0) {
-    XML_SetUserData(xmlparser, twocellanchor->from);
+    twocellanchor->from.col = NULL;
+    twocellanchor->from.colOff = NULL;
+    twocellanchor->from.row = NULL;
+    twocellanchor->from.rowOff = NULL;
+    twocellanchor->to.col = NULL;
+    twocellanchor->to.colOff = NULL;
+    twocellanchor->to.row = NULL;
+    twocellanchor->to.rowOff = NULL;
+    XML_SetUserData(xmlparser, &twocellanchor->from);
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
   } else if (strcmp(name, "xdr:to") == 0) {
-    XML_SetUserData(xmlparser, twocellanchor->to);
+    XML_SetUserData(xmlparser, &twocellanchor->to);
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
   } else if (strcmp(name, "xdr:pic") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
@@ -52,7 +71,7 @@ void drawings_lv1_end_element(void *callbackdata, const XML_Char *name) {
 }
 
 void drawings_lv2_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
-  (void)atts;
+  (void)attrs;
   if (strcmp(name, "xdr:col") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
     XML_SetCharacterDataHandler(xmlparser, drawings_col_content_handler);
@@ -60,10 +79,10 @@ void drawings_lv2_start_element(void *callbackdata, const XML_Char *name, const 
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
     XML_SetCharacterDataHandler(xmlparser, drawings_colOff_content_handler);
   } else if(strcmp(name, "xdr:row") == 0) {
-    XML_SetElementHandler(xmlparser, drawings_from_lv2_start_element, NULL);
+    XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
     XML_SetCharacterDataHandler(xmlparser, drawings_row_content_handler);
   } else if(strcmp(name, "xdr:rowOff") == 0) {
-    XML_SetElementHandler(xmlparser, drawings_from_lv2_start_element, NULL);
+    XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
     XML_SetCharacterDataHandler(xmlparser, drawings_rowOff_content_handler);
   } else if (strcmp(name, "xdr:nvPicPr") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv3_start_element, NULL);
@@ -97,7 +116,7 @@ void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
 }
 
 void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
-  (void)atts;
+  (void)attrs;
   if (strcmp(name,"xdr:cNvPr") == 0) {
     for (int i=0 ; attrs[i]; i+=2) {
       if (strcmp(attrs[i], "name") == 0) {
@@ -106,7 +125,7 @@ void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const 
         memcpy(twocellanchor->pic.name, attrs[i + 1], len_name + 1);
       }
     }
-    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv3_end_element);
+    XML_SetElementHandler(xmlparser, drawings_lv4_start_element, drawings_lv3_end_element);
   } else if (strcmp(name,"a:blip") == 0) {
     for (int i=0 ; attrs[i]; i+=2) {
       if (strcmp(attrs[i], "r:embed") == 0) {
@@ -129,6 +148,32 @@ void drawings_lv3_end_element(void *callbackdata, const XML_Char *name) {
   } else if (strcmp(name, "a:xfrm") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv4_start_element, drawings_lv3_end_element);
   }
+}
+
+void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  (void)attrs;
+  if (strcmp(name, "a:hlinkClick") == 0) {
+    for (int i = 0; attrs[i]; i+=2) {
+      if (strcmp(attrs[i], "r:id") == 0) {
+	int len_hlinkClickId = strlen(attrs[i + 1]);
+	twocellanchor->pic.hlinkClick_id = malloc(len_hlinkClickId + 1);
+	memcpy(twocellanchor->pic.hlinkClick_id, attrs[i + 1], len_hlinkClickId + 1);
+      }
+    }
+  } else if (strcmp(name, "a:ext") == 0) {
+    for (int i = 0; attrs[i]; i+=2) {
+      if (strcmp(attrs[i], "cx") == 0) {
+	sscanf(attrs[i + 1], "%zu", &twocellanchor->pic.cx);
+      } else if (strcmp(attrs[i], "cy") == 0) {
+	sscanf(attrs[i + 1], "%zu", &twocellanchor->pic.cy);
+      }
+    }
+  }
+  XML_SetElementHandler(xmlparser, NULL, drawings_lv4_end_element);
+}
+
+void drawings_lv4_end_element(void *callbackdata, const XML_Char *name) {
+  XML_SetElementHandler(xmlparser, drawings_lv4_start_element, drawings_lv3_end_element);
 }
 
 void drawings_col_content_handler(void *callbackdata, const XML_Char *buf, int len) {
@@ -185,7 +230,7 @@ void drawings_row_content_handler(void *callbackdata, const XML_Char *buf, int l
     memcpy(offset_callbackdata->row, buf, len);
     offset_callbackdata->row[len] = '\0';
   } else {
-    int len_offset_row = strlen(offset_callbackdata->rwo);
+    int len_offset_row = strlen(offset_callbackdata->row);
     if ((offset_callbackdata->row = realloc(offset_callbackdata->row, len_offset_row + len)) == NULL) {
       return;
     }

@@ -31,4 +31,16 @@ extern XML_Parser xmlparser;
 void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
 void drawings_end_element(void *callbackdata, const XML_Char *name);
 
+void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
+void drawings_lv1_end_element(void *callbackdata, const XML_Char *name);
+void drawings_lv2_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
+void drawings_lv2_end_element(void *callbackdata, const XML_Char *name);
+void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
+void drawings_lv3_end_element(void *callbackdata, const XML_Char *name);
+void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
+void drawings_lv4_end_element(void *callbackdata, const XML_Char *name);
+void drawings_col_content_handler(void *callbackdata, const XML_Char *buf, int len);
+void drawings_colOff_content_handler(void *callbackdata, const XML_Char *buf, int len);
+void drawings_row_content_handler(void *callbackdata, const XML_Char *buf, int len);
+void drawings_rowOff_content_handler(void *callbackdata, const XML_Char *buf, int len);
 #endif
