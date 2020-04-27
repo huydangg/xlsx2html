@@ -222,7 +222,7 @@ int load_worksheets(zip_t *zip) {
 	  //TODO: Load drawings in here.
 
 
-	  // load_drawings(zip, array_sheets.sheets[i]->array_rels.relationships[index_rels]->target)
+	  int status_drawings = load_drawings(zip, array_sheets.sheets[i]->array_rels.relationships[index_rels]->target)
 	  //23: xl/drawings/_rels/<token>.rels
 	  int count = 0;
 	  char *token = strtok(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target, "/");
@@ -235,7 +235,6 @@ int load_worksheets(zip_t *zip) {
           int len_zip_drawing_rels = strlen(token) + 23;
 	  zip_file_name = realloc(zip_file_name, len_zip_drawing_rels + 23 + 1);
 	  snprintf(zip_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
-	  // TODO: Just load relationships in one time.
 	  /*struct ArrayDrawings {
             unsigned short length;
             struct TwoCellAnchor **twocellanchor;

@@ -26,14 +26,6 @@ struct TwoCellAnchor {
   struct Pic pic;
 };
 
-struct ArrayDrawings {
-  unsigned short length;
-  struct TwoCellAnchor **twocellanchor;
-  struct ArrayRelationships array_relationships;
-};
-
-extern struct ArrayDrawings array_drawings;
-
 extern XML_Parser xmlparser;
 
 void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);

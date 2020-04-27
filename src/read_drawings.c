@@ -3,41 +3,27 @@
 #include <stdlib.h>
 #include <read_drawings.h>
 
-struct ArrayDrawings array_drawings;
+struct TwoCellAnchor *twocellanchor;
 
-void rollback()	{
-  array_drawings.length--;
-  free(array_drawings.twocellanchor[array_drawings.length - 1].from.col);
-  free(array_drawings.twocellanchor[array_drawings.length - 1].from.colOff);
-  free(array_drawings.twocellanchor[array_drawings.length - 1].from.row);
-  free(array_drawings.twocellanchor[array_drawings.length - 1].from.rowOff);
-  free(array_drawings.twocellanchor[array_drawings.length - 1].to.col);
-  free(array_drawings.twocellanchor[array_drawings.length - 1].to.colOff);
-  free(array_drawings.twocellanchor[array_drawings.length - 1].to.row);
-  free(array_drawings.twocellanchor[array_drawings.length - 1].to.rowOff);
-  free(array_drawings.twocellanchor[array_drawings.length - 1].editAs);
-  free(array_drawings.twocellanchor[array_drawings.length - 1]);
-}
 
 void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
   if (strcmp(name,"xdr:twoCellAnchor") == 0) {
-    array_drawings.length++;
-    array_drawings.twocellanchor = realloc(array_drawings.twocellanchor, array_drawings.length * sizeof(struct TwoCellAnchor *));
-    array_drawings.twocellanchor[array_drawings.length - 1] = malloc(sizeof(struct TwoCellAnchor));
+    twocellanchor = malloc(sizeof(TwoCellAnchor));
 
     for (int i = 0; attrs[i]; i+=2) {
       int len_editAs = strlen(attrs[i + 1]);
-      array_drawings.twocellanchor[array_drawings.length - 1].editAs = malloc(len_editAs + 1);
-      memcpy(array_drawings.twocellanchor[array_drawings.length - 1].editAs, attrs[i + 1], len_editAs + 1);
+      twocellanchor->editAs = malloc(len_editAs + 1);
+      memcpy(twocellanchor->editAs, attrs[i + 1], len_editAs + 1);
     }
     XML_SetElementHandler(xmlparser, drawings_lv1_start_element, NULL);
-
   }
 }
 
 void drawings_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name,"xdr:twoCellAnchor") == 0) {
+    //TODO: Record image html syntax with data from rels drawings to findexhtml
+    //At last, free twocellanchor obj
     XML_SetElementHandler(xmlparser, drawings_start_element, drawings_end_element);
   }
 }
@@ -46,16 +32,13 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)atts;
   if (strcmp(name, "xdr:from") == 0) {
-    XML_SetUserData(xmlparser, &array_drawings.twocellanchor[array_drawings.length - 1].from);
-    XML_SetUserData(xmlparser, &array_drawings.twocellanchor[array_drawings.length-1].from);
+    XML_SetUserData(xmlparser, twocellanchor->from);
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
-  } else if(strcmp(name, "xdr:to") == 0) {
-    XML_SetUserData(xmlparser, &array_drawings.twocellanchor[array_drawings.length - 1].to);
-    XML_SetUserData(xmlparser, &array_drawings.twocellanchor[array_drawings.length-1].to);
+  } else if (strcmp(name, "xdr:to") == 0) {
+    XML_SetUserData(xmlparser, twocellanchor->to);
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
-  } else if(strcmp(name, "xdr:sp") == 0) {
-    // Free TwoCellAnchor obj if this one is not a picture
-    rollback();
+  } else if (strcmp(name, "xdr:pic") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
   }
 }
 
@@ -82,20 +65,70 @@ void drawings_lv2_start_element(void *callbackdata, const XML_Char *name, const 
   } else if(strcmp(name, "xdr:rowOff") == 0) {
     XML_SetElementHandler(xmlparser, drawings_from_lv2_start_element, NULL);
     XML_SetCharacterDataHandler(xmlparser, drawings_rowOff_content_handler);
+  } else if (strcmp(name, "xdr:nvPicPr") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, NULL);
+  } else if (strcmp(name, "xdr:blipFill") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, NULL);
+  } else if (strcmp(name, "xdr:spPr") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, NULL);
   }
 }
 
 void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "xdr:col") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   } else if(strcmp(name, "xdr:colOff") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   } else if(strcmp(name, "xdr:row") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   } else if(strcmp(name, "xdr:rowOff") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
+  } else if (strcmp(name, "xdr:nvPicPr") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv2_end_element);
+  } else if (strcmp(name, "xdr:blipFill") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv2_end_element);
+  } else if (strcmp(name, "xdr:spPr") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv2_end_element);
   }
-  XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv1_end_element);
+}
+
+void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  (void)atts;
+  if (strcmp(name,"xdr:cNvPr") == 0) {
+    for (int i=0 ; attrs[i]; i+=2) {
+      if (strcmp(attrs[i], "name") == 0) {
+        int len_name = strlen(attrs[i + 1]);
+        twocellanchor->pic.name = malloc(len_name + 1);
+        memcpy(twocellanchor->pic.name, attrs[i + 1], len_name + 1);
+      }
+    }
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv3_end_element);
+  } else if (strcmp(name,"a:blip") == 0) {
+    for (int i=0 ; attrs[i]; i+=2) {
+      if (strcmp(attrs[i], "r:embed") == 0) {
+        int len_embedId = strlen(attrs[i + 1]);
+        twocellanchor->pic.blip_embed = malloc(len_embedId + 1);
+        memcpy(twocellanchor->pic.blip_embed , attrs[i + 1], len_embedId + 1);
+      }
+    }
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv3_end_element);
+  } else if (strcmp(name, "a:xfrm") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv4_start_element, drawings_lv3_end_element);
+  }
+}
+
+void drawings_lv3_end_element(void *callbackdata, const XML_Char *name) {
+  if (strcmp(name,"xdr:cNvPr") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv3_end_element);
+  } else if (strcmp(name,"a:blip") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv3_end_element);
+  } else if (strcmp(name, "a:xfrm") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv4_start_element, drawings_lv3_end_element);
+  }
 }
 
 void drawings_col_content_handler(void *callbackdata, const XML_Char *buf, int len) {
@@ -103,7 +136,7 @@ void drawings_col_content_handler(void *callbackdata, const XML_Char *buf, int l
     return;
   }
   struct Offset *offset_callbackdata = callbackdata;
-  if (offset_callbackdata->col == NULL) {
+  if (offset_callbackdata ->col == NULL) {
     if ((offset_callbackdata->col = realloc(offset_callbackdata->col, len + 1)) == NULL) {
       return;
     }
@@ -118,6 +151,7 @@ void drawings_col_content_handler(void *callbackdata, const XML_Char *buf, int l
     offset_callbackdata->col[len_offset_col + len - 1] = '\0';
   }
 }
+
 void drawings_colOff_content_handler(void *callbackdata, const XML_Char *buf, int len) {
   if (len == 0){
     return;
@@ -138,6 +172,7 @@ void drawings_colOff_content_handler(void *callbackdata, const XML_Char *buf, in
     offset_callbackdata->colOff[len_offset_colOff + len - 1] = '\0';
   }
 }
+
 void drawings_row_content_handler(void *callbackdata, const XML_Char *buf, int len) {
   if (len == 0){
     return;
