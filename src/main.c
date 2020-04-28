@@ -232,24 +232,19 @@ int load_worksheets(zip_t *zip) {
 	  char *zip_drawing_rels_file_name = malloc(len_zip_drawing_rels + 23 + 1);
 	  snprintf(zip_drawing_rels_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
 
-
 	  free(zip_drawing_rels_file_name);
 	  free(_tmp_target);
 	  ///////
 
-	  int len_zip_drawing_file_name = strlen(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
-	  char *zip_drawing_file_name = malloc(len_zip_drawing_file_name + 1);
-	  snprintf(zip_drawing_file_name, len_zip_drawing_file_name + 1, "xl%s", array_sheets.sheets[i]->array_rels.relationships[index_rels]->target + 2);
-	  printf("ZIP DRAWING FILE NAME: %s\n", zip_drawing_file_name);
-
-	  int status_drawings = load_drawings(zip, zip_drawing_file_name);
-	  free(zip_drawing_file_name);
 	  break;
 	} else {
+          free(array_sheets.sheets[i]->array_rels.relationships[index_rels]->id);
+          free(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
+          free(array_sheets.sheets[i]->array_rels.relationships[index_rels]->type);
+          free(array_sheets.sheets[i]->array_rels.relationships[index_rels]);
+          array_sheets.sheets[i]->array_rels.length--;
 	  continue;
 	}
-
-
       }
       free(worksheet.array_drawingids.drawing_ids[index_drawingid]);
     }
@@ -441,12 +436,12 @@ void pre_process() {
 	      "<div id=\"%s\" data-chunk-url=\"file://%s/%s.html\"></div>",
 	      CHUNK_HTML_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME
 	    );
+
             fputs(DIV_CHUNK, findexhtml);
 	    free(DIV_CHUNK);
 	    fputs("\n", findexhtml);
 	    free(CHUNK_HTML_FILE_NAME);
 	  }
-
           if (array_sheets.sheets[index_sheet]->hasMergedCells == '1') {
 	    int len_chunk_mc_file_name = len_index_sheet + 9;
 	    char *CHUNK_MC_FILE_NAME = malloc(len_chunk_mc_file_name + 1);
@@ -464,6 +459,14 @@ void pre_process() {
 	    fputs("\n", findexhtml);
 	    free(CHUNK_MC_FILE_NAME);
           }
+	  int len_zip_drawing_file_name = strlen(array_sheets.sheets[index_sheet]->array_rels.relationships[index_rels]->target);
+	  char *zip_drawing_file_name = malloc(len_zip_drawing_file_name + 1);
+	  snprintf(zip_drawing_file_name, len_zip_drawing_file_name + 1, "xl%s", array_sheets.sheets[i]->array_rels.relationships[index_rels]->target + 2);
+	  printf("ZIP DRAWING FILE NAME: %s\n", zip_drawing_file_name);
+
+	  int status_drawings = load_drawings(zip, zip_drawing_file_name);
+	  free(zip_drawing_file_name);
+
 	  fputs("</div>", findexhtml);
 	  fputs("\n", findexhtml);
         }
