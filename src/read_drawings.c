@@ -2,9 +2,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <read_drawings.h>
+#include <read_relationships.h>
 
 struct TwoCellAnchor *twocellanchor = NULL;
 
+struct DrawingCallbackdata {
+  struct ArrayRelationships array_drawing_rels;
+  FILE *findexhtml;
+};
 
 void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
@@ -20,10 +25,29 @@ void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_
   }
 }
 
+
 void drawings_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name,"xdr:twoCellAnchor") == 0) {
     //TODO: Record image html syntax with data from rels drawings to findexhtml
     //At last, free twocellanchor obj
+    if (twocellanchor->pic.name == NULL) {
+      goto ROLLBACK;
+    }
+    
+    struct DrawingCallbackdata *drawing_callbackdata = callbackdata;
+    for (int i_rels = 0; i_rels < drawing_callbackdata->array_drawing_rels.length; i_rels++) {
+      printf("------------------------------------------INSIDE DRAWING LOADER-------------------------------------------------\n");
+      printf("RELS ID: %s\n", drawing_callbackdata->array_drawing_rels.relationships[i_rels]->id);
+      printf("RELS TARGET: %s\n", drawing_callbackdata->array_drawing_rels.relationships[i_rels]->target);
+      printf("RELS TYPE: %s\n", drawing_callbackdata->array_drawing_rels.relationships[i_rels]->type);
+      if (strcmp(twocellanchor->pic.blip_embed, drawing_callbackdata->array_drawing_rels.relationships[i_rels]->id) == 0) {
+
+      } 
+    }
+
+
+   
+ROLLBACK:
     free(twocellanchor->editAs);
     free(twocellanchor->from.col);
     free(twocellanchor->from.colOff);

@@ -2,7 +2,6 @@
 #define INCLUDED_READ_DRAWINGS_H
 
 #include <expat.h>
-#include <read_relationships.h>
 
 struct Offset {
   char *col;

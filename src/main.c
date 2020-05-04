@@ -35,7 +35,7 @@ int load_relationships(zip_t *zip, char *zip_file_name, void *callbackdata) {
   return status;
 }
 
-int load_drawings(zip_t *zip, char *zip_file_name) {
+int load_drawings(zip_t *zip, char *zip_file_name, void *callbackdata) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   zip_error_t *err_zip = zip_get_error(zip);
   if (archive == NULL) {
@@ -43,7 +43,7 @@ int load_drawings(zip_t *zip, char *zip_file_name) {
     return -1;
   }
 
-  int status = process_zip_file(archive, NULL, NULL, drawings_start_element, drawings_end_element);
+  int status = process_zip_file(archive, callbackdata, NULL, drawings_start_element, drawings_end_element);
   return status;
 }
 
@@ -60,9 +60,9 @@ int load_workbook(zip_t *zip) {
     char *zip_sheet_rels_file_name = malloc(len_zip_sheet_rels_file_name + 1);
     snprintf(zip_sheet_rels_file_name, len_zip_sheet_rels_file_name + 1, "xl/worksheets/_rels/sheet%s.xml.rels", array_sheets.sheets[i]->sheetId);
     printf("ZIP FILE NAME RELS: %s\n", zip_sheet_rels_file_name);
-    array_sheets.sheets[i]->array_rels.length = 0;
-    array_sheets.sheets[i]->array_rels.relationships = NULL;
-    int status_sheet_rels = load_relationships(zip, zip_sheet_rels_file_name, &array_sheets.sheets[i]->array_rels);
+    array_sheets.sheets[i]->array_worksheet_rels.length = 0;
+    array_sheets.sheets[i]->array_worksheet_rels.relationships = NULL;
+    int status_sheet_rels = load_relationships(zip, zip_sheet_rels_file_name, &array_sheets.sheets[i]->array_worksheet_rels);
     free(zip_sheet_rels_file_name);
     printf("STATUSSS: %d\n", status_sheet_rels);
     if (status_sheet_rels != 1) {
@@ -208,19 +208,20 @@ int load_worksheets(zip_t *zip) {
 
     for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
       printf("DRAWING ID: %s\n", worksheet.array_drawingids.drawing_ids[index_drawingid]);
-      printf("RELS ARRAY LENGTH: %d\n", array_sheets.sheets[i]->array_rels.length);
-      for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_rels.length; index_rels++) {
-        printf("RELS ID: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->id);
-        printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
-        printf("RELS TYPE: %s\n", array_sheets.sheets[i]->array_rels.relationships[index_rels]->type);
-	if (strcmp(worksheet.array_drawingids.drawing_ids[index_drawingid], array_sheets.sheets[i]->array_rels.relationships[index_rels]->id) != 0) {
+      printf("RELS ARRAY LENGTH: %d\n", array_sheets.sheets[i]->array_worksheet_rels.length);
+      for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_worksheet_rels.length; index_rels++) {
+        printf("RELS ID: %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id);
+        printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
+        printf("RELS TYPE: %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type);
+	/*if (strcmp(worksheet.array_drawingids.drawing_ids[index_drawingid], array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id) != 0) {
 	  continue;
-	}
+	}*/
 
-	if (strcmp(array_sheets.sheets[i]->array_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
+        printf("TACHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH: %d\n", strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type, TYPE_DRAWING));
+	if (strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
 	  //23: xl/drawings/_rels/<token>.rels
 	  int count = 0;
-	  char *_tmp_target = strdup(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
+	  char *_tmp_target = strdup(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
 	  char *token = strtok(_tmp_target, "/");
 	  count++;
 	  while (count <= 2) {
@@ -231,18 +232,29 @@ int load_worksheets(zip_t *zip) {
           int len_zip_drawing_rels = strlen(token) + 23;
 	  char *zip_drawing_rels_file_name = malloc(len_zip_drawing_rels + 23 + 1);
 	  snprintf(zip_drawing_rels_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
+          array_sheets.sheets[i]->array_drawing_rels.length = 0;
+          array_sheets.sheets[i]->array_drawing_rels.relationships = NULL;
+          int status_drawing_rels = load_relationships(zip, zip_drawing_rels_file_name, &array_sheets.sheets[i]->array_drawing_rels);
+	  if (status_drawing_rels == -1) {
+	    //TODO: Handle error
+	  }
 
+	  for (int index_drawing_rels = 0; index_drawing_rels < array_sheets.sheets[i]->array_drawing_rels.length; index_drawing_rels++) {
+	    printf("-----------------------------------------DRAWING----------------------------------------------------\n");
+            printf("RELS ID: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->id);
+            printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->target);
+            printf("RELS TYPE: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->type);
+	  }
 	  free(zip_drawing_rels_file_name);
 	  free(_tmp_target);
-	  ///////
 
 	  break;
 	} else {
-          free(array_sheets.sheets[i]->array_rels.relationships[index_rels]->id);
-          free(array_sheets.sheets[i]->array_rels.relationships[index_rels]->target);
-          free(array_sheets.sheets[i]->array_rels.relationships[index_rels]->type);
-          free(array_sheets.sheets[i]->array_rels.relationships[index_rels]);
-          array_sheets.sheets[i]->array_rels.length--;
+          free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id);
+          free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
+          free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type);
+          free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]);
+          array_sheets.sheets[i]->array_worksheet_rels.length--;
 	  continue;
 	}
       }
@@ -353,7 +365,7 @@ void destroy_workbook() {
 }
 
 // Generate index html file
-void pre_process() {
+void pre_process(zip_t *zip) {
   char cwd[PATH_MAX];
   if (getcwd(cwd, sizeof(cwd)) != NULL) {
     printf("Current working dir: %s\n", cwd);
@@ -459,14 +471,28 @@ void pre_process() {
 	    fputs("\n", findexhtml);
 	    free(CHUNK_MC_FILE_NAME);
           }
-	  int len_zip_drawing_file_name = strlen(array_sheets.sheets[index_sheet]->array_rels.relationships[index_rels]->target);
-	  char *zip_drawing_file_name = malloc(len_zip_drawing_file_name + 1);
-	  snprintf(zip_drawing_file_name, len_zip_drawing_file_name + 1, "xl%s", array_sheets.sheets[i]->array_rels.relationships[index_rels]->target + 2);
-	  printf("ZIP DRAWING FILE NAME: %s\n", zip_drawing_file_name);
 
-	  int status_drawings = load_drawings(zip, zip_drawing_file_name);
-	  free(zip_drawing_file_name);
+	  for (int index_rels = 0; index_rels < array_sheets.sheets[index_sheet]->array_worksheet_rels.length; index_rels++) { 
+            int len_zip_drawing_file_name = strlen(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
+	    char *zip_drawing_file_name = malloc(len_zip_drawing_file_name + 1);
+	    snprintf(
+	      zip_drawing_file_name, len_zip_drawing_file_name + 1,
+	      "xl%s", 
+	      array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target + 2
+	    );
+	    printf("ZIP DRAWING FILE NAME: %s\n", zip_drawing_file_name);
+	    struct DrawingCallbackdata {
+	      struct ArrayRelationships array_drawing_rels;
+	      FILE *findexhtml;
+	    };
+	    struct DrawingCallbackdata drawing_callbackdata;
+	    drawing_callbackdata.array_drawing_rels = array_sheets.sheets[index_sheet]->array_drawing_rels;
+	    drawing_callbackdata.findexhtml = findexhtml;
 
+	    int status_drawings = load_drawings(zip, zip_drawing_file_name, &drawing_callbackdata);
+	    free(zip_drawing_file_name);
+	  }
+	  
 	  fputs("</div>", findexhtml);
 	  fputs("\n", findexhtml);
         }
@@ -610,13 +636,13 @@ int main(int argc, char **argv) {
   }
   //Set default to test on local
   if (has_origin_file_path == '0') {
-    ORIGIN_FILE_PATH = "/home/huydang/Downloads/excelsample/Project_Management1-241196.xlsx";
+    ORIGIN_FILE_PATH = "/home/huydang/Downloads/excelsample/Project_Management__codestringers.xlsx";
   }
   if (has_output_file_name == '0') {
     OUTPUT_FILE_NAME = "index";
   }
   if (has_output_dir == '0') {
-    OUTPUT_DIR = "/media/huydang/HuyDang/xlsxmagic/output";
+    OUTPUT_DIR = "/media/huydang/HuyDang1/xlsxmagic/output";
   }
   if (has_tmp_dir == '0') {
     TEMP_DIR = "/tmp";
@@ -662,7 +688,7 @@ int main(int argc, char **argv) {
     goto LOAD_RESOURCES_FAILED;
   }
   destroy_styles();
-  pre_process();
+  pre_process(zip);
 LOAD_RESOURCES_FAILED:
   zip_close(zip);
 OPEN_ZIP_FAILED:

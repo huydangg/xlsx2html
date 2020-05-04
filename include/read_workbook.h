@@ -10,7 +10,8 @@ struct Sheet {
   XML_Char *path_name;
   char isHidden;
   char hasMergedCells;
-  struct ArrayRelationships array_rels;
+  struct ArrayRelationships array_worksheet_rels;
+  struct ArrayRelationships array_drawing_rels;
 };
 
 struct ArraySheets {
