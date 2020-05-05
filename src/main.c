@@ -206,60 +206,104 @@ int load_worksheets(zip_t *zip) {
     printf("END_COL_IN_NUMBER: %d\n", worksheet.end_col_number);
     printf("Length cols: %d\n", worksheet.array_cols.length);
 
-    for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
-      printf("DRAWING ID: %s\n", worksheet.array_drawingids.drawing_ids[index_drawingid]);
-      printf("RELS ARRAY LENGTH: %d\n", array_sheets.sheets[i]->array_worksheet_rels.length);
-      for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_worksheet_rels.length; index_rels++) {
-        printf("RELS ID: %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id);
-        printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
-        printf("RELS TYPE: %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type);
-	/*if (strcmp(worksheet.array_drawingids.drawing_ids[index_drawingid], array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id) != 0) {
-	  continue;
-	}*/
+   for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_worksheet_rels.length; index_rels++) {
+     printf("LENGTH REMOVED: %d\n", array_sheets.sheets[i]->array_worksheet_rels.length);
+     printf("INDEX RELS: %d\n", index_rels);
+	     printf("-----------------------------------------ARRAY STEP----------------------------------------------------\n");
+	   for (int k = 0; k < array_sheets.sheets[i]->array_worksheet_rels.length; k++) { 
+	     printf("%s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[k]->target);
 
-        printf("TACHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH: %d\n", strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type, TYPE_DRAWING));
-	if (strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
-	  //23: xl/drawings/_rels/<token>.rels
-	  int count = 0;
-	  char *_tmp_target = strdup(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
-	  char *token = strtok(_tmp_target, "/");
-	  count++;
-	  while (count <= 2) {
-	    token = strtok(NULL, "/");
-	    count++;
-	  }
-	  printf("TOKENNNN: %s\n", token);  //
-          int len_zip_drawing_rels = strlen(token) + 23;
-	  char *zip_drawing_rels_file_name = malloc(len_zip_drawing_rels + 23 + 1);
-	  snprintf(zip_drawing_rels_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
-          array_sheets.sheets[i]->array_drawing_rels.length = 0;
-          array_sheets.sheets[i]->array_drawing_rels.relationships = NULL;
-          int status_drawing_rels = load_relationships(zip, zip_drawing_rels_file_name, &array_sheets.sheets[i]->array_drawing_rels);
-	  if (status_drawing_rels == -1) {
+	   }
+             printf("--------------------------------------------------------------------------------------------------------\n");
+
+     for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
+       if (strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id, worksheet.array_drawingids.drawing_ids[index_drawingid]) == 0) {
+	 if (strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
+	   //23: xl/drawings/_rels/<token>.rels
+	   int count = 0;
+	   char *_tmp_target = strdup(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
+	   char *token = strtok(_tmp_target, "/");
+	   count++;
+	   while (count <= 2) {
+	     token = strtok(NULL, "/");
+	     count++;
+	   }
+	   printf("TOKENNNN: %s\n", token);  //
+           int len_zip_drawing_rels = strlen(token) + 23;
+	   char *zip_drawing_rels_file_name = malloc(len_zip_drawing_rels + 23 + 1);
+	   snprintf(zip_drawing_rels_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
+           array_sheets.sheets[i]->array_drawing_rels.length = 0;
+           array_sheets.sheets[i]->array_drawing_rels.relationships = NULL;
+           int status_drawing_rels = load_relationships(zip, zip_drawing_rels_file_name, &array_sheets.sheets[i]->array_drawing_rels);
+	   if (status_drawing_rels == -1) {
 	    //TODO: Handle error
-	  }
+	   }
 
-	  for (int index_drawing_rels = 0; index_drawing_rels < array_sheets.sheets[i]->array_drawing_rels.length; index_drawing_rels++) {
-	    printf("-----------------------------------------DRAWING----------------------------------------------------\n");
-            printf("RELS ID: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->id);
-            printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->target);
-            printf("RELS TYPE: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->type);
-	  }
-	  free(zip_drawing_rels_file_name);
-	  free(_tmp_target);
+	   for (int index_drawing_rels = 0; index_drawing_rels < array_sheets.sheets[i]->array_drawing_rels.length; index_drawing_rels++) {
+	     printf("-----------------------------------------DRAWING----------------------------------------------------\n");
+             printf("RELS ID: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->id);
+             printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->target);
+             printf("RELS TYPE: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->type);
+	     printf("-----------------------------------------------------------------------------------------------------\n");
+	   }
+	   free(zip_drawing_rels_file_name);
+	   free(_tmp_target);
+	   goto SKIP_REMOVE;
+	 } else {
+	   for (int i_rm = index_rels; i_rm < array_sheets.sheets[i]->array_worksheet_rels.length - 1; i_rm++) {
+             array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm] = array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm + 1];
+	   }
 
-	  break;
-	} else {
-          free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id);
-          free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
-          free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type);
-          free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]);
-          array_sheets.sheets[i]->array_worksheet_rels.length--;
-	  continue;
-	}
-      }
-      free(worksheet.array_drawingids.drawing_ids[index_drawingid]);
-    }
+	   for (int k = 0; k < array_sheets.sheets[i]->array_worksheet_rels.length; k++) { 
+	     printf("-----------------------------------------ARRAY STEP----------------------------------------------------\n");
+	     printf("%s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[k]->target);
+             printf("--------------------------------------------------------------------------------------------------------\n");
+
+	   }
+	   int _tmp_length = array_sheets.sheets[i]->array_worksheet_rels.length;
+           free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->id);
+           free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
+           free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->type);
+           free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]);
+	   array_sheets.sheets[i]->array_worksheet_rels.relationships = realloc(
+             array_sheets.sheets[i]->array_worksheet_rels.relationships,
+	     (_tmp_length - 1) * sizeof(struct Relationship *)
+	   );
+           array_sheets.sheets[i]->array_worksheet_rels.length--;
+	   index_rels--;
+	   goto SKIP_REMOVE;
+	 }
+       } else {
+	 //Remove drawing rels if it does not match.
+	 goto REMOVE_NOT_MATCH;
+       }
+     }
+REMOVE_NOT_MATCH:
+     printf("REMOVING %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
+     for (int i_rm = index_rels; i_rm < array_sheets.sheets[i]->array_worksheet_rels.length - 1; i_rm++) {
+	printf("MOVING %s TO %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm + 1]->target, array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm]->target);
+       array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm] = array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm + 1];
+     }
+
+     int _tmp_length = array_sheets.sheets[i]->array_worksheet_rels.length;
+     free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->id);
+     free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
+     free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->type);
+     free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]);
+     array_sheets.sheets[i]->array_worksheet_rels.relationships = realloc(
+       array_sheets.sheets[i]->array_worksheet_rels.relationships,
+       (_tmp_length - 1) * sizeof(struct Relationship *)
+     );
+     array_sheets.sheets[i]->array_worksheet_rels.length--;
+     if (index_rels != array_sheets.sheets[i]->array_worksheet_rels.length)
+       index_rels--;
+     else
+       printf("THE LAST ELEMENT IS REMOVED\n");
+     continue;
+SKIP_REMOVE:
+     continue;
+   }
+
     free(worksheet.end_row);
     free(worksheet.end_col);
   }
@@ -473,6 +517,8 @@ void pre_process(zip_t *zip) {
           }
 
 	  for (int index_rels = 0; index_rels < array_sheets.sheets[index_sheet]->array_worksheet_rels.length; index_rels++) { 
+	    printf("ZIP DRAWING INDEX: %d\n", index_rels);
+
             int len_zip_drawing_file_name = strlen(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
 	    char *zip_drawing_file_name = malloc(len_zip_drawing_file_name + 1);
 	    snprintf(
