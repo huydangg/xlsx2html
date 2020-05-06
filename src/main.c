@@ -207,15 +207,6 @@ int load_worksheets(zip_t *zip) {
     printf("Length cols: %d\n", worksheet.array_cols.length);
 
    for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_worksheet_rels.length; index_rels++) {
-     printf("LENGTH REMOVED: %d\n", array_sheets.sheets[i]->array_worksheet_rels.length);
-     printf("INDEX RELS: %d\n", index_rels);
-	     printf("-----------------------------------------ARRAY STEP----------------------------------------------------\n");
-	   for (int k = 0; k < array_sheets.sheets[i]->array_worksheet_rels.length; k++) { 
-	     printf("%s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[k]->target);
-
-	   }
-             printf("--------------------------------------------------------------------------------------------------------\n");
-
      for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
        if (strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id, worksheet.array_drawingids.drawing_ids[index_drawingid]) == 0) {
 	 if (strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
@@ -228,7 +219,6 @@ int load_worksheets(zip_t *zip) {
 	     token = strtok(NULL, "/");
 	     count++;
 	   }
-	   printf("TOKENNNN: %s\n", token);  //
            int len_zip_drawing_rels = strlen(token) + 23;
 	   char *zip_drawing_rels_file_name = malloc(len_zip_drawing_rels + 23 + 1);
 	   snprintf(zip_drawing_rels_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
@@ -250,17 +240,38 @@ int load_worksheets(zip_t *zip) {
 	   free(_tmp_target);
 	   goto SKIP_REMOVE;
 	 } else {
-	   for (int i_rm = index_rels; i_rm < array_sheets.sheets[i]->array_worksheet_rels.length - 1; i_rm++) {
-             array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm] = array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm + 1];
+           int _tmp_length = array_sheets.sheets[i]->array_worksheet_rels.length;
+           if (index_rels < _tmp_length - 1) {
+             memmove(
+               array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels,
+               array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels + 1,
+               (_tmp_length - index_rels - 1) * sizeof(struct Relationship *)
+             );
+             index_rels--;
+	   } else {
+             free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->id);
+             free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
+             free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->type);
+             free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]);
+             array_sheets.sheets[i]->array_worksheet_rels.relationships = realloc(
+               array_sheets.sheets[i]->array_worksheet_rels.relationships,
+               (_tmp_length - 1) * sizeof(struct Relationship *)
+	     );
 	   }
-
-	   for (int k = 0; k < array_sheets.sheets[i]->array_worksheet_rels.length; k++) { 
-	     printf("-----------------------------------------ARRAY STEP----------------------------------------------------\n");
-	     printf("%s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[k]->target);
-             printf("--------------------------------------------------------------------------------------------------------\n");
-
-	   }
-	   int _tmp_length = array_sheets.sheets[i]->array_worksheet_rels.length;
+           array_sheets.sheets[i]->array_worksheet_rels.length--;
+           goto SKIP_REMOVE;
+	 }
+       }
+       if (index_drawingid == worksheet.array_drawingids.length - 1) {
+         int _tmp_length = array_sheets.sheets[i]->array_worksheet_rels.length;
+         if (index_rels < _tmp_length - 1) {
+           memmove(
+             array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels,
+             array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels + 1,
+             (_tmp_length - index_rels - 1) * sizeof(struct Relationship *)
+           );
+           index_rels--;
+	 } else {
            free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->id);
            free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
            free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->type);
@@ -269,37 +280,11 @@ int load_worksheets(zip_t *zip) {
              array_sheets.sheets[i]->array_worksheet_rels.relationships,
 	     (_tmp_length - 1) * sizeof(struct Relationship *)
 	   );
-           array_sheets.sheets[i]->array_worksheet_rels.length--;
-	   index_rels--;
-	   goto SKIP_REMOVE;
 	 }
-       } else {
-	 //Remove drawing rels if it does not match.
-	 goto REMOVE_NOT_MATCH;
+         array_sheets.sheets[i]->array_worksheet_rels.length--;
        }
      }
-REMOVE_NOT_MATCH:
-     printf("REMOVING %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
-     for (int i_rm = index_rels; i_rm < array_sheets.sheets[i]->array_worksheet_rels.length - 1; i_rm++) {
-	printf("MOVING %s TO %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm + 1]->target, array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm]->target);
-       array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm] = array_sheets.sheets[i]->array_worksheet_rels.relationships[i_rm + 1];
-     }
 
-     int _tmp_length = array_sheets.sheets[i]->array_worksheet_rels.length;
-     free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->id);
-     free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
-     free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->type);
-     free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]);
-     array_sheets.sheets[i]->array_worksheet_rels.relationships = realloc(
-       array_sheets.sheets[i]->array_worksheet_rels.relationships,
-       (_tmp_length - 1) * sizeof(struct Relationship *)
-     );
-     array_sheets.sheets[i]->array_worksheet_rels.length--;
-     if (index_rels != array_sheets.sheets[i]->array_worksheet_rels.length)
-       index_rels--;
-     else
-       printf("THE LAST ELEMENT IS REMOVED\n");
-     continue;
 SKIP_REMOVE:
      continue;
    }
