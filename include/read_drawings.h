@@ -3,6 +3,7 @@
 
 #include <expat.h>
 #include <read_relationships.h>
+#include <zip.h>
 
 struct Offset {
   char *col;
@@ -30,6 +31,7 @@ struct DrawingCallbackData {
   struct ArrayRelationships *array_drawing_rels;
   struct TwoCellAnchor twocellanchor;
   struct Offset _tmp_offset;
+  zip_t *zip;
   FILE *findexhtml;
   XML_Char *text;
   size_t textlen;
@@ -54,7 +56,7 @@ void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const 
 void drawings_lv4_end_element(void *callbackdata, const XML_Char *name);
 void drawings_content_handler(void *callbackdata, const XML_Char *buf, int len);
 
-void drawings_callbackdata_initialize(struct DrawingCallbackData *data, struct ArrayRelationships *array_drawing_rels, FILE *findexhtml);
+void drawings_callbackdata_initialize(struct DrawingCallbackData *data, struct ArrayRelationships *array_drawing_rels, FILE *findexhtml, zip_t *zip);
 
 void drawings_skip_tag_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
 void drawings_skip_tag_end_element(void *callbackdata, const XML_Char *name);
