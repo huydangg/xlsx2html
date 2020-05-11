@@ -12,6 +12,7 @@ const char *ORIGIN_FILE_PATH;
 const char *OUTPUT_DIR;
 const char *OUTPUT_FILE_NAME;
 const char *TEMP_DIR;
+const char *RESOURCE_URL;
 
 int err;
 
@@ -517,7 +518,7 @@ void pre_process(zip_t *zip) {
 	    );
 	    printf("ZIP DRAWING FILE NAME: %s\n", zip_drawing_file_name);
 	    struct DrawingCallbackData drawing_callbackdata;
-            drawings_callbackdata_initialize(&drawing_callbackdata, &array_sheets.sheets[index_sheet]->array_drawing_rels, findexhtml);
+            drawings_callbackdata_initialize(&drawing_callbackdata, &array_sheets.sheets[index_sheet]->array_drawing_rels, findexhtml, zip);
 	    int status_drawings = load_drawings(zip, zip_drawing_file_name, &drawing_callbackdata);
 	    free(zip_drawing_file_name);
 	  }
@@ -583,6 +584,7 @@ int main(int argc, char **argv) {
   char has_output_dir = '0';
   char has_output_file_name = '0';
   char has_tmp_dir = '0';
+  char has_url_resource = '0';
 
   while (1) {
     int this_option_optind = optind ? optind : 1;
@@ -592,6 +594,7 @@ int main(int argc, char **argv) {
          {"output-dir",  required_argument, 0, 0},
          {"output-file-name", required_argument, 0, 0},
          {"tmp-dir", required_argument, 0, 0},
+         {"url-resource", required_argument, 0, 0},
          {"help", no_argument, 0, 'h'},
          {0, 0, 0, 0}
     };
@@ -629,6 +632,12 @@ int main(int argc, char **argv) {
 	    has_tmp_dir = '1';
             printf(" with arg %s", optarg);
 	  }
+	} else if (strcmp(long_options[option_index].name, "url-resource") == 0) {
+	  if (optarg) {
+	    RESOURCE_URL = strdup(optarg);
+	    has_url_resource = '1';
+            printf(" with arg %s", optarg);
+	  }
 	}
         printf("\n");
         break;
@@ -648,6 +657,7 @@ int main(int argc, char **argv) {
 	printf("%s%40s\n", "--output-dir", "Path to ouput dir");
 	printf("%s%58s\n", "--output-file-name", "File index html (exclude .html extension)");
 	printf("%s%42s\n", "--tmp-dir", "Path to temp dir");
+	printf("%s%70s\n", "--url-resource", "Url to resource (image, etc) follow by enviroment");
 	printf("%s%48s\n", "-h, --help", "Print usage information");
         goto LOAD_RESOURCES_FAILED;
 
@@ -675,6 +685,9 @@ int main(int argc, char **argv) {
   }
   if (has_tmp_dir == '0') {
     TEMP_DIR = "/tmp";
+  }
+  if (has_url_resource == '0') {
+    RESOURCE_URL = strdup(OUTPUT_DIR);
   }
 
   zip_t *zip = open_zip(ORIGIN_FILE_PATH);
@@ -729,5 +742,7 @@ OPEN_ZIP_FAILED:
     free((char *)OUTPUT_FILE_NAME);
   if (has_tmp_dir == '1')
     free((char *)TEMP_DIR);
+  if (has_url_resource == '1')
+    free((char *)RESOURCE_URL);
   exit(EXIT_SUCCESS);
 }
