@@ -518,7 +518,7 @@ void pre_process(zip_t *zip) {
 	    );
 	    printf("ZIP DRAWING FILE NAME: %s\n", zip_drawing_file_name);
 	    struct DrawingCallbackData drawing_callbackdata;
-            drawings_callbackdata_initialize(&drawing_callbackdata, &array_sheets.sheets[index_sheet]->array_drawing_rels, findexhtml, zip);
+            drawings_callbackdata_initialize(&drawing_callbackdata, &array_sheets.sheets[index_sheet]->array_drawing_rels, findexhtml, zip, index_sheet);
 	    int status_drawings = load_drawings(zip, zip_drawing_file_name, &drawing_callbackdata);
 	    free(zip_drawing_file_name);
 	  }

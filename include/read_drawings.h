@@ -6,10 +6,10 @@
 #include <zip.h>
 
 struct Offset {
-  char *col;
-  char *colOff;
-  char *row;
-  char *rowOff;
+  unsigned int col;
+  size_t colOff;
+  unsigned int row;
+  size_t rowOff;
 };
 
 struct Pic {
@@ -40,6 +40,7 @@ struct DrawingCallbackData {
   XML_StartElementHandler skip_start;   //start handler to set after skipping
   XML_EndElementHandler skip_end;       //end handler to set after skipping
   XML_CharacterDataHandler skip_data;   //data handler to set after skipping
+  int index_sheet;
 };
 
 extern XML_Parser xmlparser;
@@ -56,7 +57,7 @@ void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const 
 void drawings_lv4_end_element(void *callbackdata, const XML_Char *name);
 void drawings_content_handler(void *callbackdata, const XML_Char *buf, int len);
 
-void drawings_callbackdata_initialize(struct DrawingCallbackData *data, struct ArrayRelationships *array_drawing_rels, FILE *findexhtml, zip_t *zip);
+void drawings_callbackdata_initialize(struct DrawingCallbackData *, struct ArrayRelationships *, FILE *, zip_t *, int);
 
 void drawings_skip_tag_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
 void drawings_skip_tag_end_element(void *callbackdata, const XML_Char *name);

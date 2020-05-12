@@ -28,7 +28,7 @@ void reversed(char *input) {
   }
 }
 
-char *int_to_column_name(int n) {
+char *int_to_column_name(unsigned int n) {
   char *column_name = malloc(4);
   column_name[0] = '\0';
   while (n > 0) {
@@ -142,7 +142,7 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
     }
     fputs(TH_STRING, fchunk0);
     fputs("\n", fchunk0);
-    char *column_name = int_to_column_name(i);
+    char *column_name = int_to_column_name((unsigned int)i);
     printf("COLUMN_NAME: %s\n", column_name);
     fputs(column_name, fchunk0);
     fputs("\n", fchunk0);

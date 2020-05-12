@@ -46,7 +46,7 @@ extern const char *RESOURCE_URL;
 void reversed(char *input);
 
 
-char *int_to_column_name(int n);
+char *int_to_column_name(unsigned int);
 size_t get_col_nr (const XML_Char* A1col);
 size_t get_row_nr (const XML_Char* A1col);
 unsigned short column_name_to_number(const char *column_name);
