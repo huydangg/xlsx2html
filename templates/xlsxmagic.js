@@ -89,6 +89,7 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
       } else if (indexCurrentChunk == 1) {
 	currentTbodyChunkEle.innerHTML = data
       }
+      loadImg(indexCurrentSheet)
       indexCurrentChunk++
       loadChunks(indexCurrentSheet, indexCurrentChunk, startTime)
     } else {
@@ -145,6 +146,38 @@ function applyMergedCells(mergedCellsData) {
     }
     mergedCellEle.rowSpan = mergedCellsData[key].rowspan
 
+  }
+}
+function getOffset(el) {
+  const rect = el.getBoundingClientRect()
+  return {
+    left: rect.left + currentSheetEle.scrollLeft,
+    top: rect.top + currentSheetEle.scrollTop
+  }
+}
+function loadImg(indexCurrentSheet) {
+  var indexImg = 0
+  while (1) {
+    var divImgMetaData = document.getElementById("chunk_" + indexCurrentSheet + "_" + indexImg + '_img');
+    if (!divImgMetaData) {
+      return;
+    }
+    var row = divImgMetaData.getAttribute('data-from-row')
+    var col = divImgMetaData.getAttribute('data-from-col')
+    var cell = document.getElementById(indexCurrentSheet + '_' + (col + row))
+    if (!cell) {
+      return
+    }
+    var colOff = divImgMetaData.getAttribute('data-from-colOff')
+    var rowOff = divImgMetaData.getAttribute('data-from-rowOff')
+    var reactCell = getOffset(cell)
+    var imgEle = document.createElement('img')
+    imgEle.src = divImgMetaData.getAttribute('data-img-url')
+    imgEle.style.top = reactCell.top + parseInt(rowOff) + 'px'
+    imgEle.style.left = reactCell.left + parseInt(colOff ) + 'px'
+    imgEle.style.position = 'absolute'
+    currentSheetEle.appendChild(imgEle)
+    indexImg++
   }
 }
 function Viewer() {
