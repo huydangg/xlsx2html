@@ -69,7 +69,6 @@ int load_workbook(zip_t *zip) {
     if (status_sheet_rels != 1) {
       continue;
     }
-
   }
   return status;
 }
@@ -206,6 +205,8 @@ int load_worksheets(zip_t *zip) {
     printf("END_COL: %s\n", worksheet.end_col);
     printf("END_COL_IN_NUMBER: %d\n", worksheet.end_col_number);
     printf("Length cols: %d\n", worksheet.array_cols.length);
+    array_sheets.sheets[i]->array_drawing_rels.length = 0;
+    array_sheets.sheets[i]->array_drawing_rels.relationships = NULL;
 
     for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_worksheet_rels.length; index_rels++) {
       for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
@@ -223,8 +224,6 @@ int load_worksheets(zip_t *zip) {
             int len_zip_drawing_rels = strlen(token) + 23;
 	    char *zip_drawing_rels_file_name = malloc(len_zip_drawing_rels + 23 + 1);
 	    snprintf(zip_drawing_rels_file_name, len_zip_drawing_rels + 1, "xl/drawings/_rels/%s.rels", token);
-            array_sheets.sheets[i]->array_drawing_rels.length = 0;
-            array_sheets.sheets[i]->array_drawing_rels.relationships = NULL;
             int status_drawing_rels = load_relationships(zip, zip_drawing_rels_file_name, &array_sheets.sheets[i]->array_drawing_rels);
 	    if (status_drawing_rels == -1) {
 	     //TODO: Handle error
@@ -510,7 +509,6 @@ void pre_process(zip_t *zip) {
 
 	  for (int index_rels = 0; index_rels < array_sheets.sheets[index_sheet]->array_worksheet_rels.length; index_rels++) { 
 	    printf("ZIP DRAWING INDEX: %d\n", index_rels);
-
             int len_zip_drawing_file_name = strlen(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
 	    char *zip_drawing_file_name = malloc(len_zip_drawing_file_name + 1);
 	    snprintf(
@@ -539,8 +537,10 @@ void pre_process(zip_t *zip) {
             free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->type);
             free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]);
 	  }
-	  free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships);
-	  free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships);
+	  if (array_sheets.sheets[index_sheet]->array_drawing_rels.length !=0)
+	    free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships);
+	  if (array_sheets.sheets[index_sheet]->array_worksheet_rels.length !=0)
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships);
 	  fputs("</div>", findexhtml);
 	  fputs("\n", findexhtml);
         }
