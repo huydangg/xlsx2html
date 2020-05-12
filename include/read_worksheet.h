@@ -38,6 +38,8 @@ struct WorkSheet {
   struct ArrayCols array_cols;
   struct ArrayDrawingIds array_drawingids;
   FILE *fmergecell;
+  char *ROW_NUMBER; // Temp current row
+
 };
 
 extern XML_Parser xmlparser;
