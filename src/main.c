@@ -265,11 +265,13 @@ int load_worksheets(zip_t *zip) {
         }
         if (index_drawingid == worksheet.array_drawingids.length - 1) {
           int _tmp_length = array_sheets.sheets[i]->array_worksheet_rels.length;
+	  printf("_TMP_LENGTHHHHHHHHHHH: %d\n", _tmp_length - 1);
+	  printf("Removingggggggggggggg %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
           if (index_rels < _tmp_length - 1) {
             memmove(
               array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels,
               array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels + 1,
-              (_tmp_length - index_rels - 1) * sizeof(struct Relationship *)
+              (_tmp_length - index_rels - 1) * sizeof(struct Relationship*)
             );
             index_rels--;
 	  } else {
@@ -516,13 +518,29 @@ void pre_process(zip_t *zip) {
 	      "xl%s", 
 	      array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target + 2
 	    );
+
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->id);
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->type);
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]);
 	    printf("ZIP DRAWING FILE NAME: %s\n", zip_drawing_file_name);
 	    struct DrawingCallbackData drawing_callbackdata;
             drawings_callbackdata_initialize(&drawing_callbackdata, &array_sheets.sheets[index_sheet]->array_drawing_rels, findexhtml, zip, index_sheet);
 	    int status_drawings = load_drawings(zip, zip_drawing_file_name, &drawing_callbackdata);
+
+	    if (status_drawings != -1) {
+	      //TODO: Handle error
+	    }
 	    free(zip_drawing_file_name);
 	  }
-	  
+	  for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
+            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->id);
+            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->target);
+            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->type);
+            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]);
+	  }
+	  free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships);
+	  free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships);
 	  fputs("</div>", findexhtml);
 	  fputs("\n", findexhtml);
         }
@@ -574,7 +592,7 @@ void pre_process(zip_t *zip) {
 }
 
 void post_process() {
-  //TODO: To handle remove redunant rows, columns, condition formating
+  //TODO: To handle remove redunant rows, columns, condition formating, create a redundant chunk to fill image in table
 }
 
 int main(int argc, char **argv) {
@@ -742,7 +760,6 @@ OPEN_ZIP_FAILED:
     free((char *)OUTPUT_FILE_NAME);
   if (has_tmp_dir == '1')
     free((char *)TEMP_DIR);
-  if (has_url_resource == '1')
-    free((char *)RESOURCE_URL);
+  free((char *)RESOURCE_URL);
   exit(EXIT_SUCCESS);
 }

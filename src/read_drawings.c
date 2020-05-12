@@ -115,7 +115,9 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	      token = strtok(NULL, "/");
 	      count++;
 	    }
+
 	    char *img_name = strdup(token);
+	    free(img_zf_name);
 	    int len_output_img_file_path = strlen(OUTPUT_DIR) + strlen(img_name) + 1;
 	    char *OUTPUT_IMG_FILE_PATH = malloc(len_output_img_file_path + 1);
 	    snprintf(OUTPUT_IMG_FILE_PATH, len_output_img_file_path + 1, "%s/%s", OUTPUT_DIR, img_name);
@@ -164,6 +166,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	      len_img_url = len_output_img_file_path;
 	      free(OUTPUT_IMG_FILE_PATH);
 	    }
+	    free(img_name);
             // http://officeopenxml.com/drwPicInSpread-oneCell.php
             // EMUs to pixels: value / 9525 (1 pixel = 9525 EMUs)
 	    size_t height = drawing_callbackdata->twocellanchor.pic.cy / 9525;
