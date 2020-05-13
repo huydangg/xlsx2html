@@ -36,6 +36,7 @@ extern const char *OUTPUT_DIR;
 extern const char *ORIGIN_FILE_PATH;
 extern const char *TEMP_DIR;
 extern const char *RESOURCE_URL;
+extern const char *WORKING_DIR;
 
 # define CHUNKS_DIR_NAME "chunks"
 # define BASE_CSS_FILE_NAME "base.css"

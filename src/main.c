@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <limits.h>
+#include <libgen.h>
 
 
 XML_Parser xmlparser;
@@ -13,6 +14,7 @@ const char *OUTPUT_DIR;
 const char *OUTPUT_FILE_NAME;
 const char *TEMP_DIR;
 const char *RESOURCE_URL;
+const char *WORKING_DIR;
 
 int err;
 
@@ -401,16 +403,9 @@ void destroy_workbook() {
 
 // Generate index html file
 void pre_process(zip_t *zip) {
-  char cwd[PATH_MAX];
-  if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    printf("Current working dir: %s\n", cwd);
-  } else {
-    perror("getcwd() error");
-    return;
-  }
-  int len_templates_dir_path = strlen(cwd) + strlen(TEMPLATES_DIR_NAME) + 1;
+  int len_templates_dir_path = strlen(WORKING_DIR) + strlen(TEMPLATES_DIR_NAME) + 1;
   char *TEMPLATES_DIR_PATH = malloc(len_templates_dir_path + 1);
-  snprintf(TEMPLATES_DIR_PATH, len_templates_dir_path + 1, "%s/%s", cwd, TEMPLATES_DIR_NAME);
+  snprintf(TEMPLATES_DIR_PATH, len_templates_dir_path + 1, "%s/%s", WORKING_DIR, TEMPLATES_DIR_NAME);
   int len_base_css_path = len_templates_dir_path + strlen(BASE_CSS_FILE_NAME) + 1;
   char *BASE_CSS_PATH = malloc(len_base_css_path + 1);
   snprintf(BASE_CSS_PATH, len_base_css_path + 1, "%s/%s", TEMPLATES_DIR_PATH, BASE_CSS_FILE_NAME);
@@ -603,6 +598,14 @@ int main(int argc, char **argv) {
   char has_output_file_name = '0';
   char has_tmp_dir = '0';
   char has_url_resource = '0';
+  char path[PATH_MAX] = {0};
+  int dest_len = PATH_MAX;
+  if (readlink("/proc/self/exe", path, dest_len) != -1) {
+    dirname(path);
+    strcat(path, "/");
+    printf("WORKING DIR: %s\n", path);
+    WORKING_DIR = path;
+  }
 
   while (1) {
     int this_option_optind = optind ? optind : 1;
