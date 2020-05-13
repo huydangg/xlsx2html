@@ -7,6 +7,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+
+int indexImg = -1;
+
 struct TwoCellAnchor new_twocellanchor() {
   struct TwoCellAnchor twocellanchor;
   twocellanchor.editAs = NULL;
@@ -95,6 +98,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
     if (drawing_callbackdata->twocellanchor.pic.name != NULL) {
       for (int i = 0; i < drawing_callbackdata->array_drawing_rels->length; i++) {
 	if (strcmp(drawing_callbackdata->twocellanchor.pic.blip_embed, drawing_callbackdata->array_drawing_rels->relationships[i]->id) == 0) {
+	  indexImg++;
 	  struct zip_stat sb;
           struct zip_file *img_zf;
 	  int img_fd;
@@ -190,7 +194,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
               DIV_IMG, len_div_img + 1,
               "<div id=\"chunk_%d_%d_img\" data-img-url=\"%s\" data-height=\"%zu\" data-width=\"%zu\" data-from-col=\"%s\" data-from-row=\"%u\" data-from-coloff=\"%zu\" data-from-rowoff=\"%zu\">",
 	      drawing_callbackdata->index_sheet,
-	      i,
+	      indexImg,
 	      IMG_URL, height, width,
 	      from_col_name,
               drawing_callbackdata->twocellanchor.from.row,
