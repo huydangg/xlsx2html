@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 
-int indexImg = -1;
 
 struct TwoCellAnchor new_twocellanchor() {
   struct TwoCellAnchor twocellanchor;
@@ -52,6 +51,7 @@ void drawings_callbackdata_initialize (struct DrawingCallbackData *data, struct 
   data->skip_end = NULL;
   data->skip_data = NULL;
   data->index_sheet = index_sheet;
+  data->index_image = -1;
 }
 
 void drawings_skip_tag_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
@@ -98,7 +98,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
     if (drawing_callbackdata->twocellanchor.pic.name != NULL) {
       for (int i = 0; i < drawing_callbackdata->array_drawing_rels->length; i++) {
 	if (strcmp(drawing_callbackdata->twocellanchor.pic.blip_embed, drawing_callbackdata->array_drawing_rels->relationships[i]->id) == 0) {
-	  indexImg++;
+	  drawing_callbackdata->index_image++;
 	  struct zip_stat sb;
           struct zip_file *img_zf;
 	  int img_fd;
@@ -194,7 +194,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
               DIV_IMG, len_div_img + 1,
               "<div id=\"chunk_%d_%d_img\" data-img-url=\"%s\" data-height=\"%zu\" data-width=\"%zu\" data-from-col=\"%s\" data-from-row=\"%u\" data-from-coloff=\"%zu\" data-from-rowoff=\"%zu\">",
 	      drawing_callbackdata->index_sheet,
-	      indexImg,
+	      drawing_callbackdata->index_image,
 	      IMG_URL, height, width,
 	      from_col_name,
               drawing_callbackdata->twocellanchor.from.row,

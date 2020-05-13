@@ -41,6 +41,7 @@ struct DrawingCallbackData {
   XML_EndElementHandler skip_end;       //end handler to set after skipping
   XML_CharacterDataHandler skip_data;   //data handler to set after skipping
   int index_sheet;
+  int index_image;
 };
 
 extern XML_Parser xmlparser;
