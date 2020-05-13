@@ -170,12 +170,18 @@ function loadImg(indexCurrentSheet) {
     }
     var colOff = divImgMetaData.getAttribute('data-from-colOff')
     var rowOff = divImgMetaData.getAttribute('data-from-rowOff')
+    var heigth = divImgMetaData.getAttribute('data-heigth')
+    var width = divImgMetaData.getAttribute('data-width')
+
     var reactCell = getOffset(cell)
+    console.log(reactCell.top + " | " + reactCell.left)
     var imgEle = document.createElement('img')
     imgEle.src = divImgMetaData.getAttribute('data-img-url')
     imgEle.style.top = reactCell.top + parseInt(rowOff) + 'px'
-    imgEle.style.left = reactCell.left + parseInt(colOff ) + 'px'
+    imgEle.style.left = reactCell.left + parseInt(colOff) + 'px'
     imgEle.style.position = 'absolute'
+    imgEle.heigth = heigth
+    imgEle.width = width
     currentSheetEle.appendChild(imgEle)
     indexImg++
   }
