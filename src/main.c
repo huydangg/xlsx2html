@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <libgen.h>
-
+#include <errno.h>
 
 XML_Parser xmlparser;
 const char *ORIGIN_FILE_PATH;
@@ -17,6 +17,44 @@ const char *RESOURCE_URL;
 const char *WORKING_DIR;
 
 int err;
+
+int mkdir_p(const char *path) {
+    /* Adapted from http://stackoverflow.com/a/2336245/119527 */
+    const size_t len = strlen(path);
+    char _path[PATH_MAX];
+    char *p;
+
+    errno = 0;
+
+    /* Copy string so its mutable */
+    if (len > sizeof(_path)-1) {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+    strcpy(_path, path);
+
+    /* Iterate the string */
+    for (p = _path + 1; *p; p++) {
+        if (*p == '/') {
+            /* Temporarily truncate */
+            *p = '\0';
+
+            if (mkdir(_path, S_IRWXU) != 0) {
+                if (errno != EEXIST)
+                    return -1;
+            }
+
+            *p = '/';
+        }
+    }
+
+    if (mkdir(_path, S_IRWXU) != 0) {
+        if (errno != EEXIST)
+            return -1;
+    }
+
+    return 0;
+}
 
 zip_t *open_zip(const char *file_name) {
   return zip_open(file_name, ZIP_RDONLY, &err);
@@ -269,6 +307,7 @@ int load_worksheets(zip_t *zip) {
 	  printf("_TMP_LENGTHHHHHHHHHHH: %d\n", _tmp_length - 1);
 	  printf("Removingggggggggggggg %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
           if (index_rels < _tmp_length - 1) {
+	    //FIXME: Memory leak in here.
             memmove(
               array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels,
               array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels + 1,
@@ -713,15 +752,15 @@ int main(int argc, char **argv) {
 
   zip_t *zip = open_zip(ORIGIN_FILE_PATH);
   if (zip == NULL){
-    fprintf(stderr, "File not found");
+    fprintf(stderr, "File not found: %s | %s\n", ORIGIN_FILE_PATH, strerror(errno));
     goto OPEN_ZIP_FAILED;
   }
   // +1 for "/" +1 for '\0'
   struct stat st = {0};
   if (stat(OUTPUT_DIR, &st) == -1) {
-    int status = mkdir(OUTPUT_DIR, 0777);
+    int status = mkdir_p(OUTPUT_DIR);
     if (status != 0) {
-      fprintf(stderr, "Error when create a output dir with status is %d\n", status);
+      fprintf(stderr, "Error when create a output dir! %s\n", strerror(errno));
       goto LOAD_RESOURCES_FAILED;
     }
   }
