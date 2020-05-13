@@ -177,8 +177,8 @@ function loadImg(indexCurrentSheet) {
     console.log(reactCell.top + " | " + reactCell.left)
     var imgEle = document.createElement('img')
     imgEle.src = divImgMetaData.getAttribute('data-img-url')
-    imgEle.style.top = reactCell.top + parseInt(rowOff) + 'px'
-    imgEle.style.left = reactCell.left + parseInt(colOff) + 'px'
+    imgEle.style.top = reactCell.top + parseInt(rowOff, 10) + 'px'
+    imgEle.style.left = reactCell.left + parseInt(colOff, 10) + 'px'
     imgEle.style.position = 'absolute'
     imgEle.heigth = heigth
     imgEle.width = width
