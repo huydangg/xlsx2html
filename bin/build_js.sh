@@ -9,7 +9,6 @@ OUTPUT="$BASEDIR/templates/$OUTPUT_FN"
     java -jar "$CLOSURE_COMPILER_JAR" \
          --compilation_level SIMPLE_OPTIMIZATIONS \
          --warning_level VERBOSE \
-         --output_wrapper "(function(){%output%})();" \
          --js "$INPUT" \
          --js_output_file "$OUTPUT" && \
     echo 'Done.') || \
