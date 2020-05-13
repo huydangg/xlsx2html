@@ -158,31 +158,35 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
 
 // When tag <row> is empty.
 void generate_cells(void *callbackdata, const XML_Char *name) {
-  struct WorkSheet *worksheet_callbackdata = callbackdata;
-  int len_row_number = strlen(worksheet_callbackdata->ROW_NUMBER);
-  int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
-  for (int i = 1; i <= worksheet_callbackdata->end_col_number; i++) {
-    //id: 0_B2
-    char *col_name = int_to_column_name(i);
-    int len_col_name = strlen(col_name);
-    int len_id = len_index_sheet + len_col_name + len_row_number + 1;
-    int len_td_str = 44 + len_id;
-    char *td = malloc(len_td_str + 1);
-    snprintf(
-      td, len_td_str + 1,
-      "<td id=\"%d_%s%s\" style=\"border-style:hidden;\"></td>",
-      INDEX_CURRENT_SHEET, col_name,
-      worksheet_callbackdata->ROW_NUMBER
-    );
+  if (strcmp(name, "row") == 0) {
+    struct WorkSheet *worksheet_callbackdata = callbackdata;
+    int len_row_number = strlen(worksheet_callbackdata->ROW_NUMBER);
+    int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
+
+    for (int i = 1; i <= worksheet_callbackdata->end_col_number; i++) {
+      //id: 0_B2
+      char *col_name = int_to_column_name(i);
+      int len_col_name = strlen(col_name);
+      int len_id = len_index_sheet + len_col_name + len_row_number + 1;
+      int len_td_str = 44 + len_id;
+      char *td = malloc(len_td_str + 1);
+      snprintf(
+        td, len_td_str + 1,
+        "<td id=\"%d_%s%s\" style=\"border-style:hidden;\"></td>",
+        INDEX_CURRENT_SHEET, col_name,
+        worksheet_callbackdata->ROW_NUMBER
+      );
+      fputs(td, worksheet_callbackdata->worksheet_file);
+      fputs("\n", worksheet_callbackdata->worksheet_file);
+      free(col_name);
+      free(td);
+      COUNT_CELLS++;
+    }
+    fputs("</tr>", worksheet_callbackdata->worksheet_file);
     fputs("\n", worksheet_callbackdata->worksheet_file);
-    free(col_name);
-    free(td);
-    COUNT_CELLS++;
+    free(worksheet_callbackdata->ROW_NUMBER);
+    worksheet_callbackdata->ROW_NUMBER = NULL;
   }
-  fputs("</tr>", worksheet_callbackdata->worksheet_file);
-  fputs("\n", worksheet_callbackdata->worksheet_file);
-  free(worksheet_callbackdata->ROW_NUMBER);
-  worksheet_callbackdata->ROW_NUMBER = NULL;
   XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
 }
 
