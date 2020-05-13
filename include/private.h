@@ -40,7 +40,7 @@ extern const char *WORKING_DIR;
 
 # define CHUNKS_DIR_NAME "chunks"
 # define BASE_CSS_FILE_NAME "base.css"
-# define BASE_JS_FILE_NAME "xlsxmagic.js"
+# define BASE_JS_FILE_NAME "xlsxmagic.min.js"
 # define MANIFEST_FILE_NAME "manifest"
 # define TEMPLATES_DIR_NAME "templates"
 

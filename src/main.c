@@ -423,7 +423,7 @@ void embed_js(FILE *f, const char *js_path) {
   if (fjs == NULL) {
     fprintf(stderr, "Cannot open js file to read");
   }
-  char line[256];
+  char line[1024];
   while (fgets(line, sizeof(line), fjs)) {
     fputs(line, f);
   }

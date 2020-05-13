@@ -4,6 +4,9 @@ SOURCES =  src/main.c src/read_styles.c src/read_worksheet.c src/read_workbook.c
 # The name of the executable
 EXE = result
 
+MAKE_FILE_DIR = $(shell pwd)
+
+FILES = $(shell $(MAKE_FILE_DIR)/bin/build_js.sh $(MAKE_FILE_DIR))
 # Flags for compilation (adding warnings are always good)
 CFLAGS = -g -Wall -Iinclude
 
@@ -24,7 +27,8 @@ default: all
 
 # Having an "all" target is customary, so one could write "make all"
 # It depends on the executable program
-all: $(EXE)
+all:	$(EXE)
+	echo $(FILES)
 
 # This will link the executable from the object files
 $(EXE): $(OBJECTS)
