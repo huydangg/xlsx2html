@@ -307,7 +307,6 @@ int load_worksheets(zip_t *zip) {
 	  printf("_TMP_LENGTHHHHHHHHHHH: %d\n", _tmp_length - 1);
 	  printf("Removingggggggggggggg %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
           if (index_rels < _tmp_length - 1) {
-	    //FIXME: Memory leak in here.
 	    free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id);
 	    free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
 	    free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type);
@@ -414,7 +413,8 @@ void embed_css(FILE *f, const char *css_path) {
     fprintf(stderr, "Cannot open css file to read");
   }
   char c;
-  while ((c = fgetc(fcss))) {
+  while ((c = fgetc(fcss)) != EOF) {
+    printf("%c\n", c);
     fputc(c, f);
   }
   fclose(fcss);
@@ -428,7 +428,7 @@ void embed_js(FILE *f, const char *js_path) {
     fprintf(stderr, "Cannot open js file to read");
   }
   char c;
-  while ((c = fgetc(fjs))) {
+  while ((c = fgetc(fjs)) != EOF) {
     fputc(c, f);
   }
   fclose(fjs);
