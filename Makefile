@@ -43,6 +43,8 @@ clean:
 	-rm -f $(EXE)      # Remove the executable file
 	-rm -f $(OBJECTS)  # Remove the object files
 	-rm -rf output/*  # Remove the object files
+	-rm -f $(MAKE_FILE_DIR)/templates/*.min.js # Remove the templates files
+	-rm -f $(MAKE_FILE_DIR)/templates/*.min.css # Remove the templates files
 # Finally we need to tell "make" what source and header file each object file depends on
 src/main.o: src/main.c include/main.h 
 src/read_styles.o: src/read_styles.c include/read_styles.h 
