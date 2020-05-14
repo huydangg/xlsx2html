@@ -413,9 +413,9 @@ void embed_css(FILE *f, const char *css_path) {
   if (fcss == NULL) {
     fprintf(stderr, "Cannot open css file to read");
   }
-  char line[256];
-  while (fgets(line, sizeof(line), fcss)) {
-    fputs(line, f);
+  char c;
+  while ((c = fgetc(fcss))) {
+    fputc(c, f);
   }
   fclose(fcss);
 }
@@ -427,9 +427,9 @@ void embed_js(FILE *f, const char *js_path) {
   if (fjs == NULL) {
     fprintf(stderr, "Cannot open js file to read");
   }
-  char line[1024];
-  while (fgets(line, sizeof(line), fjs)) {
-    fputs(line, f);
+  char c;
+  while ((c = fgetc(fjs))) {
+    fputc(c, f);
   }
   fclose(fjs);
 }
