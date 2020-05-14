@@ -3,3 +3,4 @@
 *.html
 output
 *.min.js
+*.min.css

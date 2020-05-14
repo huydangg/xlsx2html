@@ -6,7 +6,9 @@ EXE = result
 
 MAKE_FILE_DIR = $(shell pwd)
 
-FILES = $(shell $(MAKE_FILE_DIR)/bin/build_js.sh $(MAKE_FILE_DIR))
+FILES_JS = $(shell $(MAKE_FILE_DIR)/bin/build_js.sh $(MAKE_FILE_DIR))
+FILES_CSS = $(shell $(MAKE_FILE_DIR)/bin/build_css.sh $(MAKE_FILE_DIR))
+
 # Flags for compilation (adding warnings are always good)
 CFLAGS = -g -Wall -Iinclude
 
@@ -28,7 +30,8 @@ default: all
 # Having an "all" target is customary, so one could write "make all"
 # It depends on the executable program
 all:	$(EXE)
-	echo $(FILES)
+	echo $(FILES_JS)
+	echo $(FILES_CSS)
 
 # This will link the executable from the object files
 $(EXE): $(OBJECTS)
