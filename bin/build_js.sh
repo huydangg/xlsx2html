@@ -7,7 +7,7 @@ OUTPUT="$BASEDIR/templates/$OUTPUT_FN"
 
 (echo "Building $OUTPUT_FN with closure-compiler..." && \
     java -jar "$CLOSURE_COMPILER_JAR" \
-         --compilation_level SIMPLE_OPTIMIZATIONS \
+         --compilation_level ADVANCED_OPTIMIZATIONS \
          --warning_level VERBOSE \
          --js "$INPUT" \
          --js_output_file "$OUTPUT" && \

@@ -6,7 +6,7 @@ var currentSheetEle = null
 var currentTableChunkEle = null
 var currentTheadChunkEle = null
 var currentTbodyChunkEle = null
-google.charts.load('current', {'packages':['corechart']})
+google['charts'].load('current', {'packages':['corechart']})
 function readTextFile(file, file_type, callback, callbackfail) {
   var rawFile = new XMLHttpRequest()
   if (file_type === "json") {
@@ -29,7 +29,6 @@ function readTextFile(file, file_type, callback, callbackfail) {
   rawFile.send(null)
 }
 function loadMergedCells(indexCurrentSheet, startTime) {
-  var startTime = startTime
   var isFailed = false
   var isDone = false
   var mergedCellsFileName = "chunk_" + indexCurrentSheet + "_mc"
@@ -40,7 +39,7 @@ function loadMergedCells(indexCurrentSheet, startTime) {
   var URL_JSON_CHUNK = currentDivChunkEle.getAttribute('data-chunk-url')
   var _data = null
   readTextFile(URL_JSON_CHUNK, 'json', function(data){
-    if(typeof data != 'undefinded') {
+    if(data !== void 0) {
       startTime = new Date().getTime()
       _data = JSON.parse(data)
       isDone = true
@@ -71,8 +70,6 @@ function loadMergedCells(indexCurrentSheet, startTime) {
   }
 }
 function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
-  var indexCurrentChunk = indexCurrentChunk;
-  var startTime = startTime
   var isFailed = false
   var isDone = false
   var htmlFileName = "chunk_" + indexCurrentSheet + "_" + indexCurrentChunk
@@ -82,7 +79,7 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
   }
   var URL_HTML_CHUNK = currentDivChunkEle.getAttribute('data-chunk-url')
   readTextFile(URL_HTML_CHUNK, 'html', function(data){
-    if(typeof data != 'undefinded') {
+    if(data !== void 0) {
       startTime = new Date().getTime()
       if (indexCurrentChunk === 0) {
 	currentTheadChunkEle.innerHTML = data
@@ -118,8 +115,8 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
 function applyMergedCells(mergedCellsData) {
   for (var key in mergedCellsData) {
     var mergedCellEle = document.getElementById(indexCurrentSheet + '_' + key)
-    mergedCellEle.colSpan = mergedCellsData[key].colspan
-    var countColSpan = mergedCellsData[key].colspan
+    mergedCellEle.colSpan = mergedCellsData[key]['colspan']
+    var countColSpan = mergedCellsData[key]['colspan']
     var rowEle = mergedCellEle.parentNode
     while (countColSpan > 1) {
       var removedMergeCellEle = mergedCellEle.nextElementSibling
@@ -128,9 +125,9 @@ function applyMergedCells(mergedCellsData) {
     }
     var splitKey = key.match(/([A-Z]+)([0-9]+)/)
     var columnName = splitKey[1]
-    var countRowSpan = mergedCellsData[key].rowspan
+    var countRowSpan = mergedCellsData[key]['rowspan']
     while (countRowSpan > 1) {
-      var countColSpan = mergedCellsData[key].colspan
+      countColSpan = mergedCellsData[key]['colspan']
       rowEle = rowEle.nextElementSibling
       var mergedCellEleNextRow = document.getElementById(indexCurrentSheet + '_' + columnName + rowEle.id) 
       while (countColSpan > 1) {
@@ -144,7 +141,7 @@ function applyMergedCells(mergedCellsData) {
       rowEle.removeChild(mergedCellEleNextRow)
       countRowSpan--
     }
-    mergedCellEle.rowSpan = mergedCellsData[key].rowspan
+    mergedCellEle.rowSpan = mergedCellsData[key]['rowspan']
 
   }
 }
@@ -174,7 +171,6 @@ function loadImg(indexCurrentSheet) {
     var width = divImgMetaData.getAttribute('data-width')
 
     var reactCell = getOffset(cell)
-    console.log(reactCell.top + " | " + reactCell.left)
     var imgEle = document.createElement('img')
     imgEle.src = divImgMetaData.getAttribute('data-img-url')
     imgEle.style.top = reactCell.top + parseInt(rowOff, 10) + 'px'
@@ -212,7 +208,9 @@ function handleButtonClick(event) {
   indexCurrentSheet = btnClicked.id.split("btn_")[1]
   btnClicked.style.fontWeight = 'bold'
   Viewer()
+  event.preventDefault();
 }
+window['handleButtonClick'] = handleButtonClick
 document.addEventListener('DOMContentLoaded', function() {
   Viewer()
 }, false);
