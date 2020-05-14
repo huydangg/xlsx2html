@@ -308,6 +308,10 @@ int load_worksheets(zip_t *zip) {
 	  printf("Removingggggggggggggg %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
           if (index_rels < _tmp_length - 1) {
 	    //FIXME: Memory leak in here.
+	    free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id);
+	    free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
+	    free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type);
+	    free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]);
             memmove(
               array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels,
               array_sheets.sheets[i]->array_worksheet_rels.relationships + index_rels + 1,
