@@ -19,41 +19,41 @@ const char *WORKING_DIR;
 int err;
 
 int mkdir_p(const char *path) {
-    /* Adapted from http://stackoverflow.com/a/2336245/119527 */
-    const size_t len = strlen(path);
-    char _path[PATH_MAX];
-    char *p;
+  /* Adapted from http://stackoverflow.com/a/2336245/119527 */
+  const size_t len = strlen(path);
+  char _path[PATH_MAX];
+  char *p;
 
-    errno = 0;
+  errno = 0;
 
-    /* Copy string so its mutable */
-    if (len > sizeof(_path)-1) {
-        errno = ENAMETOOLONG;
-        return -1;
-    }
-    strcpy(_path, path);
+  /* Copy string so its mutable */
+  if (len > sizeof(_path)-1) {
+      errno = ENAMETOOLONG;
+      return -1;
+  }
+  strcpy(_path, path);
 
-    /* Iterate the string */
-    for (p = _path + 1; *p; p++) {
-        if (*p == '/') {
-            /* Temporarily truncate */
-            *p = '\0';
+  /* Iterate the string */
+  for (p = _path + 1; *p; p++) {
+    if (*p == '/') {
+      /* Temporarily truncate */
+      *p = '\0';
 
-            if (mkdir(_path, S_IRWXU) != 0) {
-                if (errno != EEXIST)
-                    return -1;
-            }
-
-            *p = '/';
-        }
-    }
-
-    if (mkdir(_path, S_IRWXU) != 0) {
+      if (mkdir(_path, S_IRWXU) != 0) {
         if (errno != EEXIST)
-            return -1;
-    }
+          return -1;
+        }
 
-    return 0;
+      *p = '/';
+    }
+  }
+
+  if (mkdir(_path, S_IRWXU) != 0) {
+    if (errno != EEXIST)
+      return -1;
+  }
+
+  return 0;
 }
 
 zip_t *open_zip(const char *file_name) {
@@ -85,6 +85,18 @@ int load_drawings(zip_t *zip, char *zip_file_name, void *callbackdata) {
   }
 
   int status = process_zip_file(archive, callbackdata, NULL, drawings_start_element, drawings_end_element);
+  return status;
+}
+
+int load_chart(zip_t *zip, char *zip_file_name, void *callbackdata) {
+  zip_file_t *archive = open_zip_file(zip, zip_file_name);
+  zip_error_t *err_zip = zip_get_error(zip);
+  if (archive == NULL) {
+    printf("%s\n", zip_error_strerror(err_zip));
+    return -1;
+  }
+
+  int status = process_zip_file(archive, callbackdata, NULL, chart_start_element, chart_end_element);
   return status;
 }
 

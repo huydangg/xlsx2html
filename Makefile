@@ -1,13 +1,13 @@
 # The name of the source files
-SOURCES =  src/main.c src/read_styles.c src/read_worksheet.c src/read_workbook.c src/read_sharedstrings.c src/read_relationships.c src/read_drawings.c
+SOURCES =  src/main.c src/read_styles.c src/read_worksheet.c src/read_workbook.c src/read_sharedstrings.c src/read_relationships.c src/read_drawings.c src/read_chart.c
 
 # The name of the executable
 EXE = result
 
 MAKE_FILE_DIR = $(shell pwd)
 
-FILES_JS = $(shell $(MAKE_FILE_DIR)/bin/build_js.sh $(MAKE_FILE_DIR))
-FILES_CSS = $(shell $(MAKE_FILE_DIR)/bin/build_css.sh $(MAKE_FILE_DIR))
+FILES_JS = $(MAKE_FILE_DIR)/bin/build_js.sh $(MAKE_FILE_DIR)
+FILES_CSS = $(MAKE_FILE_DIR)/bin/build_css.sh $(MAKE_FILE_DIR)
 
 # Flags for compilation (adding warnings are always good)
 CFLAGS = -g -Wall -Iinclude
@@ -30,8 +30,8 @@ default: all
 # Having an "all" target is customary, so one could write "make all"
 # It depends on the executable program
 all:	$(EXE)
-	echo $(FILES_JS)
-	echo $(FILES_CSS)
+	$(FILES_JS)
+	$(FILES_CSS)
 
 # This will link the executable from the object files
 $(EXE): $(OBJECTS)
@@ -56,5 +56,6 @@ src/read_workbook.o: src/read_workbook.c include/read_workbook.h
 src/read_sharedstrings.o: src/read_sharedstrings.c include/read_sharedstrings.h
 src/read_relationships.o: src/read_relationships.c include/read_relationships.h
 src/read_drawings.o: src/read_drawings.c include/read_drawings.h
+src/read_chart.o: src/read_chart.c include/read_chart.h
 include/private.o: include/private.h
 include/const.o: include/const.h

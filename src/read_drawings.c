@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 
-
 struct TwoCellAnchor new_twocellanchor() {
   struct TwoCellAnchor twocellanchor;
   twocellanchor.editAs = NULL;
@@ -242,6 +241,8 @@ void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const 
     drawing_callbackdata->skip_data = NULL;
     XML_SetElementHandler(xmlparser, drawings_skip_tag_start_element, drawings_skip_tag_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
+  } else if (strcmp(name, "xdr:graphicFrame") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
   }
 }
 
@@ -270,6 +271,8 @@ void drawings_lv1_end_element(void *callbackdata, const XML_Char *name) {
     XML_SetElementHandler(xmlparser, drawings_lv1_start_element, drawings_lv1_end_element);
   } else if (strcmp(name, "xdr:clientData") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv1_start_element, drawings_end_element);
+  } else if (strcmp(name, "xdr:graphicFrame") == 0) {
+    XML_SetElementHandler(xmlparser, drawings_lv1_start_element, drawings_lv1_end_element);
   }
 }
 
@@ -294,6 +297,8 @@ void drawings_lv2_start_element(void *callbackdata, const XML_Char *name, const 
     XML_SetElementHandler(xmlparser, drawings_lv3_start_element, NULL);
   } else if (strcmp(name, "xdr:spPr") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv3_start_element, NULL);
+  } else if (strcmp(name, "xdr:nvGraphicFramePr") == 0) {
+
   }
 }
 
@@ -302,7 +307,6 @@ void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (strcmp(name, "xdr:col") == 0) {
     if (drawing_callbackdata->text != NULL) {
-
       drawing_callbackdata->_tmp_offset.col = strtol(drawing_callbackdata->text, NULL, 10);
       free(drawing_callbackdata->text);
       drawing_callbackdata->text = NULL;

@@ -4,6 +4,7 @@
 #include <read_sharedstrings.h>
 #include <read_relationships.h>
 #include <read_drawings.h>
+#include <read_chart.h>
 #include <private.h>
 
 #define PARSE_BUFFER_SIZE 256

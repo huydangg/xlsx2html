@@ -19,7 +19,11 @@ struct Pic {
   size_t cx;
   size_t cy;
 };
-
+struct GraphicFrame {
+  XML_Char *name;
+  size_t cx;
+  size_t cy;
+};
 struct TwoCellAnchor {
   char *editAs;
   struct Offset from;
