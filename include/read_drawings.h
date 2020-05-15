@@ -4,6 +4,7 @@
 #include <expat.h>
 #include <read_relationships.h>
 #include <zip.h>
+#include <private.h>
 
 struct Offset {
   unsigned int col;
@@ -19,16 +20,20 @@ struct Pic {
   size_t cx;
   size_t cy;
 };
+
 struct GraphicFrame {
   XML_Char *name;
   size_t cx;
   size_t cy;
+  char *chart_id;
 };
+
 struct TwoCellAnchor {
   char *editAs;
   struct Offset from;
   struct Offset to;
   struct Pic pic;
+  struct GraphicFrame graphic_frame;
 };
 
 struct DrawingCallbackData {
@@ -46,6 +51,9 @@ struct DrawingCallbackData {
   XML_CharacterDataHandler skip_data;   //data handler to set after skipping
   int index_sheet;
   int index_image;
+  int index_graphicframe;
+  char is_pic;
+  char is_graphicframe;
 };
 
 extern XML_Parser xmlparser;

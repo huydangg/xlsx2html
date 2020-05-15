@@ -10,4 +10,6 @@
 #define PARSE_BUFFER_SIZE 256
 
 
-int process_zip_file(zip_file_t *, void *, XML_CharacterDataHandler, XML_StartElementHandler, XML_EndElementHandler); 
+zip_file_t *open_zip_file(zip_t *, const char *);
+int process_zip_file(XML_Parser *, zip_file_t *, void *, XML_CharacterDataHandler, XML_StartElementHandler, XML_EndElementHandler); 
+
