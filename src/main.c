@@ -102,7 +102,7 @@ int load_drawings(zip_t *zip, char *zip_file_name, void *callbackdata) {
   }
   printf("--------------------------------------------------------------------------------------------------\n");
 */
-int load_chart(zip_t *zip, char *zip_file_name, void *callbackdata, XML_Parser *xmlparser_chart) {
+int load_chart(zip_t *zip, char *zip_file_name, void *callbackdata) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   zip_error_t *err_zip = zip_get_error(zip);
   if (archive == NULL) {
@@ -593,10 +593,37 @@ void pre_process(zip_t *zip) {
 
 	    printf("------------------------------DRAWING_CALLBACK----------------------------------------------------\n");
 	    for (int i_drawing_callback = 0; i_drawing_callback < drawing_callbackdata.array_chart_metadata.length; i_drawing_callback++) {
-	      printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id);
-	      printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_name);
-	      printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path);
-	      printf("\n");
+	      for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
+		if (strcmp(
+                  drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id,
+		  array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->id
+		  ) == 0) {
+                  int len_zip_chart_file_name = strlen(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->target);
+		  char *zip_chart_file_name = malloc(len_zip_chart_file_name + 1);
+		  snprintf(
+                    zip_chart_file_name, len_zip_chart_file_name + 1, "xl%s",
+		    array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->target + 2
+		  );
+		  struct ChartCallBackData chart_callbackdata;
+		  int status_init = chart_callbackdata_initialize(
+                    &chart_callbackdata,
+		    drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path,
+		    index_sheet
+		  );
+		  if (status_init == -1) {
+		    //TODO: Handle error
+		    continue;
+		  }
+                  int status_chart = load_chart(zip, zip_chart_file_name, &chart_callbackdata);
+		  free(zip_chart_file_name);
+		  fclose(chart_callbackdata.fchart);
+
+		  printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id);
+		  printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_name);
+		  printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path);
+		  printf("\n");
+		}
+	      }
 
 	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id);
 	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_name);
