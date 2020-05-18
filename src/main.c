@@ -72,7 +72,7 @@ int load_relationships(zip_t *zip, char *zip_file_name, void *callbackdata) {
     return -1;
   }
 
-  int status = process_zip_file(NULL, archive, callbackdata, NULL, rels_start_element, rels_end_element);
+  int status = process_zip_file(archive, callbackdata, NULL, rels_start_element, rels_end_element);
   return status;
 }
 
@@ -83,14 +83,40 @@ int load_drawings(zip_t *zip, char *zip_file_name, void *callbackdata) {
     printf("%s\n", zip_error_strerror(err_zip));
     return -1;
   }
-  int status = process_zip_file(NULL, archive, callbackdata, NULL, drawings_start_element, drawings_end_element);
+  int status = process_zip_file(archive, callbackdata, NULL, drawings_start_element, drawings_end_element);
+  return status;
+}
+
+/* 
+  int len_chunks_dir_path = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1;
+  data->chunks_dir_path = malloc(len_chunks_dir_path + 1);
+  snprintf(data->chunks_dir_path, len_chunks_dir_path + 1, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
+
+  printf("---------------------------------------------------CHART--------------------------------------\n");
+  char *zip_file_name = "xl/charts/chart16.xml";
+  struct ChartCallBackData chart_callbackdata;
+  chart_callbackdata_initialize(&chart_callbackdata, 0);
+  int status_chart = load_chart(zip, zip_file_name, &chart_callbackdata);
+  if (status_chart != 1) {
+    fprintf(stderr, "%s\n", strerror(errno));
+  }
+  printf("--------------------------------------------------------------------------------------------------\n");
+*/
+int load_chart(zip_t *zip, char *zip_file_name, void *callbackdata, XML_Parser *xmlparser_chart) {
+  zip_file_t *archive = open_zip_file(zip, zip_file_name);
+  zip_error_t *err_zip = zip_get_error(zip);
+  if (archive == NULL) {
+    printf("%s\n", zip_error_strerror(err_zip));
+    return -1;
+  }
+  int status = process_zip_file(archive, callbackdata, NULL, chart_start_element, chart_end_element);
   return status;
 }
 
 int load_workbook(zip_t *zip) {
   const char *zip_file_name = "xl/workbook.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
-  int status = process_zip_file(NULL, archive, NULL, NULL, workbook_start_element, workbook_end_element);
+  int status = process_zip_file(archive, NULL, NULL, workbook_start_element, workbook_end_element);
   for(int i = 0; i < array_sheets.length; i++) {
     printf("Name %s\n", array_sheets.sheets[i]->name);
     printf("sheetID: %s\n", array_sheets.sheets[i]->sheetId);
@@ -159,7 +185,7 @@ int load_styles(zip_t *zip) {
   const char *zip_file_name = "xl/styles.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   // Load NumFMT first
-  int status = process_zip_file(NULL, archive, NULL, NULL, styles_start_element, styles_end_element);
+  int status = process_zip_file(archive, NULL, NULL, styles_start_element, styles_end_element);
   for (int i = 0; i < array_numfmts.length; i++) {
     printf("Format code: %s\n", array_numfmts.numfmts[i].formatCode);
     printf("Format id: %s\n", array_numfmts.numfmts[i].numFmtId);
@@ -232,7 +258,7 @@ int load_worksheets(zip_t *zip) {
     worksheet.array_drawingids.length = 0;
     worksheet.array_drawingids.drawing_ids = NULL;
 
-    int status_worksheet = process_zip_file(NULL, archive, &worksheet, NULL, worksheet_start_element, worksheet_end_element);
+    int status_worksheet = process_zip_file(archive, &worksheet, NULL, worksheet_start_element, worksheet_end_element);
     if (status_worksheet != 1){
       return status_worksheet;
     }
@@ -362,7 +388,7 @@ int load_sharedStrings(zip_t *zip) {
     return -1;
   }
   zip_file_t *archive = open_zip_file(zip, file_name);
-  int status_sharedStrings = process_zip_file(NULL, archive, sharedStrings_file, NULL, sharedStrings_main_start_element, sharedStrings_main_end_element);
+  int status_sharedStrings = process_zip_file(archive, sharedStrings_file, NULL, sharedStrings_main_start_element, sharedStrings_main_end_element);
   if (status_sharedStrings == -1) {
     fprintf(stderr, "Error when load sharedStrings\n");
     fclose(sharedStrings_file);
@@ -374,11 +400,10 @@ int load_sharedStrings(zip_t *zip) {
   return 1;
 }
 
-int process_zip_file(XML_Parser *parser, zip_file_t *archive, void *callbackdata, XML_CharacterDataHandler content_handler, XML_StartElementHandler start_element, XML_EndElementHandler end_element) {
+int process_zip_file(zip_file_t *archive, void *callbackdata, XML_CharacterDataHandler content_handler, XML_StartElementHandler start_element, XML_EndElementHandler end_element) {
   void *buf;
   zip_int64_t buflen;
-  if (parser == NULL)
-    xmlparser = XML_ParserCreate(NULL);
+  xmlparser = XML_ParserCreate(NULL);
   int done;
   enum XML_Status status = XML_STATUS_ERROR;
   XML_SetUserData(xmlparser, callbackdata);
@@ -562,10 +587,24 @@ void pre_process(zip_t *zip) {
 	    struct DrawingCallbackData drawing_callbackdata;
             drawings_callbackdata_initialize(&drawing_callbackdata, &array_sheets.sheets[index_sheet]->array_drawing_rels, findexhtml, zip, index_sheet);
 	    int status_drawings = load_drawings(zip, zip_drawing_file_name, &drawing_callbackdata);
-
 	    if (status_drawings != -1) {
 	      //TODO: Handle error
 	    }
+
+	    printf("------------------------------DRAWING_CALLBACK----------------------------------------------------\n");
+	    for (int i_drawing_callback = 0; i_drawing_callback < drawing_callbackdata.array_chart_metadata.length; i_drawing_callback++) {
+	      printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id);
+	      printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_name);
+	      printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path);
+	      printf("\n");
+
+	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id);
+	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_name);
+	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path);
+	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]);
+	    }
+	    free(drawing_callbackdata.array_chart_metadata.chart_metadata);
+	    printf("----------------------------------------------------------------------------------------------------\n");
 	    free(zip_drawing_file_name);
 	  }
 	  for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {

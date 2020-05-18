@@ -4,8 +4,6 @@
 #include <private.h>
 
 
-
-
 struct NumFMT {
   XML_Char *formatCode;
   XML_Char *numFmtId;

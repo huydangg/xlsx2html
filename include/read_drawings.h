@@ -36,6 +36,17 @@ struct TwoCellAnchor {
   struct GraphicFrame graphic_frame;
 };
 
+struct ChartMetaData {
+  char *file_name;
+  char *file_path;
+  char *id;
+};
+
+struct ArrayChartMetaData {
+  int length;
+  struct ChartMetaData **chart_metadata;
+};
+
 struct DrawingCallbackData {
   struct ArrayRelationships *array_drawing_rels;
   struct TwoCellAnchor twocellanchor;
@@ -54,6 +65,7 @@ struct DrawingCallbackData {
   int index_graphicframe;
   char is_pic;
   char is_graphicframe;
+  struct ArrayChartMetaData array_chart_metadata;
 };
 
 extern XML_Parser xmlparser;

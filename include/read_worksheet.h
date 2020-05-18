@@ -3,6 +3,7 @@
 
 #include <private.h>
 
+
 struct Col {
   unsigned short int min;
   unsigned short int max;
