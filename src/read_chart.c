@@ -41,31 +41,52 @@ void chart_skip_tag_end_element(void *callbackdata, const XML_Char *name) {
 
 void chart_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  printf("%s\n", name);
+  struct ChartCallBackData *chart_callbackdata = callbackdata;
+  printf("LV0000000000000000000000000000: <%s>\n", name);
   if (strcmp(name, "c:chart") == 0) {
+    fputs("{", chart_callbackdata->fchart);
     XML_SetElementHandler(xmlparser, chart_lv1_start_element, NULL);
   }
 }
 
 void chart_end_element(void *callbackdata, const XML_Char *name) {
-
+  struct ChartCallBackData *chart_callbackdata = callbackdata;
+  printf("LV0000000000000000000000000000: </%s>\n", name);
+  if (strcmp(name, "c:chart") == 0) {
+    fputs("}", chart_callbackdata->fchart);
+  }
 }
 
 void chart_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  if (strcmp(name, "c:chart") == 0) {
-    XML_SetElementHandler(xmlparser, chart_lv1_start_element, NULL);
+  struct ChartCallBackData *chart_callbackdata = callbackdata;
+  printf("LV11111111111111: <%s>\n", name);
+  if (strcmp(name, "c:title") == 0) {
+    fputs("\"title\": {", chart_callbackdata->fchart);
+    XML_SetElementHandler(xmlparser, chart_title_item_start_element, chart_title_item_end_element);
+  } else if (strcmp(name, "c:autoTitleDeleted") == 0){
+    XML_SetElementHandler(xmlparser, NULL, chart_lv1_end_element);
+  } else if (strcmp(name, "c:plotArea") == 0) {
+    XML_SetElementHandler(xmlparser, chart_plotArea_item_start_element, chart_plotArea_item_end_element);
   }
 }
 
 void chart_lv1_end_element(void *callbackdata, const XML_Char *name) {
+  printf("LV11111111111111: </%s>\n", name);
+  struct ChartCallBackData *chart_callbackdata = callbackdata;
   if (strcmp(name, "c:title") == 0) {
-    XML_SetElementHandler(xmlparser, chart_lv1_start_element, NULL);
+    fputs("}", chart_callbackdata->fchart);
+    XML_SetElementHandler(xmlparser, chart_lv1_start_element, chart_end_element);
+  } else if (strcmp(name, "c:autoTitleDeleted") == 0){
+    XML_SetElementHandler(xmlparser, chart_lv1_start_element, chart_end_element);
+  } else if (strcmp(name, "c:plotArea") == 0) {
+    XML_SetElementHandler(xmlparser, chart_lv1_start_element, chart_end_element);
   }
 }
 
 void chart_title_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
+  printf("LV222222: <%s>\n", name);
   struct ChartCallBackData *chart_callbackdata = callbackdata;
   if (strcmp(name, "a:pPr") == 0) {
     chart_callbackdata->skiptag = strdup(name);
@@ -75,16 +96,64 @@ void chart_title_item_start_element(void *callbackdata, const XML_Char *name, co
     chart_callbackdata->skip_data = NULL;
     XML_SetElementHandler(xmlparser, chart_skip_tag_start_element, chart_skip_tag_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
+  } else if (strcmp(name, "a:latin") == 0) {
+    for (int i = 0; attrs[i]; i += 2) {
+      if (strcmp(attrs[i], "typeface") == 0) {
+	fputs("\"font_name\":", chart_callbackdata->fchart);
+	fputs("\"", chart_callbackdata->fchart);
+	fputs(attrs[i + 1], chart_callbackdata->fchart);
+	fputs("\"", chart_callbackdata->fchart);
+      }
+    }
   } else if (strcmp(name, "a:t") == 0) {
+    fputs(",", chart_callbackdata->fchart);
+    fputs("\"text\":", chart_callbackdata->fchart);
     XML_SetElementHandler(xmlparser, chart_title_item_start_element, chart_title_item_end_element);
     XML_SetCharacterDataHandler(xmlparser, chart_content_handler);
   }
 }
 
 void chart_title_item_end_element(void *callbackdata, const XML_Char *name) {
+  printf("LV222222: </%s>\n", name);
   struct ChartCallBackData *chart_callbackdata = callbackdata;
-  XML_SetElementHandler(xmlparser, chart_title_item_start_element, chart_lv1_end_element);
-  XML_SetCharacterDataHandler(xmlparser, NULL);
+  if (strcmp(name, "a:t") == 0) {
+    fputs("\"", chart_callbackdata->fchart);
+    fputs(chart_callbackdata->text, chart_callbackdata->fchart);
+    fputs("\"", chart_callbackdata->fchart);
+    free(chart_callbackdata->text);
+    chart_callbackdata->text = NULL;
+  } else if (strcmp(name, "c:title") == 0) {
+    chart_lv1_end_element(callbackdata, name);
+  } else {
+    XML_SetElementHandler(xmlparser, chart_title_item_start_element, chart_title_item_end_element);
+    XML_SetCharacterDataHandler(xmlparser, NULL);
+  }
+}
+
+void chart_plotArea_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  (void)attrs;
+  struct ChartCallBackData *chart_callbackdata = callbackdata;
+  if (strcmp(name, "c:layout") == 0) {
+    chart_callbackdata->skiptag = strdup(name);
+    chart_callbackdata->skiptagcount = 1;
+    chart_callbackdata->skip_start = NULL;
+    chart_callbackdata->skip_end = chart_plotArea_item_end_element;
+    chart_callbackdata->skip_data = NULL;
+    XML_SetElementHandler(xmlparser, chart_skip_tag_start_element, chart_skip_tag_end_element);
+    XML_SetCharacterDataHandler(xmlparser, NULL);
+  } else if (strcmp(name, "c:barChart") == 0) {
+  }
+
+}
+
+void chart_plotArea_item_end_element(void *callbackdata, const XML_Char *name) {
+  struct ChartCallBackData *chart_callbackdata = callbackdata;
+  if (strcmp(name, "c:plotArea") == 0) {
+    chart_lv1_end_element(callbackdata, name);
+  } else {
+    XML_SetElementHandler(xmlparser, chart_plotArea_item_start_element, chart_plotArea_item_end_element);
+    XML_SetCharacterDataHandler(xmlparser, NULL);
+  }
 }
 
 void chart_content_handler(void *callbackdata, const XML_Char *buf, int len) {

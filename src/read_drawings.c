@@ -89,7 +89,7 @@ void drawings_skip_tag_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  printf("LV000000000000000000: <%s>\n", name);
+  //printf("LV000000000000000000: <%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (strcmp(name,"xdr:twoCellAnchor") == 0) {
     for (int i = 0; attrs[i]; i+=2) {
@@ -105,7 +105,7 @@ void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_
 
 void drawings_end_element(void *callbackdata, const XML_Char *name) {
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
-  printf("LV000000000000000000: </%s>\n", name);
+  //printf("LV000000000000000000: </%s>\n", name);
   if (strcmp(name,"xdr:twoCellAnchor") == 0) {
     //TODO: Record image html syntax with data from rels drawings to findexhtml
     //At last, free twocellanchor obj
@@ -297,7 +297,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  printf("LV111111111: <%s>\n", name);
+  //printf("LV111111111: <%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (strcmp(name, "xdr:from") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
@@ -330,7 +330,7 @@ void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const 
 }
 
 void drawings_lv1_end_element(void *callbackdata, const XML_Char *name) {
-  printf("LV111111111: </%s>\n", name);
+  //printf("LV111111111: </%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (strcmp(name, "xdr:from") == 0) {
     if (drawing_callbackdata->_tmp_offset.col != 0) {
@@ -361,7 +361,7 @@ void drawings_lv1_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_lv2_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  printf("LV222222222: <%s>\n", name);
+  //printf("LV222222222: <%s>\n", name);
   if (strcmp(name, "xdr:col") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv2_end_element);
     XML_SetCharacterDataHandler(xmlparser, drawings_content_handler);
@@ -388,7 +388,7 @@ void drawings_lv2_start_element(void *callbackdata, const XML_Char *name, const 
 }
 
 void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
-  printf("LV222222222: </%s>\n", name);
+  //printf("LV222222222: </%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (strcmp(name, "xdr:col") == 0) {
     if (drawing_callbackdata->text != NULL) {
@@ -437,7 +437,7 @@ void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  printf("LV333333333333333333333: <%s>\n", name);
+  //printf("LV333333333333333333333: <%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (strcmp(name,"xdr:cNvPr") == 0) {
     for (int i=0 ; attrs[i]; i+=2) {
@@ -478,7 +478,7 @@ void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const 
 }
 
 void drawings_lv3_end_element(void *callbackdata, const XML_Char *name) {
-  printf("LV333333333333333333333: </%s>\n", name);
+  //printf("LV333333333333333333333: </%s>\n", name);
   if (strcmp(name,"xdr:cNvPr") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv2_end_element);
   } else if(strcmp(name, "xdr:cNvPicPr") == 0) {
@@ -501,7 +501,7 @@ void drawings_lv3_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  printf("LV44444444444444444: <%s>\n", name);
+  //printf("LV44444444444444444: <%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (strcmp(name, "a:hlinkClick") == 0) {
     for (int i = 0; attrs[i]; i+=2) {
@@ -531,7 +531,7 @@ void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const 
 }
 
 void drawings_lv4_end_element(void *callbackdata, const XML_Char *name) {
-  printf("LV44444444444444444: </%s>\n", name);
+  //printf("LV44444444444444444: </%s>\n", name);
   XML_SetElementHandler(xmlparser, drawings_lv4_start_element, drawings_lv3_end_element);
 }
 
