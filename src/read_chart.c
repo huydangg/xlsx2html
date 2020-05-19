@@ -67,6 +67,8 @@ void chart_lv1_start_element(void *callbackdata, const XML_Char *name, const XML
   } else if (strcmp(name, "c:autoTitleDeleted") == 0){
     XML_SetElementHandler(xmlparser, NULL, chart_lv1_end_element);
   } else if (strcmp(name, "c:plotArea") == 0) {
+    fputs("\"charts\":", chart_callbackdata->fchart);
+    fputs("[", chart_callbackdata->fchart);
     XML_SetElementHandler(xmlparser, chart_plotArea_item_start_element, chart_plotArea_item_end_element);
   }
 }
@@ -80,6 +82,7 @@ void chart_lv1_end_element(void *callbackdata, const XML_Char *name) {
   } else if (strcmp(name, "c:autoTitleDeleted") == 0){
     XML_SetElementHandler(xmlparser, chart_lv1_start_element, chart_end_element);
   } else if (strcmp(name, "c:plotArea") == 0) {
+    fputs("]", chart_callbackdata->fchart);
     XML_SetElementHandler(xmlparser, chart_lv1_start_element, chart_end_element);
   }
 }
@@ -132,26 +135,72 @@ void chart_title_item_end_element(void *callbackdata, const XML_Char *name) {
 
 void chart_plotArea_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
+  printf("PlotArea ITEMMMMMMMMMMMM: <%s>\n", name);
   struct ChartCallBackData *chart_callbackdata = callbackdata;
   if (strcmp(name, "c:layout") == 0) {
     chart_callbackdata->skiptag = strdup(name);
     chart_callbackdata->skiptagcount = 1;
-    chart_callbackdata->skip_start = NULL;
+    chart_callbackdata->skip_start = chart_plotArea_item_start_element;
     chart_callbackdata->skip_end = chart_plotArea_item_end_element;
     chart_callbackdata->skip_data = NULL;
     XML_SetElementHandler(xmlparser, chart_skip_tag_start_element, chart_skip_tag_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   } else if (strcmp(name, "c:barChart") == 0) {
+    fputs("{", chart_callbackdata->fchart);
+    fputs("\"type\":\"barChart\"", chart_callbackdata->fchart);
+    fputs(",", chart_callbackdata->fchart);
+    fputs("\"sers\":", chart_callbackdata->fchart);
+    fputs("[", chart_callbackdata->fchart);
+    XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
   }
 
 }
 
 void chart_plotArea_item_end_element(void *callbackdata, const XML_Char *name) {
+  printf("PlotArea ITEMMMMMMMMMMMM: </%s>\n", name);
   struct ChartCallBackData *chart_callbackdata = callbackdata;
   if (strcmp(name, "c:plotArea") == 0) {
     chart_lv1_end_element(callbackdata, name);
   } else {
+    if (strcmp(name, "c:barChart") == 0) {
+      fputs("]", chart_callbackdata->fchart);
+      fputs("}", chart_callbackdata->fchart);
+    }
     XML_SetElementHandler(xmlparser, chart_plotArea_item_start_element, chart_plotArea_item_end_element);
+    XML_SetCharacterDataHandler(xmlparser, NULL);
+  }
+}
+
+void chart_barChart_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
+  (void)attrs;
+  printf("barChart ITEMMMMMMMMMMMMMMM: <%s>\n", name);
+  struct ChartCallBackData *chart_callbackdata = callbackdata;
+  if (strcmp(name, "c:ser") == 0) {
+    fputs("{", chart_callbackdata->fchart);
+  }/* else if (strcmp(name, "c:v") == 0) {
+    XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
+    XML_SetCharacterDataHandler(xmlparser, chart_content_handler);
+  }*/
+}
+
+void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
+  printf("barChart ITEMMMMMMMMMMMMMMM: </%s>\n", name);
+  struct ChartCallBackData *chart_callbackdata = callbackdata;
+  if (strcmp(name, "c:barChart") == 0) {
+    chart_plotArea_item_end_element(callbackdata, name);
+  } else {
+    if (strcmp(name, "c:ser") == 0) {
+    fputs("}", chart_callbackdata->fchart);
+    fputs(",", chart_callbackdata->fchart);
+    }/* else if (strcmp(name, "c:v") == 0) {
+      fputs("\"tx\":", chart_callbackdata->fchart);
+      fputs("\"", chart_callbackdata->fchart);
+      fputs(chart_callbackdata->text, chart_callbackdata->fchart);
+      free(chart_callbackdata->text);
+      chart_callbackdata->text = NULL;
+      fputs("\"", chart_callbackdata->fchart);
+    }*/
+    XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   }
 }

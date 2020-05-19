@@ -29,6 +29,8 @@ void chart_title_item_start_element(void *, const XML_Char *, const XML_Char **)
 void chart_title_item_end_element(void *, const XML_Char *);
 void chart_plotArea_item_start_element(void *, const XML_Char *, const XML_Char **);
 void chart_plotArea_item_end_element(void *, const XML_Char *);
+void chart_barChart_item_start_element(void *, const XML_Char *, const XML_Char **);
+void chart_barChart_item_end_element(void *, const XML_Char *);
 void chart_content_handler(void *, const XML_Char *, int);
 
 int chart_callbackdata_initialize (struct ChartCallBackData *, char *, int);
