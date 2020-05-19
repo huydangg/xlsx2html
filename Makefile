@@ -8,6 +8,7 @@ MAKE_FILE_DIR = $(shell pwd)
 
 FILES_JS = $(MAKE_FILE_DIR)/bin/build_js.sh $(MAKE_FILE_DIR)
 FILES_CSS = $(MAKE_FILE_DIR)/bin/build_css.sh $(MAKE_FILE_DIR)
+FILES_SSF = $(MAKE_FILE_DIR)/bin/build_ssf.sh $(MAKE_FILE_DIR)
 
 # Flags for compilation (adding warnings are always good)
 CFLAGS = -g -Wall -Iinclude
@@ -32,6 +33,7 @@ default: all
 all:	$(EXE)
 	$(FILES_JS)
 	$(FILES_CSS)
+	$(FILES_SSF)
 
 # This will link the executable from the object files
 $(EXE): $(OBJECTS)
