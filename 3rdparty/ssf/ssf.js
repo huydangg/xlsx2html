@@ -862,16 +862,10 @@ SSF.init_table = init_table;
 SSF.format = format;
 };
 make_ssf(SSF);
-var result = SSF.format(process.argv[index_format + 1], process.argv[index_format + 2], date1904=false)
-console.log(result)
 /*global module */
-console.log(process.argv);
-console.log(process.argv.slice(2))
 var index_format = process.argv.indexOf("--format");
 if (index_format !== -1) {
-  console.log(process.argv[index_format + 1])
-  console.log(process.argv[index_format + 2])
-  var result = SSF.format(process.argv[index_format + 1], parseInt(process.argv[index_format + 2]), date1904=false)
+  var result = SSF.format(process.argv[index_format + 1], Number(process.argv[index_format + 2]), date1904=false)
   console.log(result)
 }
 //if(typeof module !== 'undefined' && typeof DO_NOT_EXPORT_SSF === 'undefined') module.exports = SSF;
