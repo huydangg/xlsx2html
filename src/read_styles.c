@@ -93,8 +93,7 @@ void numFmt_main_start_element(void *callbackdata, const XML_Char *name, const X
       if (strcmp(attrs[i], "formatCode") == 0){
         numFmts_callbackdata[array_numfmts.length - 1].formatCode = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
         memcpy(numFmts_callbackdata[array_numfmts.length - 1].formatCode, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-      }
-      if (strcmp(attrs[i], "numFmtId") == 0){
+      } else if (strcmp(attrs[i], "numFmtId") == 0){
         numFmts_callbackdata[array_numfmts.length - 1].numFmtId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
         memcpy(numFmts_callbackdata[array_numfmts.length - 1].numFmtId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
@@ -325,10 +324,10 @@ void xf_main_start_element(void *callbackdata, const XML_Char *name, const XML_C
     } else if (xfs_callbackdata == array_cellXfs.Xfs) {
       _tmp_count = ++array_cellXfs.length;
     }
-    xfs_callbackdata[_tmp_count - 1].isApplyAlignment = '0';
-    xfs_callbackdata[_tmp_count - 1].isApplyFont = '0';
-    xfs_callbackdata[_tmp_count - 1].isApplyNumberFormat = '0';
-    xfs_callbackdata[_tmp_count - 1].isApplyBorder = '0';
+    xfs_callbackdata[_tmp_count - 1].isApplyAlignment = '1';
+    xfs_callbackdata[_tmp_count - 1].isApplyFont = '1';
+    xfs_callbackdata[_tmp_count - 1].isApplyNumberFormat = '1';
+    xfs_callbackdata[_tmp_count - 1].isApplyBorder = '1';
     for (int i = 0; attrs[i]; i += 2) {
       if (strcmp(attrs[i], "borderId") == 0) {
         xfs_callbackdata[_tmp_count - 1].borderId = (unsigned short)strtol(attrs[i + 1], NULL, 10);
