@@ -15,6 +15,7 @@ const char *OUTPUT_FILE_NAME;
 const char *TEMP_DIR;
 const char *RESOURCE_URL;
 const char *WORKING_DIR;
+const char *CHUNKS_DIR_PATH;
 
 int err;
 
@@ -253,6 +254,8 @@ int load_worksheets(zip_t *zip) {
     struct WorkSheet worksheet;
     worksheet.start_col = 'A';
     worksheet.start_row = '1';
+    worksheet.end_col = '\0';
+    worksheet.end_row = '\0';
     worksheet.index_sheet = i;
     worksheet.hasMergedCells = '0';
     worksheet.array_drawingids.length = 0;
@@ -498,9 +501,7 @@ void pre_process(zip_t *zip) {
     fprintf(stderr, "Cannot open index html file to read\n");
     return;
   }
-  int len_chunks_dir_path = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1;
-  char *CHUNKS_DIR_PATH = malloc(len_chunks_dir_path + 1);
-  snprintf(CHUNKS_DIR_PATH, len_chunks_dir_path + 1, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
+  int len_chunks_dir_path = strlen(CHUNKS_DIR_PATH);
 
   char line[256];
   while(fgets(line, sizeof(line), fmanifest)) {
@@ -691,7 +692,6 @@ void pre_process(zip_t *zip) {
   free(BASE_CSS_PATH);
   free(BASE_JS_PATH);
   free(INDEX_HTML_PATH);
-  free(CHUNKS_DIR_PATH);
 }
 
 void post_process() {
@@ -833,6 +833,16 @@ int main(int argc, char **argv) {
       goto LOAD_RESOURCES_FAILED;
     }
   }
+  int len_chunks_dir_path = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1;
+  CHUNKS_DIR_PATH = malloc(len_chunks_dir_path  + 1);
+  snprintf(CHUNKS_DIR_PATH, len_chunks_dir_path + 1, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
+  if (stat(CHUNKS_DIR_PATH, &st) == -1) {
+    int status = mkdir(CHUNKS_DIR_PATH, S_IRWXU);
+    if (status != 0) {
+      fprintf(stderr, "Error when create a chunks dir! %s\n", strerror(errno));
+      goto LOAD_RESOURCES_FAILED;
+    }
+  }
   int status_workbook = load_workbook(zip);
   if (status_workbook != 1) {
     fprintf(stderr, "Failed to read workbook");
@@ -873,5 +883,6 @@ OPEN_ZIP_FAILED:
   if (has_tmp_dir == '1')
     free((char *)TEMP_DIR);
   free((char *)RESOURCE_URL);
+  free((char *)CHUNKS_DIR_PATH);
   exit(EXIT_SUCCESS);
 }
