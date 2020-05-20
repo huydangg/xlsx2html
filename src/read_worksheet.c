@@ -795,12 +795,67 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
           }
         }
         fclose(sharedStrings_file);
-        } else {
-          fputs("<span>", worksheet_callbackdata->worksheet_file);
-          fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
-          fputs("</span>", worksheet_callbackdata->worksheet_file);
-          fputs("\n", worksheet_callbackdata->worksheet_file);
-        }
+      } else if (strcmp(worksheet_callbackdata->type_content, "n") == 0) {
+        unsigned short numFmt_id = -1;
+	if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyNumberFormat == '1') {
+	  numFmt_id = array_cellXfs.Xfs[worksheet_callbackdata->index_style].numFmtId;
+	} else if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyNumberFormat  == '0') {
+	  int id_cellXfs = array_cellXfs.Xfs[worksheet_callbackdata->index_style].xfId;
+	  numFmt_id = array_cellStyleXfs.Xfs[id_cellXfs].numFmtId;
+	}
+	int index_numFmt;
+	for (index_numFmt = 0; index_numFmt < array_numfmts.length; index_numFmt++) {
+	  int numFmtIdInt = strtol(array_numfmts.numfmts[index_numFmt].numFmtId, NULL, 10);
+	  if (numFmtIdInt == numFmt_id) {
+	    break;
+	  }
+	}
+        fputs("<span>", worksheet_callbackdata->worksheet_file);
+	if (strcmp(array_numfmts.numfmts[index_numFmt].formatCode, "General") == 0) {
+	  fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
+	} else {
+	  FILE *fp;
+	  char formated_content[1035];
+	  /* Open the command for reading. */
+	  int len_ssf_bin_path = strlen(WORKING_DIR) + strlen(THIRD_PARTY_DIR_NAME) + strlen(SSF_BIN_DIR_NAME) + 3;
+	  char *ssf_bin_path = malloc(len_ssf_bin_path + 1);
+	  snprintf(ssf_bin_path, len_ssf_bin_path + 1, "%s%s/%s", WORKING_DIR, THIRD_PARTY_DIR_NAME, SSF_BIN_DIR_NAME);
+	  char *option_format = "--format";
+
+	  //3: blank
+	  //2: ""
+	  int len_cmd = len_ssf_bin_path
+	    + strlen(worksheet_callbackdata->worksheet_content)
+	    + strlen(array_numfmts.numfmts[index_numFmt].formatCode)
+	    + strlen(option_format) + 3 + 2;
+	  char *cmd = malloc(len_cmd + 1);
+	  snprintf(
+	    cmd, len_cmd + 1, "%s %s \"%s\" %s", ssf_bin_path, option_format,
+	    array_numfmts.numfmts[index_numFmt].formatCode,
+	    worksheet_callbackdata->worksheet_content
+	  );
+	  free(ssf_bin_path);
+	  fp = popen(cmd, "r");
+	  free(cmd);
+	  if (fp == NULL) {
+	    fprintf(stderr, "Failed to run ssf\n");
+	    fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
+	  } else {
+	    /* Read the output a line at a time - output it. */
+	    fgets(formated_content, sizeof(formated_content), fp);
+	    /* close */
+	    pclose(fp);
+	    fputs(formated_content, worksheet_callbackdata->worksheet_file);
+	  }
+	}
+        fputs("</span>", worksheet_callbackdata->worksheet_file);
+        fputs("\n", worksheet_callbackdata->worksheet_file);
+      } else {
+        fputs("<span>", worksheet_callbackdata->worksheet_file);
+        fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
+        fputs("</span>", worksheet_callbackdata->worksheet_file);
+        fputs("\n", worksheet_callbackdata->worksheet_file);
+      }
       free(worksheet_callbackdata->worksheet_content);
       worksheet_callbackdata->worksheet_content = NULL;
       worksheet_callbackdata->len_worksheet_content = 0;
