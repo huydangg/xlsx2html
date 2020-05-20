@@ -43,6 +43,8 @@ extern const char *WORKING_DIR;
 # define BASE_JS_FILE_NAME "xlsxmagic.min.js"
 # define MANIFEST_FILE_NAME "manifest"
 # define TEMPLATES_DIR_NAME "templates"
+# define THIRD_PARTY_DIR_NAME "3rdparty"
+# define SSF_BIN_DIR_NAME "ssf/ssf-bin/ssf"
 
 void reversed(char *input);
 
