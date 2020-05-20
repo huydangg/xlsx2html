@@ -500,31 +500,35 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     }
     char *styles = NULL;
     char *horizontal_style = NULL;
-    char *vertical_style = NULL;
+    char *vertical_style =NULL;
     char *border_style = NULL;
     char *wraptext_style = NULL;
     char *horizontal = NULL;
     char *vertical = NULL;
     char *font_style = NULL;
     char *fill_style = NULL;
-    char wrapText;
+    char wrapText = '\0';
     if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyAlignment == '1') {
-      int len_horizontal = strlen(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal);
-      horizontal = realloc(horizontal, 1 + len_horizontal);
-      memcpy(horizontal, array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal, 1 + len_horizontal);
-      int len_vertical = strlen(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.vertical);
-      vertical = realloc(vertical, 1 + len_vertical);
-      memcpy(vertical, array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.vertical, 1 + len_vertical);
-      wrapText = array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.isWrapText;
+      if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal != NULL) {
+	int len_horizontal = strlen(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal);
+	horizontal = realloc(horizontal, 1 + len_horizontal);
+	memcpy(horizontal, array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal, 1 + len_horizontal);
+	int len_vertical = strlen(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.vertical);
+	vertical = realloc(vertical, 1 + len_vertical);
+	memcpy(vertical, array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.vertical, 1 + len_vertical);
+	wrapText = array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.isWrapText;
+      }
     } else if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyAlignment == '0') {
       int id_cellXfs = array_cellXfs.Xfs[worksheet_callbackdata->index_style].xfId;
-      int len_horizontal = strlen(array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal);
-      horizontal = realloc(horizontal, 1 + len_horizontal);
-      memcpy(horizontal, array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal, 1 + len_horizontal);
-      int len_vertical = strlen(array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical);
-      vertical = realloc(vertical, 1 + len_vertical);
-      memcpy(vertical, array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical, 1 + len_vertical);
-      wrapText = array_cellStyleXfs.Xfs[id_cellXfs].alignment.isWrapText;
+      if (array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal != NULL) {
+	int len_horizontal = strlen(array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal);
+	horizontal = realloc(horizontal, 1 + len_horizontal);
+	memcpy(horizontal, array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal, 1 + len_horizontal);
+	int len_vertical = strlen(array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical);
+	vertical = realloc(vertical, 1 + len_vertical);
+	memcpy(vertical, array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical, 1 + len_vertical);
+	wrapText = array_cellStyleXfs.Xfs[id_cellXfs].alignment.isWrapText;
+      }
     }
     if (horizontal != NULL) {
       if (strcmp(horizontal, "center") == 0) {
@@ -698,20 +702,34 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	LEN_FILL_FGCOLOR_RGB = 18 + strlen(array_fills.fills[fill_id].patternFill.fgColor.rgb);
 	fill_style = realloc(fill_style, LEN_FILL_FGCOLOR_RGB + 1);
         snprintf(fill_style, LEN_FILL_FGCOLOR_RGB + 1, "background-color:%s;", array_fills.fills[fill_id].patternFill.fgColor.rgb);
+      } else {
+	fill_style = calloc(1, sizeof(char));
       }
+      if (horizontal_style == NULL) {
+	horizontal_style = calloc(1, sizeof(char));
+      }
+      if (vertical_style == NULL) {
+	vertical_style = calloc(1, sizeof(char));
+      }
+      if (wraptext_style == NULL) {
+	wraptext_style = calloc(1, sizeof(char));
+      }
+      if (border_style == NULL) {
+	border_style = calloc(1, sizeof(char));
+      }
+      if (font_style == NULL) {
+	font_style = calloc(1, sizeof(char));
+      }
+
       int len_styles = strlen(horizontal_style) + strlen(vertical_style) + strlen(wraptext_style) + strlen(border_style) + strlen(font_style) + LEN_FILL_FGCOLOR_RGB;
       styles = realloc(styles, len_styles + 1);
-      if (LEN_FILL_FGCOLOR_RGB == 0) {
-        snprintf(styles, len_styles + 1, "%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style);
-      } else {
-        snprintf(styles, len_styles + 1, "%s%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style, fill_style);
-        free(fill_style);
-      }
+      snprintf(styles, len_styles + 1, "%s%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style, fill_style);
       free(horizontal_style);
       free(vertical_style);
       free(wraptext_style);
       free(border_style);
       free(font_style);
+      free(fill_style);
       char *TD_TAG = NULL;
       int len_cellname = strlen(worksheet_callbackdata->cell_name);
       int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
