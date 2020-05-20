@@ -6,7 +6,7 @@ build () {
     OUTPUT_FN="ssf-bin"
     OUTPUT="$BASEDIR/3rdparty/ssf/$OUTPUT_FN"
     (echo "Building $OUTPUT with PKG Compiler" && \
-        pkg --out-path $OUTPUT $INPUT
+        pkg -t node14-linux --out-path $OUTPUT $INPUT
         echo 'Done.') || \
     (echo 'Failed. ' && \
     echo 'Using the uncompressed version.' && \
