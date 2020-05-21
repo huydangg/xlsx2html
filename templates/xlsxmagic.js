@@ -87,6 +87,7 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
 	currentTbodyChunkEle.innerHTML = data
       }
       loadImg(indexCurrentSheet)
+      google['charts']['setOnLoadCallback'](function(){loadChart(indexCurrentSheet)})
       indexCurrentChunk++
       loadChunks(indexCurrentSheet, indexCurrentChunk, startTime)
     } else {
@@ -180,6 +181,28 @@ function loadImg(indexCurrentSheet) {
     imgEle.width = width
     currentSheetEle.appendChild(imgEle)
     indexImg++
+  }
+}
+function loadChart(indexCurrentSheet) {
+  var indexChart = 0
+  while (1) {
+    var divImgMetaData = document.getElementById("chunk_" + indexCurrentSheet + "_" + indexChart + '_chart');
+    if (!divImgMetaData) {
+      return;
+    }
+    var row = divImgMetaData.getAttribute('data-from-row')
+    var col = divImgMetaData.getAttribute('data-from-col')
+    var heigth = divImgMetaData.getAttribute('data-heigth')
+    var width = divImgMetaData.getAttribute('data-width')
+    var cell = document.getElementById(indexCurrentSheet + '_' + (col + row))
+    if (!cell) {
+      return
+    }
+    var colOff = divImgMetaData.getAttribute('data-from-colOff')
+    var rowOff = divImgMetaData.getAttribute('data-from-rowOff')
+
+    var reactCell = getOffset(cell)
+    indexChart++
   }
 }
 function Viewer() {

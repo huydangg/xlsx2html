@@ -175,7 +175,6 @@ void chart_plotArea_item_start_element(void *callbackdata, const XML_Char *name,
     fputs("[", chart_callbackdata->fchart);
     XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
   }
-
 }
 
 void chart_plotArea_item_end_element(void *callbackdata, const XML_Char *name) {

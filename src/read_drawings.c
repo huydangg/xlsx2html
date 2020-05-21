@@ -252,17 +252,24 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	      CHART_URL = strdup(OUTPUT_CHART_FILE_PATH);
 	      len_chart_url = len_output_chart_file_path;
 	    }
+            drawing_callbackdata->twocellanchor.graphic_frame.cy = drawing_callbackdata->twocellanchor.pic.cy;
+            drawing_callbackdata->twocellanchor.graphic_frame.cx = drawing_callbackdata->twocellanchor.pic.cx;
+	    size_t height = drawing_callbackdata->twocellanchor.graphic_frame.cy / 9525;
+	    size_t width = drawing_callbackdata->twocellanchor.graphic_frame.cx / 9525;
+	    int len_height = snprintf(NULL, 0, "%zu", height);
+	    int len_width = snprintf(NULL, 0, "%zu", width);
 	    int len_chart_name = strlen(drawing_callbackdata->twocellanchor.graphic_frame.name);
 	    int len_div_chart = len_chart_json_file_name + len_chart_url
-	      + len_chart_name + len_from_col_name + len_from_row + 76;
+	      + len_chart_name + len_from_col_name + len_from_row + 76 + 28 + len_height + len_width;
 	    char *DIV_CHART = malloc(len_div_chart + 1);
 	    snprintf(
 	      DIV_CHART, len_div_chart + 1,
-	      "<div id=\"%s\" data-chart-url=\"%s\" data-name=\"%s\" data-from-col=\"%s\" data-from-row=\"%u\">",
+	      "<div id=\"%s\" data-chart-url=\"%s\" data-name=\"%s\" data-from-col=\"%s\" data-from-row=\"%u\" data-height=\"%zu\" data-width=\"%zu\">",
 	      chart_json_file_name, CHART_URL,
 	      drawing_callbackdata->twocellanchor.graphic_frame.name,
 	      from_col_name,
-	      drawing_callbackdata->twocellanchor.from.row
+	      drawing_callbackdata->twocellanchor.from.row,
+	      height, width
 	    );
 	    free(drawing_callbackdata->twocellanchor.graphic_frame.name);
 	    fputs(DIV_CHART, drawing_callbackdata->findexhtml);
