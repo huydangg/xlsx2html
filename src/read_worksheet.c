@@ -342,9 +342,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
       } else if (strcmp(attrs[i], "min") == 0) {
 	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->min = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
       } else if (strcmp(attrs[i], "max") == 0) {
-        if (worksheet_callbackdata->end_col_number == 0) {
-          worksheet_callbackdata->end_col_number = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
-        }
+        worksheet_callbackdata->end_col_number = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
 	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->max = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
       } else if (strcmp(attrs[i], "width") == 0) {
 	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->width = strtof((char *)attrs[i + 1], NULL);
@@ -355,30 +353,30 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     //TODO: Need to calculate number of chunks first.
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     worksheet_callbackdata->ROW_NUMBER = NULL;
+    float row_height_in_px  = 0.0;
+    int len_row_number = 0;
     for (int i = 0; attrs[i]; i+=2) {
       if (strcmp(attrs[i], "r") == 0) {
-	int len_row_number = strlen(attrs[i + 1]);
+	len_row_number = strlen(attrs[i + 1]);
 	worksheet_callbackdata->ROW_NUMBER = realloc(worksheet_callbackdata->ROW_NUMBER, len_row_number + 1);
 	memcpy(worksheet_callbackdata->ROW_NUMBER, attrs[i + 1], len_row_number + 1);
-	int LEN_TR_TAG = 11 + len_row_number;
-        char *TR_TAG = malloc(LEN_TR_TAG);
-	if (TR_TAG == NULL) {
-	}
-	snprintf(TR_TAG, LEN_TR_TAG, "<tr id=\"%s\">", worksheet_callbackdata->ROW_NUMBER);
-	fputs(TR_TAG, worksheet_callbackdata->worksheet_file);
-	free(TR_TAG);
-        fputs("\n", worksheet_callbackdata->worksheet_file);
       } else if (strcmp(attrs[i], "ht") == 0) {
 	//<th style="height:px;"
-	float row_height_in_px = strtof((char *)attrs[i + 1], NULL) * (20 * 1.0 / 15);
-	int len_row_height_in_px = snprintf(NULL, 0, "%.2f", row_height_in_px);
-        int LEN_TH_TAG = 29 + len_row_height_in_px + strlen(worksheet_callbackdata->ROW_NUMBER);
-	char TH_TAG[LEN_TH_TAG];
-	snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%.2fpx;\">%s</th>", row_height_in_px, worksheet_callbackdata->ROW_NUMBER);
-	fputs(TH_TAG, worksheet_callbackdata->worksheet_file);
-        fputs("\n", worksheet_callbackdata->worksheet_file);
+	row_height_in_px = strtof((char *)attrs[i + 1], NULL) * (20 * 1.0 / 15);
       }
     }
+    int LEN_TR_TAG = 11 + len_row_number;
+    char *TR_TAG = malloc(LEN_TR_TAG);
+    snprintf(TR_TAG, LEN_TR_TAG, "<tr id=\"%s\">", worksheet_callbackdata->ROW_NUMBER);
+    fputs(TR_TAG, worksheet_callbackdata->worksheet_file);
+    free(TR_TAG);
+    fputs("\n", worksheet_callbackdata->worksheet_file);
+    int len_row_height_in_px = snprintf(NULL, 0, "%.2f", row_height_in_px);
+    int LEN_TH_TAG = 29 + len_row_height_in_px + strlen(worksheet_callbackdata->ROW_NUMBER);
+    char TH_TAG[LEN_TH_TAG];
+    snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%.2fpx;\">%s</th>", row_height_in_px, worksheet_callbackdata->ROW_NUMBER);
+    fputs(TH_TAG, worksheet_callbackdata->worksheet_file);
+    fputs("\n", worksheet_callbackdata->worksheet_file);
     START_CELL_IN_NUMBER_BY_ROW = 1;
     XML_SetElementHandler(xmlparser, cell_start_element, generate_cells);
   } else if (strcmp(name, "mergeCell") == 0) {
