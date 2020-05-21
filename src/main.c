@@ -834,8 +834,13 @@ int main(int argc, char **argv) {
     }
   }
   int len_chunks_dir_path = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1;
-  CHUNKS_DIR_PATH = malloc(len_chunks_dir_path  + 1);
-  snprintf(CHUNKS_DIR_PATH, len_chunks_dir_path + 1, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
+  char *_tmp_chunks_dir_path = malloc(len_chunks_dir_path  + 1);
+  if (_tmp_chunks_dir_path == NULL) {
+    fprintf(stderr, "Allocate memory error");
+  }
+  snprintf(_tmp_chunks_dir_path, len_chunks_dir_path + 1, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
+  CHUNKS_DIR_PATH = strdup(_tmp_chunks_dir_path);
+  free(_tmp_chunks_dir_path);
   if (stat(CHUNKS_DIR_PATH, &st) == -1) {
     int status = mkdir(CHUNKS_DIR_PATH, S_IRWXU);
     if (status != 0) {
