@@ -852,7 +852,7 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
 	    + strlen(option_format) + 3 + 2;
 	  char *cmd = malloc(len_cmd + 1);
 	  snprintf(
-	    cmd, len_cmd + 1, "%s %s \"%s\" %s", ssf_bin_path, option_format,
+	    cmd, len_cmd + 1, "%s %s \'%s\' %s", ssf_bin_path, option_format,
 	    array_numfmts.numfmts[index_numFmt].formatCode,
 	    worksheet_callbackdata->worksheet_content
 	  );
