@@ -40,7 +40,7 @@ struct WorkSheet {
   struct ArrayDrawingIds array_drawingids;
   FILE *fmergecell;
   char *ROW_NUMBER; // Temp current row
-
+  char has_dimension;
 };
 
 extern XML_Parser xmlparser;
