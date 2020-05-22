@@ -160,9 +160,6 @@ void chart_plotArea_item_start_element(void *callbackdata, const XML_Char *name,
       fputs(",", chart_callbackdata->fchart);
     fputs("{", chart_callbackdata->fchart);
     fputs("\"type\":\"barChart\"", chart_callbackdata->fchart);
-    fputs(",", chart_callbackdata->fchart);
-    fputs("\"sers\":", chart_callbackdata->fchart);
-    fputs("[", chart_callbackdata->fchart);
     XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
   } else if (strcmp(name, "c:bar3DChart") == 0) {
     chart_callbackdata->array_charts_length++;
@@ -170,9 +167,6 @@ void chart_plotArea_item_start_element(void *callbackdata, const XML_Char *name,
       fputs(",", chart_callbackdata->fchart);
     fputs("{", chart_callbackdata->fchart);
     fputs("\"type\":\"bar3DChart\"", chart_callbackdata->fchart);
-    fputs(",", chart_callbackdata->fchart);
-    fputs("\"sers\":", chart_callbackdata->fchart);
-    fputs("[", chart_callbackdata->fchart);
     XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
   }
 }
@@ -196,10 +190,25 @@ void chart_barChart_item_start_element(void *callbackdata, const XML_Char *name,
   (void)attrs;
   printf("barChart ITEMMMMMMMMMMMMMMM: <%s>\n", name);
   struct ChartCallBackData *chart_callbackdata = callbackdata;
-  if (strcmp(name, "c:ser") == 0) {
+  if (strcmp(name, "c:barDir") == 0) {
+    for (int i = 0; attrs[i]; i+=2) {
+      if (strcmp(attrs[i], "val") == 0) {
+        fputs(",", chart_callbackdata->fchart);
+	fputs("\"barDir\":", chart_callbackdata->fchart);
+	fputs("\"", chart_callbackdata->fchart);
+	fputs(attrs[i + 1], chart_callbackdata->fchart);
+	fputs("\"", chart_callbackdata->fchart);
+      }
+    }
+  } else if (strcmp(name, "c:ser") == 0) {
     chart_callbackdata->array_sers_length++;
     if (chart_callbackdata->array_sers_length > 1)
       fputs(",", chart_callbackdata->fchart);
+    else {
+      fputs(",", chart_callbackdata->fchart);
+      fputs("\"sers\":", chart_callbackdata->fchart);
+      fputs("[", chart_callbackdata->fchart);
+    }
     fputs("{", chart_callbackdata->fchart);
   } else if (strcmp(name, "c:tx") == 0) {
     fputs("\"tx\":", chart_callbackdata->fchart);
