@@ -88,9 +88,9 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
 	currentTheadChunkEle.innerHTML = data
       } else if (indexCurrentChunk == 1) {
 	currentTbodyChunkEle.innerHTML = data
+        loadImg(indexCurrentSheet)
+        google['charts']['setOnLoadCallback'](function(){loadChart(indexCurrentSheet, 0, new Date().getTime())})
       }
-      loadImg(indexCurrentSheet)
-      google['charts']['setOnLoadCallback'](function(){loadChart(indexCurrentSheet, 0, new Date().getTime())})
       indexCurrentChunk++
       loadChunks(indexCurrentSheet, indexCurrentChunk, startTime)
     } else {
@@ -193,9 +193,9 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
     return;
   }
   var URL_CHART_CHUNK = divChartMetaData.getAttribute('data-chart-url')
-  readTextFile(URL_CHART_CHUNK , 'json', function(data){
-    if(data !== void 0) {
-      data = JSON.parse(data)
+  readTextFile(URL_CHART_CHUNK , 'json', function(d){
+    if(d !== void 0) {
+      var data = JSON.parse(d)
       startTime = new Date().getTime()
       var row = divChartMetaData.getAttribute('data-from-row')
       var col = divChartMetaData.getAttribute('data-from-col')
@@ -247,10 +247,14 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 	}
       }
       data_table = google['visualization']['arrayToDataTable'](data_table)
-      if (chart !== void 0)
+      if (chart !== void 0) {
         chart['draw'](data_table, options)
-      indexChart++
-      loadChart(indexCurrentSheet, indexChart, startTime)
+        indexChart++
+        loadChart(indexCurrentSheet, indexChart, startTime)
+      } else {
+	isFailed = true
+        return;
+      }
     } else {
       var endTime = new Date().getTime()
       if (endTime - startTime  >= TIME_OUT_FOR_EACH_CHUNKS) {
