@@ -7,6 +7,9 @@ var currentTableChunkEle = null
 var currentTheadChunkEle = null
 var currentTbodyChunkEle = null
 google['charts'].load('current', {'packages':['corechart']})
+const zip = (arr, ...arrs) => {
+  return arr.map((val, i) => arrs.reduce((a, arr) => [...a, arr[i]], [val]));
+}
 function readTextFile(file, file_type, callback, callbackfail) {
   var rawFile = new XMLHttpRequest()
   if (file_type === "json") {
@@ -87,7 +90,7 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
 	currentTbodyChunkEle.innerHTML = data
       }
       loadImg(indexCurrentSheet)
-      google['charts']['setOnLoadCallback'](function(){loadChart(indexCurrentSheet)})
+      google['charts']['setOnLoadCallback'](function(){loadChart(indexCurrentSheet, 0, new Date().getTime())})
       indexCurrentChunk++
       loadChunks(indexCurrentSheet, indexCurrentChunk, startTime)
     } else {
@@ -143,7 +146,6 @@ function applyMergedCells(mergedCellsData) {
       countRowSpan--
     }
     mergedCellEle.rowSpan = mergedCellsData[key]['rowspan']
-
   }
 }
 function getOffset(el) {
@@ -166,9 +168,9 @@ function loadImg(indexCurrentSheet) {
     if (!cell) {
       return
     }
-    var colOff = divImgMetaData.getAttribute('data-from-colOff')
-    var rowOff = divImgMetaData.getAttribute('data-from-rowOff')
-    var heigth = divImgMetaData.getAttribute('data-heigth')
+    var colOff = divImgMetaData.getAttribute('data-from-coloff')
+    var rowOff = divImgMetaData.getAttribute('data-from-rowoff')
+    var height = divImgMetaData.getAttribute('data-height')
     var width = divImgMetaData.getAttribute('data-width')
 
     var reactCell = getOffset(cell)
@@ -177,34 +179,104 @@ function loadImg(indexCurrentSheet) {
     imgEle.style.top = reactCell.top + parseInt(rowOff, 10) + 'px'
     imgEle.style.left = reactCell.left + parseInt(colOff, 10) + 'px'
     imgEle.style.position = 'absolute'
-    imgEle.heigth = heigth
+    imgEle.heigth = height
     imgEle.width = width
     currentSheetEle.appendChild(imgEle)
     indexImg++
   }
 }
-function loadChart(indexCurrentSheet) {
-  var indexChart = 0
-  while (1) {
-    var divImgMetaData = document.getElementById("chunk_" + indexCurrentSheet + "_" + indexChart + '_chart');
-    if (!divImgMetaData) {
-      return;
-    }
-    var row = divImgMetaData.getAttribute('data-from-row')
-    var col = divImgMetaData.getAttribute('data-from-col')
-    var heigth = divImgMetaData.getAttribute('data-heigth')
-    var width = divImgMetaData.getAttribute('data-width')
-    var cell = document.getElementById(indexCurrentSheet + '_' + (col + row))
-    if (!cell) {
-      return
-    }
-    var colOff = divImgMetaData.getAttribute('data-from-colOff')
-    var rowOff = divImgMetaData.getAttribute('data-from-rowOff')
+function loadChart(indexCurrentSheet, indexChart, startTime) {
+  var isFailed = false
+  var isDone = false
+  var divChartMetaData = document.getElementById("chunk_" + indexCurrentSheet + "_" + indexChart + '_chart');
+  if (!divChartMetaData) {
+    return;
+  }
+  var URL_CHART_CHUNK = divChartMetaData.getAttribute('data-chart-url')
+  readTextFile(URL_CHART_CHUNK , 'json', function(data){
+    if(data !== void 0) {
+      data = JSON.parse(data)
+      startTime = new Date().getTime()
+      var row = divChartMetaData.getAttribute('data-from-row')
+      var col = divChartMetaData.getAttribute('data-from-col')
+      var height = divChartMetaData.getAttribute('data-height')
+      var width = divChartMetaData.getAttribute('data-width')
+      var cell = document.getElementById(indexCurrentSheet + '_' + (col + row))
+      if (!cell) {
+        return
+      }
+      var colOff = divChartMetaData.getAttribute('data-from-coloff')
+      var rowOff = divChartMetaData.getAttribute('data-from-rowoff')
+      var reactCell = getOffset(cell)
+      var divChart = document.createElement('div')
+      divChart.id = indexCurrentSheet + '-' + indexChart
+      divChart.style.position = 'absolute'
+      divChart.style.top = reactCell.top + parseInt(rowOff, 10) + 'px'
+      divChart.style.left = reactCell.left + parseInt(colOff, 10) + 'px'
+      divChart.style.width = width
+      divChart.style.heigtht = height
+      currentSheetEle.appendChild(divChart)
 
-    var reactCell = getOffset(cell)
-    indexChart++
+      var data_table = [];
+      var options = {
+        title: data['title'] ? data['title']['text'] : ""
+      }
+      var chart;
+      for (var i_chart = 0; i_chart < data['charts'].length; i_chart++) {
+        if (data['charts'][i_chart]['type'] === 'barChart') {
+	  if (data['charts'][i_chart]['barDir'] === 'col') {
+            chart = new google['visualization']['ColumnChart'](divChart)
+	  } else if (data['charts'][i_chart]['barDir'] === 'bar') {
+            chart = new google['visualization']['BarChart'](divChart)
+	  }
+	  var col_name = ['Row']
+	  var sers = []
+	  for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
+	    col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
+	    sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
+	  }
+	  data_table.push(col_name)
+	  data_table.push(...zip(data['charts'][i_chart]['sers'][0]['cat'], ...sers))
+	} else if (data['charts'][i_chart]['type'] === 'bar3DChart') {
+          options['is3D'] = true
+	  if (data['charts'][i_chart]['barDir'] === 'col') {
+            chart = new google['visualization']['ColumnChart'](divChart)
+	  } else if (data['charts'][i_chart]['barDir'] === 'bar') {
+            chart = new google['visualization']['BarChart'](divChart)
+	  }
+	}
+      }
+      data_table = google['visualization']['arrayToDataTable'](data_table)
+      if (chart !== void 0)
+        chart['draw'](data_table, options)
+      indexChart++
+      loadChart(indexCurrentSheet, indexChart, startTime)
+    } else {
+      var endTime = new Date().getTime()
+      if (endTime - startTime  >= TIME_OUT_FOR_EACH_CHUNKS) {
+        isFailed = true
+      }
+      else {
+        tempSetTimeOut = setTimeout(function(){loadChart(indexCurrentSheet, indexChart, startTime)}, DELAY_TIME_FOR_EACH_LOOP)
+      }
+    }
+  }, function(){
+       // handle fail
+       var endTime = new Date().getTime()
+       if (endTime - startTime  >= TIME_OUT_FOR_EACH_CHUNKS) {
+         isFailed = true
+       }
+       else{
+         tempSetTimeOut = setTimeout(function(){loadChart(indexCurrentSheet, indexChart, startTime)}, DELAY_TIME_FOR_EACH_LOOP)
+       }
+  })
+
+  if (isFailed || isDone) {
+    return;
   }
 }
+
+
 function Viewer() {
   currentSheetEle = document.getElementById('sheet_' + indexCurrentSheet)
   currentSheetEle.style.removeProperty("display")
