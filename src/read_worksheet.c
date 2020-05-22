@@ -837,9 +837,9 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
 	  FILE *fp;
 	  char formated_content[1035];
 	  /* Open the command for reading. */
-	  int len_ssf_bin_path = strlen(WORKING_DIR) + strlen(THIRD_PARTY_DIR_NAME) + strlen(SSF_BIN_DIR_NAME) + 3;
+	  int len_ssf_bin_path = strlen(WORKING_DIR) + strlen(THIRD_PARTY_DIR_NAME) + strlen(SSF_BIN_DIR_NAME) + 4;
 	  char *ssf_bin_path = malloc(len_ssf_bin_path + 1);
-	  snprintf(ssf_bin_path, len_ssf_bin_path + 1, "%s%s/%s", WORKING_DIR, THIRD_PARTY_DIR_NAME, SSF_BIN_DIR_NAME);
+	  snprintf(ssf_bin_path, len_ssf_bin_path + 1, "%s/%s/%s", WORKING_DIR, THIRD_PARTY_DIR_NAME, SSF_BIN_DIR_NAME);
 	  char *option_format = "--format";
 
 	  //3: blank

@@ -710,7 +710,7 @@ int main(int argc, char **argv) {
   int dest_len = PATH_MAX;
   if (readlink("/proc/self/exe", path, dest_len) != -1) {
     dirname(path);
-    strcat(path, "/");
+    //strcat(path, "/");
     printf("WORKING DIR: %s\n", path);
     WORKING_DIR = path;
   }
@@ -810,7 +810,12 @@ int main(int argc, char **argv) {
     OUTPUT_FILE_NAME = "index";
   }
   if (has_output_dir == '0') {
-    OUTPUT_DIR = "/media/huydang/HuyDang1/xlsxmagic/output";
+    char *OUTPUT_DIR_NAME = "output";
+    int len_tmp_output_dir = strlen(WORKING_DIR) + strlen(OUTPUT_DIR_NAME) + 1;
+    char *_tmp_output_dir = malloc(len_tmp_output_dir + 1);
+    snprintf(_tmp_output_dir, len_tmp_output_dir + 1, "%s/%s", WORKING_DIR, OUTPUT_DIR_NAME);
+    OUTPUT_DIR = strdup(_tmp_output_dir);
+    free(_tmp_output_dir);
   }
   if (has_tmp_dir == '0') {
     TEMP_DIR = "/tmp";
@@ -879,8 +884,6 @@ int main(int argc, char **argv) {
 LOAD_RESOURCES_FAILED:
   zip_close(zip);
 OPEN_ZIP_FAILED:
-  if (has_output_dir == '1')
-    free((char *)OUTPUT_DIR);
   if (has_origin_file_path == '1')
     free((char *)ORIGIN_FILE_PATH);
   if (has_output_file_name == '1')
@@ -889,5 +892,6 @@ OPEN_ZIP_FAILED:
     free((char *)TEMP_DIR);
   free((char *)RESOURCE_URL);
   free((char *)CHUNKS_DIR_PATH);
+  free((char *)OUTPUT_DIR);
   exit(EXIT_SUCCESS);
 }
