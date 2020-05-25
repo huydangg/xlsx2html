@@ -7,9 +7,6 @@ var currentTableChunkEle = null
 var currentTheadChunkEle = null
 var currentTbodyChunkEle = null
 google['charts'].load('current', {'packages':['corechart']})
-/*const zip = (arr, ...arrs) => {
-  return arr.map((val, i) => arrs.reduce((a, arr) => [...a, arr[i]], [val]));
-}*/
 const zip = (...arrs) => {
   return arrs[0].map((val, i) => (arrs.slice(1)).reduce((a, arr) => [...a, arr[i]], [val]));
 }
@@ -242,7 +239,7 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 
       var data_table = [];
       var options = {
-        title: data['title'] ? data['title']['text'] : ""
+        title: data['title'] ? data['title']['text'] : "",
       }
       var chart;
       for (var i_chart = 0; i_chart < data['charts'].length; i_chart++) {
@@ -281,28 +278,35 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
             chart = new google['visualization']['BarChart'](divChart)
 	  }
 	} else if (data['charts'][i_chart]['type'] === 'lineChart') {
-	  chart = new google['visualization']['LineChart'](divChart)
-	  var col_name = []
-	  var sers = []
-	  col_name.push('Row')
-	  if (data['charts'][i_chart]['sers'][0]['cat']) {
-	    sers.push(data['charts'][i_chart]['sers'][0]['cat'])
+	  if (i_chart !== 0) {
+	    options['series'] = {
+	      [sers[0].length]: {type: 'line'}
+	    }
+	    chart = new google['visualization']['ComboChart'](divChart)
 	  } else {
-	    var _cat = []
-	    for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
-	      _cat.push((index + 1)+ '')
+	    chart = new google['visualization']['LineChart'](divChart)
+	    var col_name = []
+	    var sers = []
+	    col_name.push('Row')
+	    if (data['charts'][i_chart]['sers'][0]['cat']) {
+	      sers.push(data['charts'][i_chart]['sers'][0]['cat'])
+	    } else {
+	      var _cat = []
+	      for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
+	        _cat.push((index + 1)+ '')
 
-	    sers.push(_cat)
+	      sers.push(_cat)
+	    }
+	    for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
+	      if (data['charts'][i_chart]['sers'][i_ser]['tx'])
+	        col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
+	      else
+	        col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][0]['f']))
+	      sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
+	    }
+	    data_table.push(col_name)
+	    data_table.push(...zip(...sers))
 	  }
-	  for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
-	    if (data['charts'][i_chart]['sers'][i_ser]['tx'])
-	      col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
-	    else
-	      col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][0]['f']))
-	    sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
-	  }
-	  data_table.push(col_name)
-	  data_table.push(...zip(...sers))
 	}
       }
       console.log(data_table)
