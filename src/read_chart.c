@@ -23,6 +23,7 @@ int chart_callbackdata_initialize (struct ChartCallBackData *data, char* json_pa
   data->array_vals_length = 0;
   data->array_cats_length = 0;
   data->is_val = '0';
+  data->f = NULL;
   return 1;
 }
 
@@ -170,6 +171,13 @@ void chart_plotArea_item_start_element(void *callbackdata, const XML_Char *name,
     fputs("{", chart_callbackdata->fchart);
     fputs("\"type\":\"bar3DChart\"", chart_callbackdata->fchart);
     XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
+  } else if (strcmp(name, "c:lineChart") == 0) {
+    chart_callbackdata->array_charts_length++;
+    if (chart_callbackdata->array_charts_length > 1)
+      fputs(",", chart_callbackdata->fchart);
+    fputs("{", chart_callbackdata->fchart);
+    fputs("\"type\":\"lineChart\"", chart_callbackdata->fchart);
+    XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
   }
 }
 
@@ -183,6 +191,9 @@ void chart_plotArea_item_end_element(void *callbackdata, const XML_Char *name) {
       fputs("]", chart_callbackdata->fchart);
       fputs("}", chart_callbackdata->fchart);
     } else if (strcmp(name, "c:bar3DChart") == 0) {
+      fputs("]", chart_callbackdata->fchart);
+      fputs("}", chart_callbackdata->fchart);
+    } else if (strcmp(name, "c:lineChart") == 0) {
       fputs("]", chart_callbackdata->fchart);
       fputs("}", chart_callbackdata->fchart);
     }
@@ -228,7 +239,11 @@ void chart_barChart_item_start_element(void *callbackdata, const XML_Char *name,
       fputs(",", chart_callbackdata->fchart);
     fputs("\"val\": [", chart_callbackdata->fchart);
     chart_callbackdata->array_vals_length = 1;
-  } else if (strcmp(name, "c:v") == 0) {
+  } else if (strcmp(name, "c:f") == 0) {
+    XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
+    XML_SetCharacterDataHandler(xmlparser, chart_content_handler);
+  }
+  else if (strcmp(name, "c:v") == 0) {
     XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
     XML_SetCharacterDataHandler(xmlparser, chart_content_handler);
   }
@@ -240,6 +255,8 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
   if (strcmp(name, "c:barChart") == 0) {
     chart_plotArea_item_end_element(callbackdata, name);
   } else if (strcmp(name, "c:bar3DChart") == 0) {
+    chart_plotArea_item_end_element(callbackdata, name);
+  } else if (strcmp(name, "c:lineChart") == 0) {
     chart_plotArea_item_end_element(callbackdata, name);
   }
   else {
@@ -254,6 +271,19 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
       chart_callbackdata->is_val = '0';
       fputs("]", chart_callbackdata->fchart);
       chart_callbackdata->array_vals_length = 0;
+      fputs(",", chart_callbackdata->fchart);
+      fputs("\"f\":", chart_callbackdata->fchart);
+      fputs("\"", chart_callbackdata->fchart);
+      fputs(chart_callbackdata->f, chart_callbackdata->fchart);
+      free(chart_callbackdata->f);
+      chart_callbackdata->f = NULL;
+      fputs("\"", chart_callbackdata->fchart);
+    } else if (strcmp(name, "c:f") == 0) {
+      chart_callbackdata->f = strdup(chart_callbackdata->text);
+      free(chart_callbackdata->text);
+      chart_callbackdata->text = NULL;
+      XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
+      XML_SetCharacterDataHandler(xmlparser, NULL);
     } else if (strcmp(name, "c:v") == 0) {
       if (chart_callbackdata->array_cats_length > 1 || chart_callbackdata->array_vals_length > 1) {
         fputs(",", chart_callbackdata->fchart);
