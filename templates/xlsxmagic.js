@@ -7,8 +7,31 @@ var currentTableChunkEle = null
 var currentTheadChunkEle = null
 var currentTbodyChunkEle = null
 google['charts'].load('current', {'packages':['corechart']})
-const zip = (arr, ...arrs) => {
+/*const zip = (arr, ...arrs) => {
   return arr.map((val, i) => arrs.reduce((a, arr) => [...a, arr[i]], [val]));
+}*/
+const zip = (...arrs) => {
+  return arrs[0].map((val, i) => (arrs.slice(1)).reduce((a, arr) => [...a, arr[i]], [val]));
+}
+function find_column_name_by_pattern(pattern) {
+  var re = /\$(\w+)\$(\d+)/g;
+  var m;
+  var matched = [];
+
+  do {
+    m = re.exec(pattern);
+    if (m) {
+      matched.push(m);
+    }
+  } while (m);
+  if (matched) {
+    if (matched[0][1] == matched[1][1]) {
+      return 'Column ' + matched[0][1]
+    } else if (matched[0][2] == matched[1][2]) {
+      return 'Row ' + matched[0][2]
+    }
+  }
+  return ''
 }
 function readTextFile(file, file_type, callback, callbackfail) {
   var rawFile = new XMLHttpRequest()
@@ -229,14 +252,27 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 	  } else if (data['charts'][i_chart]['barDir'] === 'bar') {
             chart = new google['visualization']['BarChart'](divChart)
 	  }
-	  var col_name = ['Row']
+	  var col_name = []
 	  var sers = []
+	  col_name.push('Row')
+	  if (data['charts'][i_chart]['sers'][0]['cat']) {
+	    sers.push(data['charts'][i_chart]['sers'][0]['cat'])
+	  } else {
+	    var _cat = []
+	    for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
+	      _cat.push((index + 1)+ '')
+
+	    sers.push(_cat)
+	  }
 	  for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
-	    col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
+	    if (data['charts'][i_chart]['sers'][i_ser]['tx'])
+	       col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
+            else
+	      col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][i_ser]['f']))
 	    sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
 	  }
 	  data_table.push(col_name)
-	  data_table.push(...zip(data['charts'][i_chart]['sers'][0]['cat'], ...sers))
+	  data_table.push(...zip(...sers))
 	} else if (data['charts'][i_chart]['type'] === 'bar3DChart') {
           options['is3D'] = true
 	  if (data['charts'][i_chart]['barDir'] === 'col') {
@@ -244,8 +280,32 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 	  } else if (data['charts'][i_chart]['barDir'] === 'bar') {
             chart = new google['visualization']['BarChart'](divChart)
 	  }
+	} else if (data['charts'][i_chart]['type'] === 'lineChart') {
+	  chart = new google['visualization']['LineChart'](divChart)
+	  var col_name = []
+	  var sers = []
+	  col_name.push('Row')
+	  if (data['charts'][i_chart]['sers'][0]['cat']) {
+	    sers.push(data['charts'][i_chart]['sers'][0]['cat'])
+	  } else {
+	    var _cat = []
+	    for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
+	      _cat.push((index + 1)+ '')
+
+	    sers.push(_cat)
+	  }
+	  for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
+	    if (data['charts'][i_chart]['sers'][i_ser]['tx'])
+	      col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
+	    else
+	      col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][0]['f']))
+	    sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
+	  }
+	  data_table.push(col_name)
+	  data_table.push(...zip(...sers))
 	}
       }
+      console.log(data_table)
       data_table = google['visualization']['arrayToDataTable'](data_table)
       if (chart !== void 0) {
         chart['draw'](data_table, options)
@@ -279,8 +339,6 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
     return;
   }
 }
-
-
 function Viewer() {
   currentSheetEle = document.getElementById('sheet_' + indexCurrentSheet)
   currentSheetEle.style.removeProperty("display")
