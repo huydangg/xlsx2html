@@ -242,24 +242,26 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
         title: data['title'] ? data['title']['text'] : "",
       }
       var chart;
+      var col_name = []
+      var sers = []
       for (var i_chart = 0; i_chart < data['charts'].length; i_chart++) {
         if (data['charts'][i_chart]['type'] === 'barChart') {
+          options['seriesType'] = 'bars'
 	  if (data['charts'][i_chart]['barDir'] === 'col') {
             chart = new google['visualization']['ColumnChart'](divChart)
 	  } else if (data['charts'][i_chart]['barDir'] === 'bar') {
             chart = new google['visualization']['BarChart'](divChart)
 	  }
-	  var col_name = []
-	  var sers = []
-	  col_name.push('Row')
-	  if (data['charts'][i_chart]['sers'][0]['cat']) {
-	    sers.push(data['charts'][i_chart]['sers'][0]['cat'])
-	  } else {
-	    var _cat = []
-	    for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
-	      _cat.push((index + 1)+ '')
-
-	    sers.push(_cat)
+	  if (sers.length === 0) {
+            col_name.push('Row')
+	    if (data['charts'][i_chart]['sers'][0]['cat']) {
+	      sers.push(data['charts'][i_chart]['sers'][0]['cat'])
+	    } else {
+	      var _cat = []
+	      for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
+	        _cat.push((index + 1)+ '')
+              sers.push(_cat)
+	    }
 	  }
 	  for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
 	    if (data['charts'][i_chart]['sers'][i_ser]['tx'])
@@ -268,8 +270,6 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 	      col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][i_ser]['f']))
 	    sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
 	  }
-	  data_table.push(col_name)
-	  data_table.push(...zip(...sers))
 	} else if (data['charts'][i_chart]['type'] === 'bar3DChart') {
           options['is3D'] = true
 	  if (data['charts'][i_chart]['barDir'] === 'col') {
@@ -277,47 +277,71 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 	  } else if (data['charts'][i_chart]['barDir'] === 'bar') {
             chart = new google['visualization']['BarChart'](divChart)
 	  }
-	} else if (data['charts'][i_chart]['type'] === 'lineChart') {
-	  if (i_chart !== 0) {
-	    options['series'] = {
-	      [sers[0].length]: {type: 'line'}
-	    }
-	    chart = new google['visualization']['ComboChart'](divChart)
-	  } else {
-	    chart = new google['visualization']['LineChart'](divChart)
-	    var col_name = []
-	    var sers = []
-	    col_name.push('Row')
+	  if (sers.length === 0) {
+            col_name.push('Row')
 	    if (data['charts'][i_chart]['sers'][0]['cat']) {
 	      sers.push(data['charts'][i_chart]['sers'][0]['cat'])
 	    } else {
 	      var _cat = []
 	      for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
 	        _cat.push((index + 1)+ '')
-
-	      sers.push(_cat)
+              sers.push(_cat)
 	    }
-	    for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
-	      if (data['charts'][i_chart]['sers'][i_ser]['tx'])
-	        col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
-	      else
-	        col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][0]['f']))
-	      sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
+	  }
+	  for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
+	    if (data['charts'][i_chart]['sers'][i_ser]['tx'])
+	       col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
+            else
+	      col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][i_ser]['f']))
+	    sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
+	  }
+	} else if (data['charts'][i_chart]['type'] === 'lineChart') {
+	  if (i_chart !== 0) {
+	    chart = new google['visualization']['ComboChart'](divChart)
+	  } else {
+	    chart = new google['visualization']['LineChart'](divChart)
+	  }
+	  if (sers.length === 0) {
+            col_name.push('Row')
+	    if (data['charts'][i_chart]['sers'][0]['cat']) {
+	      sers.push(data['charts'][i_chart]['sers'][0]['cat'])
+	    } else {
+	      var _cat = []
+	      for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
+	        _cat.push((index + 1)+ '')
+              sers.push(_cat)
 	    }
-	    data_table.push(col_name)
-	    data_table.push(...zip(...sers))
+	  }
+	  for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
+	    if (data['charts'][i_chart]['sers'][i_ser]['tx'])
+	      col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
+	    else
+	      col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][0]['f']))
+	    sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
+	  }
+	  options['series'] = {
+	    [col_name.length - 2]: {type: 'line'}
 	  }
 	}
       }
+      data_table.push(col_name)
+      data_table.push(...zip(...sers))
+
       console.log(data_table)
+      console.log(options)
       data_table = google['visualization']['arrayToDataTable'](data_table)
       if (chart !== void 0) {
         chart['draw'](data_table, options)
         indexChart++
         loadChart(indexCurrentSheet, indexChart, startTime)
       } else {
-	isFailed = true
-        return;
+        var endTime = new Date().getTime()
+        if (endTime - startTime  >= TIME_OUT_FOR_EACH_CHUNKS) {
+          isFailed = true
+        }
+        else {
+          tempSetTimeOut = setTimeout(function(){loadChart(indexCurrentSheet, indexChart, startTime)}, DELAY_TIME_FOR_EACH_LOOP)
+        }
       }
     } else {
       var endTime = new Date().getTime()
