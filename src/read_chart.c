@@ -188,12 +188,15 @@ void chart_plotArea_item_end_element(void *callbackdata, const XML_Char *name) {
     chart_lv1_end_element(callbackdata, name);
   } else {
     if (strcmp(name, "c:barChart") == 0) {
+      chart_callbackdata->array_sers_length = 0;
       fputs("]", chart_callbackdata->fchart);
       fputs("}", chart_callbackdata->fchart);
     } else if (strcmp(name, "c:bar3DChart") == 0) {
+      chart_callbackdata->array_sers_length = 0;
       fputs("]", chart_callbackdata->fchart);
       fputs("}", chart_callbackdata->fchart);
     } else if (strcmp(name, "c:lineChart") == 0) {
+      chart_callbackdata->array_sers_length = 0;
       fputs("]", chart_callbackdata->fchart);
       fputs("}", chart_callbackdata->fchart);
     }
