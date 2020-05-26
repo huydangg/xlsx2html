@@ -39,7 +39,7 @@ struct WorkSheet {
   struct ArrayCols array_cols;
   struct ArrayDrawingIds array_drawingids;
   FILE *fmergecell;
-  char *ROW_NUMBER; // Temp current row
+  unsigned short ROW_NUMBER; // Temp current row
   char has_dimension;
 };
 
