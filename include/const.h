@@ -1,1 +1,4 @@
-#define CHUNK_SIZE_LIMIT 0x3E8
+# define CHUNK_SIZE_LIMIT 0x3E8
+# define ROW_LIMIT 0x10000 //65536
+# define COLUMN_LIMIT 0x100 // 256
+
