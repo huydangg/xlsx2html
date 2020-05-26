@@ -233,8 +233,8 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
       divChart.style.position = 'absolute'
       divChart.style.top = reactCell.top + parseInt(rowOff, 10) + 'px'
       divChart.style.left = reactCell.left + parseInt(colOff, 10) + 'px'
-      divChart.style.width = width
-      divChart.style.heigtht = height
+      divChart.style.width = parseInt(width, 10) + 'px'
+      divChart.style.height = parseInt(height, 10) + 'px'
       currentSheetEle.appendChild(divChart)
 
       var data_table = [];
