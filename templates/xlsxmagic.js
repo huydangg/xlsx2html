@@ -240,6 +240,7 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
       var data_table = [];
       var options = {
         title: data['title'] ? data['title']['text'] : "",
+        interpolateNulls: true,
       }
       var chart;
       var col_name = []
