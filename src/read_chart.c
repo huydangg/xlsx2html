@@ -23,6 +23,7 @@ int chart_callbackdata_initialize (struct ChartCallBackData *data, char* json_pa
   data->array_vals_length = 0;
   data->array_cats_length = 0;
   data->is_val = '0';
+  data->has_tx = '0'; // check tx tag is visiable or not
   data->f = NULL;
   return 1;
 }
@@ -222,10 +223,14 @@ void chart_barChart_item_start_element(void *callbackdata, const XML_Char *name,
     }
     fputs("{", chart_callbackdata->fchart);
   } else if (strcmp(name, "c:tx") == 0) {
+    chart_callbackdata->has_tx = '1';
     fputs("\"tx\":", chart_callbackdata->fchart);
   } else if (strcmp(name, "c:cat") == 0) {
     chart_callbackdata->mark_to_insert_commas = '1';
-    fputs(",", chart_callbackdata->fchart);
+    if (chart_callbackdata->has_tx == '1') {
+     fputs(",", chart_callbackdata->fchart);
+     chart_callbackdata->has_tx = '0';
+    }
     fputs("\"cat\": [", chart_callbackdata->fchart);
     chart_callbackdata->array_cats_length = 1;
   } else if (strcmp(name, "c:val") == 0) {
