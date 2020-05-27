@@ -404,33 +404,41 @@ void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (strcmp(name, "xdr:col") == 0) {
     if (drawing_callbackdata->text != NULL) {
+      drawing_callbackdata->text[drawing_callbackdata->textlen] = '\0';
       drawing_callbackdata->_tmp_offset.col = strtol(drawing_callbackdata->text, NULL, 10) + 1;
       free(drawing_callbackdata->text);
       drawing_callbackdata->text = NULL;
+      drawing_callbackdata->textlen = 0;
     }
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   } else if(strcmp(name, "xdr:colOff") == 0) {
     if (drawing_callbackdata->text != NULL) {
+      drawing_callbackdata->text[drawing_callbackdata->textlen] = '\0';
       drawing_callbackdata->_tmp_offset.colOff = strtol(drawing_callbackdata->text, NULL, 10);
       free(drawing_callbackdata->text);
       drawing_callbackdata->text = NULL;
+      drawing_callbackdata->textlen = 0;
     }
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   } else if(strcmp(name, "xdr:row") == 0) {
     if (drawing_callbackdata->text != NULL) {
+      drawing_callbackdata->text[drawing_callbackdata->textlen] = '\0';
       drawing_callbackdata->_tmp_offset.row = strtol(drawing_callbackdata->text, NULL, 10) + 1;
       free(drawing_callbackdata->text);
       drawing_callbackdata->text = NULL;
+      drawing_callbackdata->textlen = 0;
     }
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   } else if(strcmp(name, "xdr:rowOff") == 0) {
     if (drawing_callbackdata->text != NULL) {
+      drawing_callbackdata->text[drawing_callbackdata->textlen] = '\0';
       drawing_callbackdata->_tmp_offset.rowOff = strtol(drawing_callbackdata->text, NULL, 10);
       free(drawing_callbackdata->text);
       drawing_callbackdata->text = NULL;
+      drawing_callbackdata->textlen = 0;
     }
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
@@ -563,22 +571,11 @@ void drawings_lv4_end_element(void *callbackdata, const XML_Char *name) {
 }
 
 void drawings_content_handler(void *callbackdata, const XML_Char *buf, int len) {
-  if (len == 0){
-    return;
-  }
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
-  if (drawing_callbackdata->text == NULL) {
-    if ((drawing_callbackdata->text = realloc(drawing_callbackdata->text, len + 1)) == NULL) {
-      return;
-    }
-    memcpy(drawing_callbackdata->text, buf, len);
-    drawing_callbackdata->text[len] = '\0';
+  if ((drawing_callbackdata->text = realloc(drawing_callbackdata->text, drawing_callbackdata->textlen + len + 1)) == NULL) {
+    drawing_callbackdata->textlen = 0;
   } else {
-    int len_text = strlen(drawing_callbackdata->text);
-    if ((drawing_callbackdata->text = realloc(drawing_callbackdata->text, len_text + len)) == NULL) {
-      return;
-    }
-    memcpy(drawing_callbackdata->text + len_text - 1, buf, len);
-    drawing_callbackdata->text[len_text + len - 1] = '\0';
+    memcpy(drawing_callbackdata->text + drawing_callbackdata->textlen, buf, len);
+    drawing_callbackdata->textlen += len;
   }
 }
