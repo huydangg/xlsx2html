@@ -288,14 +288,14 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
       XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
       XML_SetCharacterDataHandler(xmlparser, NULL);
     } else if (strcmp(name, "c:v") == 0) {
-      if (chart_callbackdata->text != NULL && (chart_callbackdata->array_cats_length > 1 || chart_callbackdata->array_vals_length > 1)) {
-        fputs(",", chart_callbackdata->fchart);
+      if (chart_callbackdata->text != NULL) {
+        if (chart_callbackdata->array_cats_length > 1 || chart_callbackdata->array_vals_length > 1)
+         fputs(",", chart_callbackdata->fchart);
+	if (chart_callbackdata->array_cats_length > 0)
+	  chart_callbackdata->array_cats_length++;
+	if (chart_callbackdata->array_vals_length > 0)
+	  chart_callbackdata->array_vals_length++;
       }
-      if (chart_callbackdata->array_cats_length > 0)
-	chart_callbackdata->array_cats_length++;
-      if (chart_callbackdata->array_vals_length > 0)
-	chart_callbackdata->array_vals_length++;
-
       if (chart_callbackdata->is_val == '0')
         fputs("\"", chart_callbackdata->fchart);
       if (chart_callbackdata->text != NULL)
