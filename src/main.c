@@ -539,11 +539,11 @@ void pre_process(zip_t *zip) {
 	    char *CHUNK_HTML_FILE_NAME = malloc(len_chunk_html_file_name + 1);
 	    snprintf(CHUNK_HTML_FILE_NAME, len_chunk_html_file_name + 1, "chunk_%d_%d", index_sheet, index_chunk);
 
-	    int len_div_chunk = (len_chunk_html_file_name * 2) + len_chunks_dir_path + 48;
+	    int len_div_chunk = (len_chunk_html_file_name * 2) + len_chunks_dir_path + 42;
             char *DIV_CHUNK = malloc(len_div_chunk + 1);
 	    snprintf(
               DIV_CHUNK, len_div_chunk + 1,
-	      "<div id=\"%s\" data-chunk-url=\"file://%s/%s.html\"></div>",
+	      "<div id=\"%s\" data-chunk-url=\"%s/%s.html\"></div>",
 	      CHUNK_HTML_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME
 	    );
 
@@ -557,11 +557,11 @@ void pre_process(zip_t *zip) {
 	    char *CHUNK_MC_FILE_NAME = malloc(len_chunk_mc_file_name + 1);
 	    snprintf(CHUNK_MC_FILE_NAME, len_chunk_mc_file_name + 1, "chunk_%d_mc", index_sheet);
 
-	    int len_div_chunk = (len_chunk_mc_file_name * 2) + len_chunks_dir_path + 48;
+	    int len_div_chunk = (len_chunk_mc_file_name * 2) + len_chunks_dir_path + 42;
             char *DIV_CHUNK = malloc(len_div_chunk + 1);
 	    snprintf(
               DIV_CHUNK, len_div_chunk + 1,
-	      "<div id=\"%s\" data-chunk-url=\"file://%s/%s.json\"></div>",
+	      "<div id=\"%s\" data-chunk-url=\"%s/%s.json\"></div>",
 	      CHUNK_MC_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_MC_FILE_NAME
 	    );
             fputs(DIV_CHUNK, findexhtml);
