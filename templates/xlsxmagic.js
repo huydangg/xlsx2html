@@ -273,6 +273,7 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 	  }
 	} else if (data['charts'][i_chart]['type'] === 'bar3DChart') {
           options['is3D'] = true
+          options['seriesType'] = 'bars'
 	  if (data['charts'][i_chart]['barDir'] === 'col') {
             chart = new google['visualization']['ColumnChart'](divChart)
 	  } else if (data['charts'][i_chart]['barDir'] === 'bar') {
@@ -323,13 +324,52 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 	  options['series'] = {
 	    [col_name.length - 2]: {type: 'line'}
 	  }
+	} else if (data['charts'][i_chart]['type'] === 'pieChart') {
+          options['is3D'] = true
+	  chart = new google['visualization']['PieChart'](divChart)
+	  if (sers.length === 0) {
+            col_name.push('Row')
+	    if (data['charts'][i_chart]['sers'][0]['cat']) {
+	      sers.push(data['charts'][i_chart]['sers'][0]['cat'])
+	    } else {
+	      var _cat = []
+	      for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
+	        _cat.push((index + 1)+ '')
+              sers.push(_cat)
+	    }
+	  }
+	  for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
+	    if (data['charts'][i_chart]['sers'][i_ser]['tx'])
+	      col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
+	    else
+	      col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][0]['f']))
+	    sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
+	  }
+
+	} else if (data['charts'][i_chart]['type'] === 'pie3DChart') {
+	  chart = new google['visualization']['PieChart'](divChart)
+	  if (sers.length === 0) {
+            col_name.push('Row')
+	    if (data['charts'][i_chart]['sers'][0]['cat']) {
+	      sers.push(data['charts'][i_chart]['sers'][0]['cat'])
+	    } else {
+	      var _cat = []
+	      for (let [index, value] of data['charts'][i_chart]['sers'][0]['val'].entries())
+	        _cat.push((index + 1)+ '')
+              sers.push(_cat)
+	    }
+	  }
+	  for (var i_ser = 0; i_ser < data['charts'][i_chart]['sers'].length; i_ser++) {
+	    if (data['charts'][i_chart]['sers'][i_ser]['tx'])
+	      col_name.push(data['charts'][i_chart]['sers'][i_ser]['tx'])
+	    else
+	      col_name.push(find_column_name_by_pattern(data['charts'][i_chart]['sers'][0]['f']))
+	    sers.push(data['charts'][i_chart]['sers'][i_ser]['val'])
+	  }
 	}
       }
       data_table.push(col_name)
       data_table.push(...zip(...sers))
-
-      console.log(data_table)
-      console.log(options)
       data_table = google['visualization']['arrayToDataTable'](data_table)
       if (chart !== void 0) {
         chart['draw'](data_table, options)
