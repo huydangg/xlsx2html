@@ -188,6 +188,20 @@ void chart_plotArea_item_start_element(void *callbackdata, const XML_Char *name,
     fputs("{", chart_callbackdata->fchart);
     fputs("\"type\":\"pie3DChart\"", chart_callbackdata->fchart);
     XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
+  } else if (strcmp(name, "c:areaChart") == 0) {
+    chart_callbackdata->array_charts_length++;
+    if (chart_callbackdata->array_charts_length > 1)
+      fputs(",", chart_callbackdata->fchart);
+    fputs("{", chart_callbackdata->fchart);
+    fputs("\"type\":\"areaChart\"", chart_callbackdata->fchart);
+    XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
+  } else if (strcmp(name, "c:area3DChart") == 0) {
+    chart_callbackdata->array_charts_length++;
+    if (chart_callbackdata->array_charts_length > 1)
+      fputs(",", chart_callbackdata->fchart);
+    fputs("{", chart_callbackdata->fchart);
+    fputs("\"type\":\"area3DChart\"", chart_callbackdata->fchart);
+    XML_SetElementHandler(xmlparser, chart_barChart_item_start_element, chart_barChart_item_end_element);
   }
 }
 
@@ -213,6 +227,14 @@ void chart_plotArea_item_end_element(void *callbackdata, const XML_Char *name) {
       fputs("]", chart_callbackdata->fchart);
       fputs("}", chart_callbackdata->fchart);
     } else if (strcmp(name, "c:pie3DChart") == 0) {
+      chart_callbackdata->array_sers_length = 0;
+      fputs("]", chart_callbackdata->fchart);
+      fputs("}", chart_callbackdata->fchart);
+    } else if (strcmp(name, "c:areaChart") == 0) {
+      chart_callbackdata->array_sers_length = 0;
+      fputs("]", chart_callbackdata->fchart);
+      fputs("}", chart_callbackdata->fchart);
+    } else if (strcmp(name, "c:area3DChart") == 0) {
       chart_callbackdata->array_sers_length = 0;
       fputs("]", chart_callbackdata->fchart);
       fputs("}", chart_callbackdata->fchart);
@@ -282,6 +304,10 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
   } else if (strcmp(name, "c:pieChart") == 0) {
     chart_plotArea_item_end_element(callbackdata, name);
   } else if (strcmp(name, "c:pie3DChart") == 0) {
+    chart_plotArea_item_end_element(callbackdata, name);
+  } else if (strcmp(name, "c:areaChart") == 0) {
+    chart_plotArea_item_end_element(callbackdata, name);
+  } else if (strcmp(name, "c:area3DChart") == 0) {
     chart_plotArea_item_end_element(callbackdata, name);
   }
   else {
