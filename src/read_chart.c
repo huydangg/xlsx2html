@@ -296,21 +296,56 @@ void chart_barChart_item_start_element(void *callbackdata, const XML_Char *name,
 void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
   struct ChartCallBackData *chart_callbackdata = callbackdata;
   if (strcmp(name, "c:barChart") == 0) {
+    if (chart_callbackdata->text != NULL) {
+      free(chart_callbackdata->text);
+      chart_callbackdata->text = NULL;
+    }
+    chart_callbackdata->text = NULL;
+    chart_callbackdata->textlen = 0;
     chart_plotArea_item_end_element(callbackdata, name);
   } else if (strcmp(name, "c:bar3DChart") == 0) {
+    if (chart_callbackdata->text != NULL) {
+      free(chart_callbackdata->text);
+    }
+    chart_callbackdata->text = NULL;
+    chart_callbackdata->textlen = 0;
     chart_plotArea_item_end_element(callbackdata, name);
   } else if (strcmp(name, "c:lineChart") == 0) {
+    if (chart_callbackdata->text != NULL) {
+      free(chart_callbackdata->text);
+    }
+    chart_callbackdata->text = NULL;
+    chart_callbackdata->textlen = 0;
     chart_plotArea_item_end_element(callbackdata, name);
   } else if (strcmp(name, "c:pieChart") == 0) {
+    if (chart_callbackdata->text != NULL) {
+      free(chart_callbackdata->text);
+    }
+    chart_callbackdata->text = NULL;
+    chart_callbackdata->textlen = 0;
     chart_plotArea_item_end_element(callbackdata, name);
   } else if (strcmp(name, "c:pie3DChart") == 0) {
+    if (chart_callbackdata->text != NULL) {
+      free(chart_callbackdata->text);
+    }
+    chart_callbackdata->text = NULL;
+    chart_callbackdata->textlen = 0;
     chart_plotArea_item_end_element(callbackdata, name);
   } else if (strcmp(name, "c:areaChart") == 0) {
+    if (chart_callbackdata->text != NULL) {
+      free(chart_callbackdata->text);
+    }
+    chart_callbackdata->text = NULL;
+    chart_callbackdata->textlen = 0;
     chart_plotArea_item_end_element(callbackdata, name);
   } else if (strcmp(name, "c:area3DChart") == 0) {
+    if (chart_callbackdata->text != NULL) {
+      free(chart_callbackdata->text);
+    }
+    chart_callbackdata->text = NULL;
+    chart_callbackdata->textlen = 0;
     chart_plotArea_item_end_element(callbackdata, name);
-  }
-  else {
+  } else {
     if (strcmp(name, "c:ser") == 0) {
       fputs("}", chart_callbackdata->fchart);
     } else if (strcmp(name, "c:tx") == 0) {
@@ -326,14 +361,20 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
       fputs(",", chart_callbackdata->fchart);
       fputs("\"f\":", chart_callbackdata->fchart);
       fputs("\"", chart_callbackdata->fchart);
-      fputs(chart_callbackdata->f, chart_callbackdata->fchart);
-      free(chart_callbackdata->f);
+
+      if (chart_callbackdata->f != NULL) {
+        fputs(chart_callbackdata->f, chart_callbackdata->fchart);
+        free(chart_callbackdata->f);
+      }
       chart_callbackdata->f = NULL;
       fputs("\"", chart_callbackdata->fchart);
     } else if (strcmp(name, "c:f") == 0) {
-      chart_callbackdata->text[chart_callbackdata->textlen] = '\0';
-      chart_callbackdata->f = strdup(chart_callbackdata->text);
-      free(chart_callbackdata->text);
+      if (chart_callbackdata->text != NULL) {
+	chart_callbackdata->text[chart_callbackdata->textlen] = '\0';
+        chart_callbackdata->f = realloc(chart_callbackdata->f, chart_callbackdata->textlen + 1);
+	memcpy(chart_callbackdata->f, chart_callbackdata->text, chart_callbackdata->textlen + 1);
+	free(chart_callbackdata->text);
+      }
       chart_callbackdata->text = NULL;
       chart_callbackdata->textlen = 0;
     } else if (strcmp(name, "c:v") == 0) {
@@ -349,13 +390,13 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
 	chart_callbackdata->text[chart_callbackdata->textlen] = '\0';
         fputs(chart_callbackdata->text, chart_callbackdata->fchart);
 	free(chart_callbackdata->text);
-	chart_callbackdata->text = NULL;
-	chart_callbackdata->textlen = 0;
       } else {
 	if (chart_callbackdata->is_val == '1') {
           fputs("null", chart_callbackdata->fchart);
 	}
       }
+      chart_callbackdata->text = NULL;
+      chart_callbackdata->textlen = 0;
       if (chart_callbackdata->is_val == '0')
         fputs("\"", chart_callbackdata->fchart);
     }

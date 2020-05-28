@@ -22,7 +22,7 @@ struct ChartCallBackData {
   unsigned short array_vals_length;
   unsigned short array_cats_length;
   char is_val;
-  char *f;
+  XML_Char *f;
   char has_tx;
 };
 
