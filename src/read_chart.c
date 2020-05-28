@@ -128,6 +128,7 @@ void chart_title_item_end_element(void *callbackdata, const XML_Char *name) {
   struct ChartCallBackData *chart_callbackdata = callbackdata;
   if (strcmp(name, "a:t") == 0) {
     fputs("\"", chart_callbackdata->fchart);
+    chart_callbackdata->text[chart_callbackdata->textlen] = '\0';
     fputs(chart_callbackdata->text, chart_callbackdata->fchart);
     fputs("\"", chart_callbackdata->fchart);
     free(chart_callbackdata->text);
@@ -293,8 +294,6 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
       if (chart_callbackdata->is_val == '0')
         fputs("\"", chart_callbackdata->fchart);
       if (chart_callbackdata->text != NULL) {
-	if (chart_callbackdata->is_val == '1' && chart_callbackdata->index_sheet == 2)
-	  printf("TEXTTTTTTTTTTT: %s\n", chart_callbackdata->text);
 	chart_callbackdata->text[chart_callbackdata->textlen] = '\0';
         fputs(chart_callbackdata->text, chart_callbackdata->fchart);
 	free(chart_callbackdata->text);
