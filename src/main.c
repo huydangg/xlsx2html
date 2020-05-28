@@ -88,21 +88,6 @@ int load_drawings(zip_t *zip, char *zip_file_name, void *callbackdata) {
   return status;
 }
 
-/* 
-  int len_chunks_dir_path = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1;
-  data->chunks_dir_path = malloc(len_chunks_dir_path + 1);
-  snprintf(data->chunks_dir_path, len_chunks_dir_path + 1, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
-
-  printf("---------------------------------------------------CHART--------------------------------------\n");
-  char *zip_file_name = "xl/charts/chart16.xml";
-  struct ChartCallBackData chart_callbackdata;
-  chart_callbackdata_initialize(&chart_callbackdata, 0);
-  int status_chart = load_chart(zip, zip_file_name, &chart_callbackdata);
-  if (status_chart != 1) {
-    fprintf(stderr, "%s\n", strerror(errno));
-  }
-  printf("--------------------------------------------------------------------------------------------------\n");
-*/
 int load_chart(zip_t *zip, char *zip_file_name, void *callbackdata) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   zip_error_t *err_zip = zip_get_error(zip);
