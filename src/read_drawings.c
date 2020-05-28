@@ -189,7 +189,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 		// 17: /img/%s?format_img=
 		len_img_url = len_img_name + len_resource_url + len_img_ext + 17;
 		IMG_URL = malloc(len_img_url + 1);
-		snprintf(IMG_URL, len_img_url + 1, "%s/img/%s?format_img=%s", RESOURCE_URL, img_name, img_ext);
+		snprintf(IMG_URL, len_img_url + 1, "%simg/%s?format_img=%s", RESOURCE_URL, img_name, img_ext);
 	      } else {
 		IMG_URL = strdup(OUTPUT_IMG_FILE_PATH);
 		len_img_url = len_output_img_file_path;
