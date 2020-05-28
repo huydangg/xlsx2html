@@ -40,7 +40,7 @@ int mkdir_p(const char *path) {
       /* Temporarily truncate */
       *p = '\0';
 
-      if (mkdir(_path, S_IRWXU) != 0) {
+      if (mkdir(_path, 0777) != 0) {
         if (errno != EEXIST)
           return -1;
         }
@@ -49,7 +49,7 @@ int mkdir_p(const char *path) {
     }
   }
 
-  if (mkdir(_path, S_IRWXU) != 0) {
+  if (mkdir(_path, 0777) != 0) {
     if (errno != EEXIST)
       return -1;
   }
@@ -538,15 +538,28 @@ void pre_process(zip_t *zip) {
 	    int len_chunk_html_file_name = snprintf(NULL, 0, "%d", index_chunk) + len_index_sheet + 7;
 	    char *CHUNK_HTML_FILE_NAME = malloc(len_chunk_html_file_name + 1);
 	    snprintf(CHUNK_HTML_FILE_NAME, len_chunk_html_file_name + 1, "chunk_%d_%d", index_sheet, index_chunk);
+	    int len_resource_url, len_chunk_html_url;
+	    char *CHUNK_HTML_URL;
+	    if (strstr(RESOURCE_URL, "https") != NULL) {
+	      len_resource_url = strlen(RESOURCE_URL);
+	      int len_output_file_name = strlen(OUTPUT_FILE_NAME);
+	      len_chunk_html_url = len_chunk_html_file_name + len_resource_url + len_output_file_name + 6;
+	      CHUNK_HTML_URL = malloc(len_chunk_html_url + 1);
+	      snprintf(CHUNK_HTML_URL , len_chunk_html_url + 1, "%s%s/html/%s", RESOURCE_URL, OUTPUT_FILE_NAME, CHUNK_HTML_FILE_NAME);
+	    } else {
+	      len_chunk_html_url = len_chunk_html_file_name + len_chunks_dir_path + 6;
+	      CHUNK_HTML_URL = malloc(len_chunk_html_url + 1);
+	      snprintf(CHUNK_HTML_URL, len_chunk_html_url + 1, "%s/%s.html", CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME);
+	    }
 
-	    int len_div_chunk = (len_chunk_html_file_name * 2) + len_chunks_dir_path + 42;
+	    int len_div_chunk = len_chunk_html_file_name + len_chunk_html_url + 35;
             char *DIV_CHUNK = malloc(len_div_chunk + 1);
 	    snprintf(
               DIV_CHUNK, len_div_chunk + 1,
-	      "<div id=\"%s\" data-chunk-url=\"%s/%s.html\"></div>",
-	      CHUNK_HTML_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME
+	      "<div id=\"%s\" data-chunk-url=\"%s\"></div>",
+	      CHUNK_HTML_FILE_NAME, CHUNK_HTML_URL
 	    );
-
+	    free(CHUNK_HTML_URL);
             fputs(DIV_CHUNK, findexhtml);
 	    free(DIV_CHUNK);
 	    fputs("\n", findexhtml);
@@ -556,14 +569,27 @@ void pre_process(zip_t *zip) {
 	    int len_chunk_mc_file_name = len_index_sheet + 9;
 	    char *CHUNK_MC_FILE_NAME = malloc(len_chunk_mc_file_name + 1);
 	    snprintf(CHUNK_MC_FILE_NAME, len_chunk_mc_file_name + 1, "chunk_%d_mc", index_sheet);
-
-	    int len_div_chunk = (len_chunk_mc_file_name * 2) + len_chunks_dir_path + 42;
+	    int len_resource_url, len_chunk_mc_url;
+	    char *CHUNK_MC_URL;
+	    if (strstr(RESOURCE_URL, "https") != NULL) {
+	      len_resource_url = strlen(RESOURCE_URL);
+	      int len_output_file_name = strlen(OUTPUT_FILE_NAME);
+	      len_chunk_mc_url = len_chunk_mc_file_name + len_resource_url + len_output_file_name + 6;
+	      CHUNK_MC_URL = malloc(len_chunk_mc_url + 1);
+	      snprintf(CHUNK_MC_URL , len_chunk_mc_url + 1, "%s%s/json/%s", RESOURCE_URL, OUTPUT_FILE_NAME, CHUNK_MC_FILE_NAME);
+	    } else {
+	      len_chunk_mc_url = len_chunk_mc_file_name + len_chunks_dir_path + 6;
+	      CHUNK_MC_URL = malloc(len_chunk_mc_url + 1);
+	      snprintf(CHUNK_MC_URL, len_chunk_mc_url + 1, "%s/%s.json", CHUNKS_DIR_PATH, CHUNK_MC_FILE_NAME);
+	    }
+	    int len_div_chunk = len_chunk_mc_file_name + len_chunk_mc_url + 35;
             char *DIV_CHUNK = malloc(len_div_chunk + 1);
 	    snprintf(
               DIV_CHUNK, len_div_chunk + 1,
-	      "<div id=\"%s\" data-chunk-url=\"%s/%s.json\"></div>",
-	      CHUNK_MC_FILE_NAME, CHUNKS_DIR_PATH, CHUNK_MC_FILE_NAME
+	      "<div id=\"%s\" data-chunk-url=\"%s\"></div>",
+	      CHUNK_MC_FILE_NAME, CHUNK_MC_URL
 	    );
+	    free(CHUNK_MC_URL);
             fputs(DIV_CHUNK, findexhtml);
 	    free(DIV_CHUNK);
 	    fputs("\n", findexhtml);

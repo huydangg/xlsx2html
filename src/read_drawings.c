@@ -286,7 +286,6 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	  }
 	  free(from_col_name);
 	  free(_tmp_target);
-
 	}
       }
       free(drawing_callbackdata->twocellanchor.pic.name);
