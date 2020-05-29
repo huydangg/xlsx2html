@@ -99,9 +99,9 @@ unsigned short column_name_to_number(const char *column_name) {
 int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number, unsigned short index_worksheet) {
   int len_index_worksheet = snprintf(NULL, 0, "%d", index_worksheet);
   int LEN_CHUNKS_DIR_PATH = strlen(CHUNKS_DIR_PATH);
-  int LEN_THE_FIRST_CHUNK_PATH = LEN_CHUNKS_DIR_PATH + len_index_worksheet + 14;
+  int LEN_THE_FIRST_CHUNK_PATH = LEN_CHUNKS_DIR_PATH + len_index_worksheet + 15;
   char *THE_FIRST_CHUNK_PATH = malloc(LEN_THE_FIRST_CHUNK_PATH + 1);
-  snprintf(THE_FIRST_CHUNK_PATH, LEN_THE_FIRST_CHUNK_PATH + 1, "%s/chunk_%d_0.html", CHUNKS_DIR_PATH, index_worksheet);
+  snprintf(THE_FIRST_CHUNK_PATH, LEN_THE_FIRST_CHUNK_PATH + 1, "%s/chunk_%d_0.chunk", CHUNKS_DIR_PATH, index_worksheet);
   FILE *fchunk0;
   fchunk0 = fopen(THE_FIRST_CHUNK_PATH, "ab+");
   if (fchunk0 == NULL) {
@@ -243,9 +243,9 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     char *CHUNKS_DIR_PATH = malloc(LEN_CHUNKS_DIR_PATH);
     snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
     //12: chunk_%d_%d.html
-    int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET) + snprintf(NULL, 0, "%d", CURRENT_CHUNK) + 12;
+    int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET) + snprintf(NULL, 0, "%d", CURRENT_CHUNK) + 13;
     char *CHUNK_FILE_PATH = malloc(len_chunk_file_path + 1);
-    snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.html", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, CURRENT_CHUNK);
+    snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, CURRENT_CHUNK);
     free(CHUNKS_DIR_PATH);
     worksheet_callbackdata->worksheet_file = fopen(CHUNK_FILE_PATH, "w");
     if (worksheet_callbackdata->worksheet_file == NULL) {

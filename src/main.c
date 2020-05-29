@@ -40,7 +40,7 @@ int mkdir_p(const char *path) {
       /* Temporarily truncate */
       *p = '\0';
 
-      if (mkdir(_path, 0777) != 0) {
+      if (mkdir(_path, 0755) != 0) {
         if (errno != EEXIST)
           return -1;
         }
@@ -49,7 +49,7 @@ int mkdir_p(const char *path) {
     }
   }
 
-  if (mkdir(_path, 0777) != 0) {
+  if (mkdir(_path, 0755) != 0) {
     if (errno != EEXIST)
       return -1;
   }
@@ -528,13 +528,13 @@ void pre_process(zip_t *zip) {
 	    if (strstr(RESOURCE_URL, "https") != NULL) {
 	      len_resource_url = strlen(RESOURCE_URL);
 	      int len_output_file_name = strlen(OUTPUT_FILE_NAME);
-	      len_chunk_html_url = len_chunk_html_file_name + len_resource_url + len_output_file_name + 6;
+	      len_chunk_html_url = len_chunk_html_file_name + len_resource_url + len_output_file_name + 7;
 	      CHUNK_HTML_URL = malloc(len_chunk_html_url + 1);
-	      snprintf(CHUNK_HTML_URL , len_chunk_html_url + 1, "%s%s/html/%s", RESOURCE_URL, OUTPUT_FILE_NAME, CHUNK_HTML_FILE_NAME);
+	      snprintf(CHUNK_HTML_URL , len_chunk_html_url + 1, "%s%s/chunk/%s", RESOURCE_URL, OUTPUT_FILE_NAME, CHUNK_HTML_FILE_NAME);
 	    } else {
-	      len_chunk_html_url = len_chunk_html_file_name + len_chunks_dir_path + 6;
+	      len_chunk_html_url = len_chunk_html_file_name + len_chunks_dir_path + 7;
 	      CHUNK_HTML_URL = malloc(len_chunk_html_url + 1);
-	      snprintf(CHUNK_HTML_URL, len_chunk_html_url + 1, "%s/%s.html", CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME);
+	      snprintf(CHUNK_HTML_URL, len_chunk_html_url + 1, "%s/%s.chunk", CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME);
 	    }
 
 	    int len_div_chunk = len_chunk_html_file_name + len_chunk_html_url + 35;
