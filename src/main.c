@@ -19,7 +19,7 @@ const char *CHUNKS_DIR_PATH;
 
 int err;
 
-int mkdir_p(const char *path) {
+int mkdir_p(const char *path, mode_t mode) {
   /* Adapted from http://stackoverflow.com/a/2336245/119527 */
   const size_t len = strlen(path);
   char _path[PATH_MAX];
@@ -40,7 +40,7 @@ int mkdir_p(const char *path) {
       /* Temporarily truncate */
       *p = '\0';
 
-      if (mkdir(_path, 0755) != 0) {
+      if (mkdir(_path, mode) != 0) {
         if (errno != EEXIST)
           return -1;
         }
@@ -49,7 +49,7 @@ int mkdir_p(const char *path) {
     }
   }
 
-  if (mkdir(_path, 0755) != 0) {
+  if (mkdir(_path, mode) != 0) {
     if (errno != EEXIST)
       return -1;
   }
@@ -843,7 +843,7 @@ int main(int argc, char **argv) {
   // +1 for "/" +1 for '\0'
   struct stat st = {0};
   if (stat(OUTPUT_DIR, &st) == -1) {
-    int status = mkdir_p(OUTPUT_DIR);
+    int status = mkdir_p(OUTPUT_DIR, 0755);
     if (status != 0) {
       fprintf(stderr, "Error when create a output dir! %s\n", strerror(errno));
       goto LOAD_RESOURCES_FAILED;
@@ -858,7 +858,7 @@ int main(int argc, char **argv) {
   CHUNKS_DIR_PATH = strdup(_tmp_chunks_dir_path);
   free(_tmp_chunks_dir_path);
   if (stat(CHUNKS_DIR_PATH, &st) == -1) {
-    int status = mkdir(CHUNKS_DIR_PATH, S_IRWXU);
+    int status = mkdir_p(CHUNKS_DIR_PATH, 0755);
     if (status != 0) {
       fprintf(stderr, "Error when create a chunks dir! %s\n", strerror(errno));
       goto LOAD_RESOURCES_FAILED;

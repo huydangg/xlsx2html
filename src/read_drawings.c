@@ -126,6 +126,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	  int len_from_row = snprintf(NULL, 0, "%u", drawing_callbackdata->twocellanchor.from.row);
 	  char *from_col_name = int_to_column_name(drawing_callbackdata->twocellanchor.from.col);
 	  int len_from_col_name = strlen(from_col_name);
+	  int len_output_file_name = strlen(OUTPUT_FILE_NAME);
 	  if (drawing_callbackdata->is_pic == '1') {
 	    drawing_callbackdata->index_image++;
 	    struct zip_stat sb;
@@ -187,9 +188,9 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 		len_img_name = strlen(img_name);
 		int len_img_ext = strlen(img_ext);
 		// 17: /img/%s?format_img=
-		len_img_url = len_img_name + len_resource_url + len_img_ext + 17;
+		len_img_url = len_img_name + len_resource_url + len_img_ext + len_output_file_name + 18;
 		IMG_URL = malloc(len_img_url + 1);
-		snprintf(IMG_URL, len_img_url + 1, "%simg/%s?format_img=%s", RESOURCE_URL, img_name, img_ext);
+		snprintf(IMG_URL, len_img_url + 1, "%s%s/img/%s?format_img=%s", RESOURCE_URL, OUTPUT_FILE_NAME, img_name, img_ext);
 	      } else {
 		IMG_URL = strdup(OUTPUT_IMG_FILE_PATH);
 		len_img_url = len_output_img_file_path;
@@ -245,9 +246,9 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	    int len_chart_url, len_resource_url;
 	    if (strstr(RESOURCE_URL, "https") != NULL) {
 	      len_resource_url = strlen(RESOURCE_URL);
-	      len_chart_url = len_output_chart_file_path   + len_resource_url + 6;
+	      len_chart_url = len_output_chart_file_path + len_resource_url + + len_output_file_name + 6;
 	      CHART_URL = malloc(len_chart_url + 1);
-	      snprintf(CHART_URL , len_chart_url + 1, "%s/json/%s", RESOURCE_URL, chart_json_file_name);
+	      snprintf(CHART_URL , len_chart_url + 1, "%s%s/json/%s", RESOURCE_URL, OUTPUT_FILE_NAME, chart_json_file_name);
 	    } else {
 	      CHART_URL = strdup(OUTPUT_CHART_FILE_PATH);
 	      len_chart_url = len_output_chart_file_path;
