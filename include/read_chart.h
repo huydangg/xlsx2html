@@ -16,7 +16,6 @@ struct ChartCallBackData {
   XML_CharacterDataHandler skip_data;   //data handler to set after skipping
   int index_sheet;
   FILE *fchart;
-  char mark_to_insert_commas;
   unsigned short array_charts_length;
   unsigned short array_sers_length;
   unsigned short array_vals_length;
@@ -24,6 +23,9 @@ struct ChartCallBackData {
   char is_val;
   XML_Char *f;
   char has_tx;
+  char has_title;
+  char has_cat;
+  char has_f;
 };
 
 
