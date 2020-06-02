@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <ssf.h>
 #include <math.h>
-
+#include <time.h>
 // char *strrev() : include <string.h>
 char *fill(char *c, int l) {
   char *o = calloc(1, sizeof(char));
@@ -129,11 +129,13 @@ int *frac(int x, int D, char mixed /*boolean */) {
   return _arr;
 }
 
-void parse_date_code(long v, char is_date1904 /* opts: boolean */, char b2 /* boolean */) {
-  if (v > 2958465 || v < 0)
-    return;
+long *parse_date_code(long v, char is_date1904 /* opts: boolean */, char b2 /* boolean */) {
+  if (v > 2958465 || v < 0) {
+    long *_tmp = calloc(1, sizeof(long));
+    return _tmp;
+  }
   int date = v | 0, time = floor(86400 * (v - date)), dow = 0;
-  unsigned short dout[3];
+  int dout[3];
   // 0       1       2                     3   4   5   6   7   8   9
   //{D:date, T:time, u:86400*(v-date)-time,y:0,m:0,d:0,H:0,M:0,S:0,q:0} in js
   long out[10] = {date, time, 86400*(v-date)-time, 0, 0, 0, 0, 0, 0, 0};
@@ -150,8 +152,8 @@ void parse_date_code(long v, char is_date1904 /* opts: boolean */, char b2 /* bo
     }
   }
   if (date == 60) {
-    unsigned short _arr1[3] = {1317, 10, 29};
-    unsigned short _arr2[3] = {1900, 2, 29};
+    int _arr1[3] = {1317, 10, 29};
+    int _arr2[3] = {1900, 2, 29};
     if (b2 == '1') {
       for (int i = 0; i < 3; i++)
 	dout[i] = _arr1[i];
@@ -161,8 +163,8 @@ void parse_date_code(long v, char is_date1904 /* opts: boolean */, char b2 /* bo
     }
     dow = 3;
   } else if (date == 0) {
-    unsigned short _arr1[3] = {1317, 10, 29};
-    unsigned short _arr2[3] = {1900, 1, 0};
+    int _arr1[3] = {1317, 10, 29};
+    int _arr2[3] = {1900, 1, 0};
     if (b2 == '1') {
       for (int i = 0; i < 3; i++)
 	dout[i] = _arr1[i];
@@ -174,10 +176,30 @@ void parse_date_code(long v, char is_date1904 /* opts: boolean */, char b2 /* bo
   } else {
     if (date > 60)
       --date;
-    struct tm tm;
-    tm.tm_year = 1900;
-    tm.tm_mon = 0;
-    tm.tm_mday = 1;
+    struct tm t = { .tm_year=1900-1900, .tm_mon=0, .tm_mday=1 };
+    t.tm_mday = t.tm_mday + date - 1;
+    time_t when = mktime(&t);
+    const struct tm *norm = localtime(&when);   // Normalized time
+    dout[0] = norm->tm_year;
+    dout[1] = norm->tm_mon+1;
+    dout[2] = norm->tm_mday;
+    dow = norm->tm_wday;
+    if(date < 60)
+      dow = (dow + 6) % 7;
+    /*if(b2 == '1')
+      dow = fix_hijri(d, dout);*/
   }
+  out[3] = dout[0];
+  out[4] = dout[1];
+  out[5] = dout[2];
+  out[8] = time % 60;
+  time = floor(time / 60);
+  out[7] = time % 60;
+  time = floor(time / 60);
+  out[6] = time;
+  out[9] = dow;
+  return out;
 }
-
+struct tm basedate = { .tm_year=1899-1900, .tm_mon=11, .tm_mday=31, .tm_hour=0, .tm_min=0, .tm_sec=0 };
+//var dnthresh = basedate.getTime();
+struct tm base1904 = { .tm_year=1900-1900, .tm_mon=2, .tm_mday=1, .tm_hour=0, .tm_min=0, .tm_sec=0 };
