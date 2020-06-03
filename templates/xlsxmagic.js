@@ -36,7 +36,7 @@ function ssfHandler() {
     var formatCode = _arr[i].getAttribute('data-format-code')
     if (formatCode === null || formatCode === '')
       continue
-    _arr[i].innerHTML = SSF.format(formatCode, _arr[i].innerHTML)
+    _arr[i].innerHTML = window['SSF']['format'](formatCode, Number(_arr[i].innerHTML))
   }
 }
 function readTextFile(file, file_type, callback, callbackfail) {

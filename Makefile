@@ -33,7 +33,6 @@ default: all
 all:	$(EXE)
 	$(FILES_JS)
 	$(FILES_CSS)
-	$(FILES_SSF)
 
 # This will link the executable from the object files
 $(EXE): $(OBJECTS)
