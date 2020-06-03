@@ -30,6 +30,15 @@ function find_column_name_by_pattern(pattern) {
   }
   return ''
 }
+function ssfHandler() {
+  var _arr = currentTbodyChunkEle.querySelectorAll('.n')
+  for (var i = 0; i < _arr.length; i++) {
+    var formatCode = _arr[i].getAttribute('data-format-code')
+    if (formatCode === null || formatCode === '')
+      continue
+    _arr[i].innerHTML = SSF.format(formatCode, _arr[i].innerHTML)
+  }
+}
 function readTextFile(file, file_type, callback, callbackfail) {
   var rawFile = new XMLHttpRequest()
   if (file_type === "json") {
@@ -460,6 +469,7 @@ function Viewer() {
     currentTbodyChunkEle = currentTableChunkEle.appendChild(document.createElement('tbody'))
     var mergedCellsData = loadMergedCells(indexCurrentSheet, new Date().getTime())
     loadChunks(indexCurrentSheet, 0, new Date().getTime())
+    ssfHandler()
     if (mergedCellsData) {
       applyMergedCells(mergedCellsData)
     }

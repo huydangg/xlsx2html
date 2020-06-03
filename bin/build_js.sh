@@ -10,6 +10,7 @@ OUTPUT="$BASEDIR/templates/$OUTPUT_FN"
          --compilation_level ADVANCED_OPTIMIZATIONS \
          --warning_level VERBOSE \
          --js "$INPUT" \
+	 --externs "$BASEDIR/3rdparty/ssf/ssf.js" \
          --js_output_file "$OUTPUT" && \
     echo 'Done.') || \
 (echo 'Failed. Read `3rdparty/closure-compiler/README` for more detail.' && \

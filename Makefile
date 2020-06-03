@@ -1,5 +1,5 @@
 # The name of the source files
-SOURCES =  src/main.c src/read_styles.c src/read_worksheet.c src/read_workbook.c src/read_sharedstrings.c src/read_relationships.c src/read_drawings.c src/read_chart.c src/ssf.c
+SOURCES =  src/main.c src/read_styles.c src/read_worksheet.c src/read_workbook.c src/read_sharedstrings.c src/read_relationships.c src/read_drawings.c src/read_chart.c
 
 # The name of the executable
 EXE = result
@@ -59,6 +59,5 @@ src/read_sharedstrings.o: src/read_sharedstrings.c include/read_sharedstrings.h
 src/read_relationships.o: src/read_relationships.c include/read_relationships.h
 src/read_drawings.o: src/read_drawings.c include/read_drawings.h
 src/read_chart.o: src/read_chart.c include/read_chart.h
-src/ssf.o: src/ssf.c include/ssf.h
 include/private.o: include/private.h
 include/const.o: include/const.h

@@ -6,12 +6,17 @@
 // char *strrev() : include <string.h>
 char *fill(char *c, int l) {
   char *o = calloc(1, sizeof(char));
-  while (strlen(o) < 1)
+  while (strlen(o) < 1) {
+    o = realloc(o, strlen(c) + strlen(o) + 1);
     strcat(o, c);
+  }
   return o;
 }
 
 char *pad0(void *v, int d) {
+  char t[256];
+  snprintf(t, 256, "%s", v);
+  return strlen(t) >= d ? t : fill('0', d - strlen(t)) + t;
 }
 char *pad_(void *v, int d) {
 }
@@ -200,6 +205,14 @@ long *parse_date_code(long v, char is_date1904 /* opts: boolean */, char b2 /* b
   out[9] = dow;
   return out;
 }
-struct tm basedate = { .tm_year=1899-1900, .tm_mon=11, .tm_mday=31, .tm_hour=0, .tm_min=0, .tm_sec=0 };
-//var dnthresh = basedate.getTime();
+//This func is just available on front-end
+/*struct tm basedate = { .tm_year=1899-1900, .tm_mon=11, .tm_mday=31, .tm_hour=0, .tm_min=0, .tm_sec=0 };
+time_t dnthresh = mktime(&basedate);
 struct tm base1904 = { .tm_year=1900-1900, .tm_mon=2, .tm_mday=1, .tm_hour=0, .tm_min=0, .tm_sec=0 };
+long datenum_local(struct tm v, char date1904) { }*/ 
+
+//This func for library purpose and not using this in anywhere else 
+// char *general_fmt_int(long v) {} 
+
+
+

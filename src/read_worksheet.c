@@ -868,46 +868,18 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
 	    break;
 	  }
 	}
-        fputs("<span>", worksheet_callbackdata->worksheet_file);
 	if (strcmp(array_numfmts.numfmts[index_numFmt].formatCode, "General") == 0) {
-	  fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
+          fputs("<span>", worksheet_callbackdata->worksheet_file);
 	} else {
-	  FILE *fp;
-	  char formated_content[1035];
-	  /* Open the command for reading. */
-	  int len_ssf_bin_path = strlen(WORKING_DIR) + strlen(THIRD_PARTY_DIR_NAME) + strlen(SSF_BIN_DIR_NAME) + 4;
-	  char *ssf_bin_path = malloc(len_ssf_bin_path + 1);
-	  snprintf(ssf_bin_path, len_ssf_bin_path + 1, "%s/%s/%s", WORKING_DIR, THIRD_PARTY_DIR_NAME, SSF_BIN_DIR_NAME);
-	  char *option_format = "--format";
-
-	  //3: blank
-	  //2: ""
-	  int len_cmd = len_ssf_bin_path
-	    + strlen(worksheet_callbackdata->worksheet_content)
-	    + strlen(array_numfmts.numfmts[index_numFmt].formatCode)
-	    + strlen(option_format) + 3 + 2;
-	  char *cmd = malloc(len_cmd + 1);
-	  snprintf(
-	    cmd, len_cmd + 1, "%s %s \'%s\' %s", ssf_bin_path, option_format,
-	    array_numfmts.numfmts[index_numFmt].formatCode,
-	    worksheet_callbackdata->worksheet_content
-	  );
-	  free(ssf_bin_path);
-	  fp = popen(cmd, "r");
-	  free(cmd);
-	  if (fp == NULL) {
-	    fprintf(stderr, "Failed to run ssf\n");
-	    fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
-	  } else {
-	    /* Read the output a line at a time - output it. */
-	    fgets(formated_content, sizeof(formated_content), fp);
-	    /* close */
-	    pclose(fp);
-	    fputs(formated_content, worksheet_callbackdata->worksheet_file);
-	  }
-	}
-        fputs("</span>", worksheet_callbackdata->worksheet_file);
-        fputs("\n", worksheet_callbackdata->worksheet_file);
+	  // <span class="n" data-format-code="">
+	  int len_span_html = strlen(array_numfmts.numfmts[index_numFmt].formatCode) + 36;
+	  char *span_html = malloc(len_span_html + 1);
+	  snprintf(span_html, len_span_html + 1, "<span class=\"n\" data-format-code=\"%s\">", array_numfmts.numfmts[index_numFmt].formatCode);
+	  fputs(span_html, worksheet_callbackdata->worksheet_file);
+	}  
+	fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
+	fputs("</span>", worksheet_callbackdata->worksheet_file);
+	fputs("\n", worksheet_callbackdata->worksheet_file);
       } else {
         fputs("<span>", worksheet_callbackdata->worksheet_file);
         fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
