@@ -876,6 +876,7 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
 	  char *span_html = malloc(len_span_html + 1);
 	  snprintf(span_html, len_span_html + 1, "<span class=\"n\" data-format-code=\"%s\">", array_numfmts.numfmts[index_numFmt].formatCode);
 	  fputs(span_html, worksheet_callbackdata->worksheet_file);
+	  free(span_html);
 	}  
 	fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
 	fputs("</span>", worksheet_callbackdata->worksheet_file);
