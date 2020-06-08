@@ -717,14 +717,6 @@ int main(int argc, char **argv) {
   char has_output_file_name = '0';
   char has_tmp_dir = '0';
   char has_url_resource = '0';
-  char path[PATH_MAX] = {0};
-  int dest_len = PATH_MAX;
-  if (readlink("/proc/self/exe", path, dest_len) != -1) {
-    dirname(path);
-    //strcat(path, "/");
-    printf("WORKING DIR: %s\n", path);
-    WORKING_DIR = path;
-  }
 
   while (1) {
     int this_option_optind = optind ? optind : 1;
@@ -736,10 +728,11 @@ int main(int argc, char **argv) {
          {"tmp-dir", required_argument, 0, 0},
          {"url-resource", required_argument, 0, 0},
          {"help", no_argument, 0, 'h'},
+         {"version", no_argument, 0, 'v'},
          {0, 0, 0, 0}
     };
 
-    c = getopt_long(argc, argv, "h",
+    c = getopt_long(argc, argv, "hv",
              long_options, &option_index);
 
     if (c == -1)
@@ -789,20 +782,25 @@ int main(int argc, char **argv) {
           printf("digits occur in two different argv-elements.\n");
         digit_optind = this_option_optind;
         printf("option %c\n", c);
-        break;
+        exit(EXIT_SUCCESS);
 
       case 'h':
       case '?':
+	printf("%s\n", XLSXMAGIC_FULLNAME);
 	printf("%s%50s\n", "--origin-file-path", "Path to xlsx file to be converted");
 	printf("%s%40s\n", "--output-dir", "Path to ouput dir");
 	printf("%s%58s\n", "--output-file-name", "File index html (exclude .html extension)");
 	printf("%s%42s\n", "--tmp-dir", "Path to temp dir");
 	printf("%s%70s\n", "--url-resource", "Url to resource (image, etc) follow by enviroment");
 	printf("%s%48s\n", "-h, --help", "Print usage information");
-        goto LOAD_RESOURCES_FAILED;
+        exit(EXIT_SUCCESS);
+      case 'v':
+	printf("%s\n", XLSXMAGIC_FULLNAME);
+        exit(EXIT_SUCCESS);
 
       default:
         printf("?? getopt returned character code 0%o ??\n", c);
+        exit(EXIT_SUCCESS);
     }
   }
 
@@ -819,6 +817,14 @@ int main(int argc, char **argv) {
   }
   if (has_output_file_name == '0') {
     OUTPUT_FILE_NAME = "index";
+  }
+  char path[PATH_MAX] = {0};
+  int dest_len = PATH_MAX;
+  if (readlink("/proc/self/exe", path, dest_len) != -1) {
+    dirname(path);
+    //strcat(path, "/");
+    printf("WORKING DIR: %s\n", path);
+    WORKING_DIR = path;
   }
   if (has_output_dir == '0') {
     char *OUTPUT_DIR_NAME = "output";
@@ -840,6 +846,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "File not found: %s | %s\n", ORIGIN_FILE_PATH, strerror(errno));
     goto OPEN_ZIP_FAILED;
   }
+
   // +1 for "/" +1 for '\0'
   struct stat st = {0};
   if (stat(OUTPUT_DIR, &st) == -1) {

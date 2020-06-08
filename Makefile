@@ -60,3 +60,4 @@ src/read_drawings.o: src/read_drawings.c include/read_drawings.h
 src/read_chart.o: src/read_chart.c include/read_chart.h
 include/private.o: include/private.h
 include/const.o: include/const.h
+include/version.o: include/version.h
