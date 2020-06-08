@@ -252,13 +252,6 @@ int load_worksheets(zip_t *zip) {
       return status_worksheet;
     }
     array_sheets.sheets[i]->hasMergedCells = worksheet.hasMergedCells;
-    printf("HAS MERGED CELLS: %c\n", worksheet.hasMergedCells);
-    printf("START_ROW: %c\n", worksheet.start_row);
-    printf("START_COL: %c\n", worksheet.start_col);
-    printf("END_ROW: %s\n", worksheet.end_row);
-    printf("END_COL: %s\n", worksheet.end_col);
-    printf("END_COL_IN_NUMBER: %d\n", worksheet.end_col_number);
-    printf("Length cols: %d\n", worksheet.array_cols.length);
     array_sheets.sheets[i]->array_drawing_rels.length = 0;
     array_sheets.sheets[i]->array_drawing_rels.relationships = NULL;
 
@@ -793,6 +786,7 @@ int main(int argc, char **argv) {
 	printf("%s%42s\n", "--tmp-dir", "Path to temp dir");
 	printf("%s%70s\n", "--url-resource", "Url to resource (image, etc) follow by enviroment");
 	printf("%s%48s\n", "-h, --help", "Print usage information");
+	printf("%s%42s\n", "-v, --version", "Show current version");
         exit(EXIT_SUCCESS);
       case 'v':
 	printf("%s\n", XLSXMAGIC_FULLNAME);
