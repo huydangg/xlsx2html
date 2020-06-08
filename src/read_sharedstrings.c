@@ -17,6 +17,10 @@ struct Font new_font() {
 struct Font font;
 int current_index;
 
+int clean_ss_data(const char *file_name) {
+  return remove(file_name);
+}
+
 char* concat(const char *s1, const char *s2) {
   const size_t len1 = strlen(s1);
   const size_t len2 = strlen(s2);

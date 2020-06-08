@@ -16,6 +16,7 @@ const char *TEMP_DIR;
 const char *RESOURCE_URL;
 const char *WORKING_DIR;
 const char *CHUNKS_DIR_PATH;
+const char *SHAREDSTRINGS_HTML_FILE_PATH;
 
 int err;
 
@@ -365,14 +366,15 @@ int load_sharedStrings(zip_t *zip) {
   char *SHAREDSTRINGS_HTML_FILE_NAME = malloc(len_sharedStrings_html_file_name + 1);
   snprintf(SHAREDSTRINGS_HTML_FILE_NAME, len_sharedStrings_html_file_name + 1, "%s%s", OUTPUT_FILE_NAME, SHAREDSTRINGS_HTML_FILE_SUFFIX);
   int len_sharedStrings_file_path = strlen(TEMP_DIR) + 1 + len_sharedStrings_html_file_name;
-  char *SHAREDSTRINGS_HTML_FILE_PATH = malloc(len_sharedStrings_file_path + 1);
-  snprintf(SHAREDSTRINGS_HTML_FILE_PATH, len_sharedStrings_file_path + 1, "%s/%s", TEMP_DIR, SHAREDSTRINGS_HTML_FILE_NAME);
+  char *_SHAREDSTRINGS_HTML_FILE_PATH = malloc(len_sharedStrings_file_path + 1);
+  snprintf(_SHAREDSTRINGS_HTML_FILE_PATH, len_sharedStrings_file_path + 1, "%s/%s", TEMP_DIR, SHAREDSTRINGS_HTML_FILE_NAME);
   free(SHAREDSTRINGS_HTML_FILE_NAME);
+  SHAREDSTRINGS_HTML_FILE_PATH = strdup(_SHAREDSTRINGS_HTML_FILE_PATH);
+  free(_SHAREDSTRINGS_HTML_FILE_PATH);
   FILE *sharedStrings_file;
   sharedStrings_file = fopen(SHAREDSTRINGS_HTML_FILE_PATH, "wb+");
   if (sharedStrings_file == NULL) {
     fprintf(stderr, "Cannot open %s to write\n", SHAREDSTRINGS_HTML_FILE_PATH);
-    free(SHAREDSTRINGS_HTML_FILE_PATH);
     return -1;
   }
   zip_file_t *archive = open_zip_file(zip, file_name);
@@ -380,10 +382,8 @@ int load_sharedStrings(zip_t *zip) {
   if (status_sharedStrings == -1) {
     fprintf(stderr, "Error when load sharedStrings\n");
     fclose(sharedStrings_file);
-    free(SHAREDSTRINGS_HTML_FILE_PATH);
     return -1;
   }
-  free(SHAREDSTRINGS_HTML_FILE_PATH);
   fclose(sharedStrings_file);
   return 1;
 }
@@ -904,5 +904,9 @@ OPEN_ZIP_FAILED:
   free((char *)RESOURCE_URL);
   free((char *)CHUNKS_DIR_PATH);
   free((char *)OUTPUT_DIR);
+  int status_clean_ss_data = clean_ss_data(SHAREDSTRINGS_HTML_FILE_PATH);
+  if (status_clean_ss_data != 0)
+    fprintf(stderr, "Unable to delete the file %s", SHAREDSTRINGS_HTML_FILE_PATH);
+  free((char *)SHAREDSTRINGS_HTML_FILE_PATH);
   exit(EXIT_SUCCESS);
 }
