@@ -8,13 +8,13 @@ struct ArraySheets array_sheets;
 
 XML_Char *insert_substr_to_str_at_pos(XML_Char *des, const XML_Char *substr, int pos) {
   const XML_Char *_substr = substr;
-  XML_Char *_tmp_sheet_id = malloc(sizeof(XML_Char) * (strlen(_substr) + 1));
-  memcpy(_tmp_sheet_id, _substr, sizeof(XML_Char) * (strlen(_substr) + 1));
-  XML_Char *_tmp_path_name = malloc(sizeof(XML_Char) * (strlen(_tmp_sheet_id) + strlen(des) + 1));
+  XML_Char *_tmp_sheet_id = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(_substr) + 1));
+  memcpy(_tmp_sheet_id, _substr, sizeof(XML_Char) * (XML_Char_len(_substr) + 1));
+  XML_Char *_tmp_path_name = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(_tmp_sheet_id) + XML_Char_len(des) + 1));
   memcpy(_tmp_path_name, des, pos);
   _tmp_path_name[pos] = '\0';
-  memcpy(_tmp_path_name + pos, _tmp_sheet_id, sizeof(XML_Char) * (strlen(_tmp_sheet_id) + 1));
-  memcpy(_tmp_path_name + pos + strlen(_tmp_sheet_id), des + pos, sizeof(XML_Char) * (strlen(des + pos) + 1));
+  memcpy(_tmp_path_name + pos, _tmp_sheet_id, sizeof(XML_Char) * (XML_Char_len(_tmp_sheet_id) + 1));
+  memcpy(_tmp_path_name + pos + XML_Char_len(_tmp_sheet_id), des + pos, sizeof(XML_Char) * (XML_Char_len(des + pos) + 1));
   free(_tmp_sheet_id);
   return _tmp_path_name;
 }
@@ -23,9 +23,9 @@ void workbook_start_element(void *callbackdata, const XML_Char *name, const XML_
   (void)attrs;
   if (XML_Char_icmp(name, "sheets") == 0) {
     array_sheets.length = 0;
-    array_sheets.sheets = malloc(sizeof(struct Sheet *));
+    array_sheets.sheets = XML_Char_malloc(sizeof(struct Sheet *));
     if (array_sheets.sheets == NULL) {
-      fprintf(stderr, "Error when malloc sheets_data");
+      fprintf(stderr, "Error when XML_Char_malloc sheets_data");
       // TODO: Handle error
     } else {
       XML_SetElementHandler(xmlparser, sheet_main_start_element, NULL);
@@ -51,18 +51,18 @@ void sheet_main_start_element(void *callbackdata, const XML_Char *name, const XM
 	// TODO: Handle error
       }
     }
-    array_sheets.sheets[array_sheets.length - 1] = malloc(sizeof(struct Sheet));
+    array_sheets.sheets[array_sheets.length - 1] = XML_Char_malloc(sizeof(struct Sheet));
     for(int i = 0; attrs[i]; i += 2){
       if(XML_Char_icmp(attrs[i], "state") == 0){
         array_sheets.sheets[array_sheets.length - 1]->isHidden = XML_Char_icmp(attrs[i + 1], "hidden") == 0 ? '1' : '0';
       }
       if (XML_Char_icmp(attrs[i], "name") == 0){
-	array_sheets.sheets[array_sheets.length - 1]->name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(array_sheets.sheets[array_sheets.length - 1]->name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	array_sheets.sheets[array_sheets.length - 1]->name = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(array_sheets.sheets[array_sheets.length - 1]->name, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
       if (XML_Char_icmp(attrs[i], "sheetId") == 0){
-	array_sheets.sheets[array_sheets.length - 1]->sheetId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(array_sheets.sheets[array_sheets.length - 1]->sheetId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	array_sheets.sheets[array_sheets.length - 1]->sheetId = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(array_sheets.sheets[array_sheets.length - 1]->sheetId, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
 	char *pattern_name = "xl/worksheets/sheet.xml";
 	array_sheets.sheets[array_sheets.length - 1]->path_name = insert_substr_to_str_at_pos(pattern_name, attrs[i + 1], 19);
       }

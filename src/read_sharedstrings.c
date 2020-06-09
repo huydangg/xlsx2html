@@ -24,14 +24,14 @@ int clean_ss_data(const char *file_name) {
 }
 
 char* concat(const char *s1, const char *s2) {
-  const size_t len1 = strlen(s1);
-  const size_t len2 = strlen(s2);
-  char *result = malloc(len1 + len2 + 1); // +1 for the null-terminator
+  const size_t len1 = XML_Char_len(s1);
+  const size_t len2 = XML_Char_len(s2);
+  char *result = XML_Char_malloc(len1 + len2 + 1); // +1 for the null-terminator
   if (result == NULL) {
     fprintf(stderr, "Cannot concat()");
     return NULL;
   }
-  // in real code you would check for errors in malloc here
+  // in real code you would check for errors in XML_Char_malloc here
   memcpy(result, s1, len1);
   memcpy(result + len1, s2, len2 + 1); // +1 to copy the null-terminator
   return result;
@@ -43,7 +43,7 @@ void sharedStrings_main_start_element(void *callbackdata, const XML_Char *name, 
   if (XML_Char_icmp(name, "sst") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "uniqueCount") == 0) {
-	sharedStrings_position.positions = malloc((int)strtol(attrs[i + 1], NULL, 10) * sizeof(long int));
+	sharedStrings_position.positions = XML_Char_malloc((int)strtol(attrs[i + 1], NULL, 10) * sizeof(long int));
 	current_index = -1;
       }
     }
@@ -91,7 +91,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
       printf("FONT COLOR RGB: %s\n", font.color.rgb);
 
       //12: "font-family:" | 1: ';'
-      const int LEN_FONT_NAME = 14 + strlen(font.name); //ex
+      const int LEN_FONT_NAME = 14 + XML_Char_len(font.name); //ex
       char font_name[LEN_FONT_NAME];
       snprintf(font_name, LEN_FONT_NAME, "font-family:%s;", font.name);
       font_style = strdup(font_name); 
@@ -129,7 +129,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
 	free(tmp_font_style);
       }
       if (font.color.rgb != NULL) {
-	const int LEN_FONT_COLOR_RGB = 8 + strlen(font.color.rgb);
+	const int LEN_FONT_COLOR_RGB = 8 + XML_Char_len(font.color.rgb);
         char font_color_rgb[LEN_FONT_COLOR_RGB];
         // 6: "color:" | 1: ';'
         snprintf(font_color_rgb, LEN_FONT_COLOR_RGB, "color:%s;", font.color.rgb);
@@ -207,8 +207,8 @@ void sharedStrings_rPritem_start_element(void *callbackdata, const XML_Char *nam
   if (XML_Char_icmp(name, "rFont") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "val") == 0) {
-	font.name = realloc(font.name, sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(font.name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	font.name = realloc(font.name, sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(font.name, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
   }
@@ -229,16 +229,16 @@ void sharedStrings_rPritem_start_element(void *callbackdata, const XML_Char *nam
   if (XML_Char_icmp(name, "u") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "val") == 0) {
-	font.underline = realloc(font.underline, sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(font.underline, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	font.underline = realloc(font.underline, sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(font.underline, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
   }
   if (XML_Char_icmp(name, "color") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "val") == 0) {
-	font.color.rgb = realloc(font.color.rgb, sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(font.color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	font.color.rgb = realloc(font.color.rgb, sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(font.color.rgb, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
   }
@@ -256,7 +256,7 @@ void sharedStrings_content_handler(void *callbackdata, const XML_Char *buf, int 
   FILE *sharedStrings_file_callbackdata = callbackdata;
   XML_Char *value;
   int len_value = len;
-  if ((value = malloc(len_value + 1)) == NULL) {
+  if ((value = XML_Char_malloc(len_value + 1)) == NULL) {
     return;
   }
   memcpy(value, buf, len_value);

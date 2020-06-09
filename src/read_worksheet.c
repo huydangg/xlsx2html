@@ -20,7 +20,7 @@ unsigned short INDEX_CURRENT_SHEET;
 
 
 void reversed(char *input) {
-  int length = strlen(input);
+  int length = XML_Char_len(input);
   int last_pos = length - 1;
   for (int i = 0; i < length/2; i++) {
     char tmp = input[i];
@@ -30,7 +30,7 @@ void reversed(char *input) {
 }
 
 char *int_to_column_name(unsigned int n) {
-  char *column_name = malloc(4);
+  char *column_name = XML_Char_malloc(4);
   column_name[0] = '\0';
   while (n > 0) {
     n--;
@@ -41,7 +41,7 @@ char *int_to_column_name(unsigned int n) {
     n /= 26;
   }
   reversed(column_name);
-  column_name[strlen(column_name)] = '\0';
+  column_name[XML_Char_len(column_name)] = '\0';
   return column_name;
 }
 
@@ -86,22 +86,22 @@ unsigned short column_name_to_number(const char *column_name) {
   const char *col_name = column_name;
   char *base = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   int i, j, result = 0;
-  for (i = 0, j = strlen(col_name) - 1; i < strlen(col_name); i += 1, j -= 1) {
+  for (i = 0, j = XML_Char_len(col_name) - 1; i < XML_Char_len(col_name); i += 1, j -= 1) {
     const char *ptr = strchr(base, col_name[i]);
     if (!ptr) {
       return -1;
     }
     int index = ptr - base;
-    result += (int)pow((double)strlen(base), (double)j) * (index + 1);
+    result += (int)pow((double)XML_Char_len(base), (double)j) * (index + 1);
   }
   return result;
 }
 
 int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number, unsigned short index_worksheet) {
   int len_index_worksheet = snprintf(NULL, 0, "%d", index_worksheet);
-  int LEN_CHUNKS_DIR_PATH = strlen(CHUNKS_DIR_PATH);
+  int LEN_CHUNKS_DIR_PATH = XML_Char_len(CHUNKS_DIR_PATH);
   int LEN_THE_FIRST_CHUNK_PATH = LEN_CHUNKS_DIR_PATH + len_index_worksheet + 15;
-  char *THE_FIRST_CHUNK_PATH = malloc(LEN_THE_FIRST_CHUNK_PATH + 1);
+  char *THE_FIRST_CHUNK_PATH = XML_Char_malloc(LEN_THE_FIRST_CHUNK_PATH + 1);
   snprintf(THE_FIRST_CHUNK_PATH, LEN_THE_FIRST_CHUNK_PATH + 1, "%s/chunk_%d_0.chunk", CHUNKS_DIR_PATH, index_worksheet);
   FILE *fchunk0;
   fchunk0 = fopen(THE_FIRST_CHUNK_PATH, "ab+");
@@ -153,10 +153,10 @@ void generate_cells(void *callbackdata, const XML_Char *name) {
     for (int i = 1; i <= worksheet_callbackdata->end_col_number; i++) {
       //id: 0_B2
       char *col_name = int_to_column_name(i);
-      int len_col_name = strlen(col_name);
+      int len_col_name = XML_Char_len(col_name);
       int len_id = len_index_sheet + len_col_name + len_row_number + 1;
       int len_td_str = 44 + len_id;
-      char *td = malloc(len_td_str + 1);
+      char *td = XML_Char_malloc(len_td_str + 1);
       snprintf(
 	td, len_td_str + 1,
 	"<td id=\"%d_%s%d\" style=\"border-style:hidden;\"></td>",
@@ -184,7 +184,7 @@ void get_end_col_end_row_from_range(const XML_Char *range, char **end_row, char 
     pos_colon = check_colon - range + 1;
   }
   const XML_Char *_tmp_end_cell = range + pos_colon;
-  int length = (int)strlen(_tmp_end_cell);
+  int length = (int)XML_Char_len(_tmp_end_cell);
   char _tmp_end_col[4];
   int count_col_char = 0;
   while (*_tmp_end_cell) {
@@ -193,9 +193,9 @@ void get_end_col_end_row_from_range(const XML_Char *range, char **end_row, char 
       _tmp_end_col[count_col_char - 1] = *_tmp_end_cell;
     } else {
       _tmp_end_col[count_col_char] = '\0';
-      *end_col = malloc((count_col_char + 1) * sizeof(char));
+      *end_col = XML_Char_malloc((count_col_char + 1) * sizeof(char));
       memcpy(*end_col, _tmp_end_col, (count_col_char + 1) * sizeof(char));
-      *end_row = malloc(sizeof(char) * (length - count_col_char + 1));
+      *end_row = XML_Char_malloc(sizeof(char) * (length - count_col_char + 1));
       memcpy(*end_row, _tmp_end_cell, (length - count_col_char + 1) * sizeof(char));
       return;
     }
@@ -230,7 +230,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     XML_SetElementHandler(xmlparser, NULL, worksheet_end_element);
   } else if (XML_Char_icmp(name, "cols") == 0) {
     worksheet_callbackdata->array_cols.length = 0;
-    worksheet_callbackdata->array_cols.cols = malloc(sizeof(struct Col *));
+    worksheet_callbackdata->array_cols.cols = XML_Char_malloc(sizeof(struct Col *));
     if (worksheet_callbackdata->array_cols.cols == NULL) {
 	fprintf(stderr, "Error when allocted array_cols.cols");
 	// TODO: Handle Error
@@ -240,12 +240,12 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
   } else if (XML_Char_icmp(name, "sheetData") == 0) {
     worksheet_callbackdata->ROW_NUMBER = 0;
     CURRENT_CHUNK = 1;
-    int LEN_CHUNKS_DIR_PATH = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1 + 1;
-    char *CHUNKS_DIR_PATH = malloc(LEN_CHUNKS_DIR_PATH);
+    int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
+    char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
     snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
     //12: chunk_%d_%d.html
     int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET) + snprintf(NULL, 0, "%d", CURRENT_CHUNK) + 13;
-    char *CHUNK_FILE_PATH = malloc(len_chunk_file_path + 1);
+    char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
     snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, CURRENT_CHUNK);
     free(CHUNKS_DIR_PATH);
     worksheet_callbackdata->worksheet_file = fopen(CHUNK_FILE_PATH, "w");
@@ -257,8 +257,8 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
   } else if (XML_Char_icmp(name, "mergeCells") == 0) {
     worksheet_callbackdata->hasMergedCells = '1';
-    int LEN_CHUNKS_DIR_PATH = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1 + 1;
-    char *CHUNKS_DIR_PATH = malloc(LEN_CHUNKS_DIR_PATH);
+    int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
+    char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
     snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
 
     int len_index_worksheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
@@ -333,7 +333,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	// TODO: Handle Error
       }
     }
-    worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1] = malloc(sizeof(struct Col));
+    worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1] = XML_Char_malloc(sizeof(struct Col));
     worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->isHidden = '0';
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "hidden") == 0) {
@@ -370,7 +370,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     while (pre_row_number != 0 && worksheet_callbackdata->ROW_NUMBER != 0 && pre_row_number < worksheet_callbackdata->ROW_NUMBER) {
       int len_pre_row_number = snprintf(NULL, 0, "%d", pre_row_number);
       int LEN_TR_TAG = 11 + len_pre_row_number;
-      char *TR_TAG = malloc(LEN_TR_TAG);
+      char *TR_TAG = XML_Char_malloc(LEN_TR_TAG);
       snprintf(TR_TAG, LEN_TR_TAG, "<tr id=\"%d\">", pre_row_number);
       fputs(TR_TAG, worksheet_callbackdata->worksheet_file);
       free(TR_TAG);
@@ -385,10 +385,10 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
       for (int i = 1; i <= worksheet_callbackdata->end_col_number; i++) {
 	//id: 0_B2
 	char *col_name = int_to_column_name(i);
-	int len_col_name = strlen(col_name);
+	int len_col_name = XML_Char_len(col_name);
 	int len_id = len_index_sheet + len_col_name + len_pre_row_number + 1;
 	int len_td_str = 44 + len_id;
-	char *td = malloc(len_td_str + 1);
+	char *td = XML_Char_malloc(len_td_str + 1);
 	snprintf(
 	  td, len_td_str + 1,
 	  "<td id=\"%d_%s%d\" style=\"border-style:hidden;\"></td>",
@@ -406,7 +406,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
       pre_row_number++;
     }
     int LEN_TR_TAG = 11 + len_row_number;
-    char *TR_TAG = malloc(LEN_TR_TAG);
+    char *TR_TAG = XML_Char_malloc(LEN_TR_TAG);
     snprintf(TR_TAG, LEN_TR_TAG, "<tr id=\"%d\">", worksheet_callbackdata->ROW_NUMBER);
     fputs(TR_TAG, worksheet_callbackdata->worksheet_file);
     free(TR_TAG);
@@ -424,13 +424,13 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     for (int i = 0; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "ref") == 0) {
-	char **mergecell_range = malloc(2 * sizeof(char *));
+	char **mergecell_range = XML_Char_malloc(2 * sizeof(char *));
 	int count = 0;
 	char *token, *_tmp_range, *tofree;
 	tofree = _tmp_range = strdup(attrs[i + 1]);
 	while ((token = strsep(&_tmp_range, ":"))) {
-	  int len_token = strlen(token);
-	  mergecell_range[count] = malloc(len_token + 1);
+	  int len_token = XML_Char_len(token);
+	  mergecell_range[count] = XML_Char_malloc(len_token + 1);
 	  memcpy(mergecell_range[count], token, len_token + 1);
 	  mergecell_range[count][len_token] = '\0';
 	  count++;
@@ -445,7 +445,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	size_t index_row_end = get_row_nr(mergecell_range[1]);
 	unsigned short colspan = index_col_end - index_col_start + 1;
 	unsigned short rowspan = index_row_end - index_row_start + 1;
-	int len_start_cell = strlen(mergecell_range[0]);
+	int len_start_cell = XML_Char_len(mergecell_range[0]);
 	int len_colspan = snprintf(NULL, 0, "%d", colspan);
 	int len_rowspan = snprintf(NULL, 0, "%d", rowspan);
 	//30:  "":{colspan:"",rowspan:""}
@@ -472,10 +472,10 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
     int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
     while (START_CELL_IN_NUMBER_BY_ROW <= worksheet_callbackdata->end_col_number) {
       char *col_name = int_to_column_name(START_CELL_IN_NUMBER_BY_ROW);
-      int len_col_name = strlen(col_name);
+      int len_col_name = XML_Char_len(col_name);
       int len_id = len_index_sheet + len_col_name + len_row_number + 1;
       int len_td_str = 44 + len_id;
-      char *td = malloc(len_td_str + 1);
+      char *td = XML_Char_malloc(len_td_str + 1);
       snprintf(
 	td, len_td_str + 1,
 	"<td id=\"%d_%s%d\" style=\"border-style:hidden;\"></td>",
@@ -506,14 +506,14 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     worksheet_callbackdata->type_content = NULL;
     for (int i = 0; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "r") == 0) {
-	worksheet_callbackdata->cell_name = realloc(worksheet_callbackdata->cell_name, 1 + strlen(attrs[i + 1]));
-        memcpy(worksheet_callbackdata->cell_name, attrs[i + 1], 1 + strlen(attrs[i + 1]));
+	worksheet_callbackdata->cell_name = realloc(worksheet_callbackdata->cell_name, 1 + XML_Char_len(attrs[i + 1]));
+        memcpy(worksheet_callbackdata->cell_name, attrs[i + 1], 1 + XML_Char_len(attrs[i + 1]));
         CURRENT_CELL_IN_NUMBER_BY_ROW = (unsigned int)get_col_nr(attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "s") == 0) {
         worksheet_callbackdata->index_style = (int)strtol(attrs[i + 1], NULL, 10);
       } else if (XML_Char_icmp(attrs[i], "t") == 0) {
-        worksheet_callbackdata->type_content = realloc(worksheet_callbackdata->type_content, 1 + strlen(attrs[i + 1]));
-	memcpy(worksheet_callbackdata->type_content, attrs[i + 1], 1 + strlen(attrs[i + 1]));
+        worksheet_callbackdata->type_content = realloc(worksheet_callbackdata->type_content, 1 + XML_Char_len(attrs[i + 1]));
+	memcpy(worksheet_callbackdata->type_content, attrs[i + 1], 1 + XML_Char_len(attrs[i + 1]));
       }
     }
 
@@ -521,10 +521,10 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
     while (START_CELL_IN_NUMBER_BY_ROW < CURRENT_CELL_IN_NUMBER_BY_ROW) {
       char *col_name = int_to_column_name(START_CELL_IN_NUMBER_BY_ROW);
-      int len_col_name = strlen(col_name);
+      int len_col_name = XML_Char_len(col_name);
       int len_id = len_index_sheet + len_col_name + len_row_number + 1;
       int len_td_str = 44 + len_id;
-      char *td = malloc(len_td_str + 1);
+      char *td = XML_Char_malloc(len_td_str + 1);
       snprintf(
         td, len_td_str + 1,
         "<td id=\"%d_%s%d\" style=\"border-style:hidden;\"></td>",
@@ -551,10 +551,10 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     char wrapText = '\0';
     if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyAlignment == '1') {
       if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal != NULL) {
-	int len_horizontal = strlen(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal);
+	int len_horizontal = XML_Char_len(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal);
 	horizontal = realloc(horizontal, 1 + len_horizontal);
 	memcpy(horizontal, array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal, 1 + len_horizontal);
-	int len_vertical = strlen(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.vertical);
+	int len_vertical = XML_Char_len(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.vertical);
 	vertical = realloc(vertical, 1 + len_vertical);
 	memcpy(vertical, array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.vertical, 1 + len_vertical);
 	wrapText = array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.isWrapText;
@@ -562,10 +562,10 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     } else if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyAlignment == '0') {
       int id_cellXfs = array_cellXfs.Xfs[worksheet_callbackdata->index_style].xfId;
       if (array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal != NULL) {
-	int len_horizontal = strlen(array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal);
+	int len_horizontal = XML_Char_len(array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal);
 	horizontal = realloc(horizontal, 1 + len_horizontal);
 	memcpy(horizontal, array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal, 1 + len_horizontal);
-	int len_vertical = strlen(array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical);
+	int len_vertical = XML_Char_len(array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical);
 	vertical = realloc(vertical, 1 + len_vertical);
 	memcpy(vertical, array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical, 1 + len_vertical);
 	wrapText = array_cellStyleXfs.Xfs[id_cellXfs].alignment.isWrapText;
@@ -582,8 +582,8 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
         snprintf(horizontal_style, 16 + 1, "text-align:left;");
       } else {
         //12: text-align:;
-        horizontal_style = realloc(horizontal_style, strlen(horizontal) + 12 + 1);
-        snprintf(horizontal_style, strlen(horizontal) + 12 + 1, "text-align:%s;", horizontal);
+        horizontal_style = realloc(horizontal_style, XML_Char_len(horizontal) + 12 + 1);
+        snprintf(horizontal_style, XML_Char_len(horizontal) + 12 + 1, "text-align:%s;", horizontal);
       }
       free(horizontal);
     }
@@ -594,8 +594,8 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
         snprintf(vertical_style, 22 + 1, "vertical-align:middle;");
       } else {
         //16: vertical-align:;
-        vertical_style = realloc(vertical_style, strlen(vertical) + 16 + 1);
-        snprintf(vertical_style, strlen(vertical) + 16 + 1, "vertical-align:%s;", vertical);
+        vertical_style = realloc(vertical_style, XML_Char_len(vertical) + 16 + 1);
+        snprintf(vertical_style, XML_Char_len(vertical) + 16 + 1, "vertical-align:%s;", vertical);
       }
       free(vertical);
     }
@@ -657,7 +657,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
         snprintf(border_bottom, 28 + 1, "border-bottom-style:hidden;");
       }
     }
-    int len_borders = strlen(border_left) + strlen(border_right) + strlen(border_top) + strlen(border_bottom);
+    int len_borders = XML_Char_len(border_left) + XML_Char_len(border_right) + XML_Char_len(border_top) + XML_Char_len(border_bottom);
     border_style = realloc(border_style, len_borders + 1);
     snprintf(border_style, len_borders + 1, "%s%s%s%s", border_left, border_right, border_top, border_bottom);
     free(border_left);
@@ -674,7 +674,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     }
     if (font_id != -1 && array_fonts.fonts[font_id].name != NULL) {
       //12: "font-family:" | 1: ';'
-      const int LEN_FONT_NAME = 14 + strlen(array_fonts.fonts[font_id].name); //ex
+      const int LEN_FONT_NAME = 14 + XML_Char_len(array_fonts.fonts[font_id].name); //ex
       char font_name[LEN_FONT_NAME];
       snprintf(font_name, LEN_FONT_NAME, "font-family:%s;", array_fonts.fonts[font_id].name);
       font_style = strdup(font_name);
@@ -701,7 +701,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	free(tmp_font_style);
       }
       if (array_fonts.fonts[font_id].color.rgb != NULL) {
-	const int LEN_FONT_COLOR_RGB = 8 + strlen(array_fonts.fonts[font_id].color.rgb);
+	const int LEN_FONT_COLOR_RGB = 8 + XML_Char_len(array_fonts.fonts[font_id].color.rgb);
         char font_color_rgb[LEN_FONT_COLOR_RGB];
         // 6: "color:" | 1: ';'
         snprintf(font_color_rgb, LEN_FONT_COLOR_RGB, "color:%s;", array_fonts.fonts[font_id].color.rgb);
@@ -740,7 +740,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       int LEN_FILL_FGCOLOR_RGB = 0;
       if (array_fills.fills[fill_id].patternFill.fgColor.rgb != NULL) {
         // 18: "background-color:;"
-	LEN_FILL_FGCOLOR_RGB = 18 + strlen(array_fills.fills[fill_id].patternFill.fgColor.rgb);
+	LEN_FILL_FGCOLOR_RGB = 18 + XML_Char_len(array_fills.fills[fill_id].patternFill.fgColor.rgb);
 	fill_style = realloc(fill_style, LEN_FILL_FGCOLOR_RGB + 1);
         snprintf(fill_style, LEN_FILL_FGCOLOR_RGB + 1, "background-color:%s;", array_fills.fills[fill_id].patternFill.fgColor.rgb);
       } else {
@@ -762,7 +762,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	font_style = calloc(1, sizeof(char));
       }
 
-      int len_styles = strlen(horizontal_style) + strlen(vertical_style) + strlen(wraptext_style) + strlen(border_style) + strlen(font_style) + LEN_FILL_FGCOLOR_RGB;
+      int len_styles = XML_Char_len(horizontal_style) + XML_Char_len(vertical_style) + XML_Char_len(wraptext_style) + XML_Char_len(border_style) + XML_Char_len(font_style) + LEN_FILL_FGCOLOR_RGB;
       styles = realloc(styles, len_styles + 1);
       snprintf(styles, len_styles + 1, "%s%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style, fill_style);
       free(horizontal_style);
@@ -772,7 +772,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       free(font_style);
       free(fill_style);
       char *TD_TAG = NULL;
-      int len_cellname = strlen(worksheet_callbackdata->cell_name);
+      int len_cellname = XML_Char_len(worksheet_callbackdata->cell_name);
       int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
       //24: <td id="" style=""></td>
       //1: _
@@ -864,8 +864,8 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
           fputs("<span>", worksheet_callbackdata->worksheet_file);
 	} else {
 	  // <span class="n" data-format-code="">
-	  int len_span_html = strlen(array_numfmts.numfmts[index_numFmt].formatCode) + 36;
-	  char *span_html = malloc(len_span_html + 1);
+	  int len_span_html = XML_Char_len(array_numfmts.numfmts[index_numFmt].formatCode) + 36;
+	  char *span_html = XML_Char_malloc(len_span_html + 1);
 	  snprintf(span_html, len_span_html + 1, "<span class=\"n\" data-format-code=\"%s\">", array_numfmts.numfmts[index_numFmt].formatCode);
 	  fputs(span_html, worksheet_callbackdata->worksheet_file);
 	  free(span_html);

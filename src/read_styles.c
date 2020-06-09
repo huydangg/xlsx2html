@@ -92,11 +92,11 @@ void numFmt_main_start_element(void *callbackdata, const XML_Char *name, const X
     array_numfmts.length++;
     for (int i = 0; attrs[i]; i += 2){
       if (XML_Char_icmp(attrs[i], "formatCode") == 0){
-        numFmts_callbackdata[array_numfmts.length - 1].formatCode = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(numFmts_callbackdata[array_numfmts.length - 1].formatCode, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        numFmts_callbackdata[array_numfmts.length - 1].formatCode = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+        memcpy(numFmts_callbackdata[array_numfmts.length - 1].formatCode, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       } else if (XML_Char_icmp(attrs[i], "numFmtId") == 0){
-        numFmts_callbackdata[array_numfmts.length - 1].numFmtId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(numFmts_callbackdata[array_numfmts.length - 1].numFmtId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        numFmts_callbackdata[array_numfmts.length - 1].numFmtId = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+        memcpy(numFmts_callbackdata[array_numfmts.length - 1].numFmtId, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
   }
@@ -135,8 +135,8 @@ void font_item_start_element(void *callbackdata, const XML_Char *name, const XML
   } else if (XML_Char_icmp(name, "name") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "val") == 0) {
-        fonts_callbackdata[array_fonts.length - 1].name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(fonts_callbackdata[array_fonts.length - 1].name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1)); 
+        fonts_callbackdata[array_fonts.length - 1].name = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(fonts_callbackdata[array_fonts.length - 1].name, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1)); 
       }
     }
   } else if (XML_Char_icmp(name, "b") == 0) {
@@ -154,15 +154,15 @@ void font_item_start_element(void *callbackdata, const XML_Char *name, const XML
   } else if (XML_Char_icmp(name, "u") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "val") == 0) {
-	fonts_callbackdata[array_fonts.length - 1].underline = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(fonts_callbackdata[array_fonts.length - 1].underline, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	fonts_callbackdata[array_fonts.length - 1].underline = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(fonts_callbackdata[array_fonts.length - 1].underline, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
   } else if (XML_Char_icmp(name, "color") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "rgb") == 0) {
-	fonts_callbackdata[array_fonts.length - 1].color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) - 1 + 1));
-	snprintf(fonts_callbackdata[array_fonts.length - 1].color.rgb, (strlen(attrs[i + 1]) - 1 + 1), "#%s", attrs[i + 1] + 2);
+	fonts_callbackdata[array_fonts.length - 1].color.rgb = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) - 1 + 1));
+	snprintf(fonts_callbackdata[array_fonts.length - 1].color.rgb, (XML_Char_len(attrs[i + 1]) - 1 + 1), "#%s", attrs[i + 1] + 2);
       }
     }
   } else if(XML_Char_icmp(name, "family") == 0){
@@ -196,8 +196,8 @@ void fill_item_lv1_start_element(void *callbackdata, const XML_Char *name, const
   if (XML_Char_icmp(name, "patternFill") == 0)  {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "patternType") == 0) {
-        fills_callbackdata[array_fills.length - 1].patternFill.patternType = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(fills_callbackdata[array_fills.length - 1].patternFill.patternType, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        fills_callbackdata[array_fills.length - 1].patternFill.patternType = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+        memcpy(fills_callbackdata[array_fills.length - 1].patternFill.patternType, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
     XML_SetElementHandler(xmlparser, fill_item_lv2_start_element, fill_item_lv1_end_element);
@@ -220,15 +220,15 @@ void fill_item_lv2_start_element(void *callbackdata, const XML_Char *name, const
   if (XML_Char_icmp(name, "bgColor") == 0)  {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "rgb") == 0) {
-        fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) - 1 + 1));
-	snprintf(fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb, strlen(attrs[i + 1]) - 1 + 1, "#%s", attrs[i + 1] + 2);
+        fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) - 1 + 1));
+	snprintf(fills_callbackdata[array_fills.length - 1].patternFill.bgColor.rgb, XML_Char_len(attrs[i + 1]) - 1 + 1, "#%s", attrs[i + 1] + 2);
       }
     }
   } else if (XML_Char_icmp(name, "fgColor") == 0) {
      for (int i = 0; attrs[i]; i += 2) {
        if (XML_Char_icmp(attrs[i], "rgb") == 0) {
-         fills_callbackdata[array_fills.length - 1].patternFill.fgColor.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	 snprintf(fills_callbackdata[array_fills.length - 1].patternFill.fgColor.rgb, strlen(attrs[i + 1]) - 1 + 1, "#%s", attrs[i + 1] + 2);
+         fills_callbackdata[array_fills.length - 1].patternFill.fgColor.rgb = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	 snprintf(fills_callbackdata[array_fills.length - 1].patternFill.fgColor.rgb, XML_Char_len(attrs[i + 1]) - 1 + 1, "#%s", attrs[i + 1] + 2);
        }
      }   
   }
@@ -260,32 +260,32 @@ void border_item_lv1_start_element(void *callbackdata, const XML_Char *name, con
   if (XML_Char_icmp(name, "left") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "style") == 0) {
-        borders_callbackdata[array_borders.length - 1].left.style = malloc(sizeof(XML_Char) * strlen(attrs[i + 1]) + 1);
-	memcpy(borders_callbackdata[array_borders.length - 1].left.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        borders_callbackdata[array_borders.length - 1].left.style = XML_Char_malloc(sizeof(XML_Char) * XML_Char_len(attrs[i + 1]) + 1);
+	memcpy(borders_callbackdata[array_borders.length - 1].left.style, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
     XML_SetUserData(xmlparser, &borders_callbackdata[array_borders.length - 1].left);
   } else if (XML_Char_icmp(name, "right") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "style") == 0) {
-        borders_callbackdata[array_borders.length - 1].right.style = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(borders_callbackdata[array_borders.length - 1].right.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        borders_callbackdata[array_borders.length - 1].right.style = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(borders_callbackdata[array_borders.length - 1].right.style, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
     XML_SetUserData(xmlparser, &borders_callbackdata[array_borders.length - 1].right);
   } else if (XML_Char_icmp(name, "top") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "style") == 0) {
-        borders_callbackdata[array_borders.length - 1].top.style = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(borders_callbackdata[array_borders.length - 1].top.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        borders_callbackdata[array_borders.length - 1].top.style = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(borders_callbackdata[array_borders.length - 1].top.style, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
     XML_SetUserData(xmlparser, &borders_callbackdata[array_borders.length - 1].top);
   } else if (XML_Char_icmp(name, "bottom") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "style") == 0) {
-        borders_callbackdata[array_borders.length - 1].bottom.style = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(borders_callbackdata[array_borders.length - 1].bottom.style, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        borders_callbackdata[array_borders.length - 1].bottom.style = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(borders_callbackdata[array_borders.length - 1].bottom.style, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
     XML_SetUserData(xmlparser, &borders_callbackdata[array_borders.length - 1].bottom);
@@ -304,8 +304,8 @@ void border_item_lv2_start_element(void *callbackdata, const XML_Char *name, con
   if(XML_Char_icmp(name, "color") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "rgb") == 0) {
-        border_specific_callbackdata->color.rgb = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-	memcpy(border_specific_callbackdata->color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+        border_specific_callbackdata->color.rgb = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	memcpy(border_specific_callbackdata->color.rgb, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
   }
@@ -370,14 +370,14 @@ void xf_item_lv1_start_element(void *callbackdata, const XML_Char *name, const X
     xfs_callbackdata[_tmp_count - 1].alignment.isWrapText = '0';
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "horizontal") == 0) {
-	xfs_callbackdata[_tmp_count - 1].alignment.horizontal = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(xfs_callbackdata[_tmp_count - 1].alignment.horizontal, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	xfs_callbackdata[_tmp_count - 1].alignment.horizontal = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].alignment.horizontal, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       } else if (XML_Char_icmp(attrs[i], "vertical") == 0) {
-	xfs_callbackdata[_tmp_count - 1].alignment.vertical = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(xfs_callbackdata[_tmp_count - 1].alignment.vertical, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	xfs_callbackdata[_tmp_count - 1].alignment.vertical = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].alignment.vertical, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       } else if (XML_Char_icmp(attrs[i], "textRotation") == 0) {
-	xfs_callbackdata[_tmp_count - 1].alignment.textRotation = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
-        memcpy(xfs_callbackdata[_tmp_count - 1].alignment.textRotation, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
+	xfs_callbackdata[_tmp_count - 1].alignment.textRotation = XML_Char_malloc(sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+        memcpy(xfs_callbackdata[_tmp_count - 1].alignment.textRotation, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       } else if (XML_Char_icmp(attrs[i], "wrapText") == 0) {
         xfs_callbackdata[_tmp_count - 1].alignment.isWrapText = XML_Char_icmp(attrs[i + 1], "true") == 0 ? '1' : '0';
       }

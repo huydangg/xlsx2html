@@ -93,8 +93,8 @@ void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (XML_Char_icmp(name,"xdr:twoCellAnchor") == 0) {
     for (int i = 0; attrs[i]; i+=2) {
-      int len_editAs = strlen(attrs[i + 1]);
-      drawing_callbackdata->twocellanchor.editAs = malloc(len_editAs + 1);
+      int len_editAs = XML_Char_len(attrs[i + 1]);
+      drawing_callbackdata->twocellanchor.editAs = XML_Char_malloc(len_editAs + 1);
       memcpy(drawing_callbackdata->twocellanchor.editAs, attrs[i + 1], len_editAs + 1);
     }
     XML_SetElementHandler(xmlparser, drawings_lv1_start_element, NULL);
@@ -119,14 +119,14 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
     if (drawing_id != NULL) {
       for (int i = 0; i < drawing_callbackdata->array_drawing_rels->length; i++) {
 	if (XML_Char_icmp(drawing_id, drawing_callbackdata->array_drawing_rels->relationships[i]->id) == 0) {
-	  int len_target = strlen(drawing_callbackdata->array_drawing_rels->relationships[i]->target);
-	  char *_tmp_target = malloc(len_target + 1);
+	  int len_target = XML_Char_len(drawing_callbackdata->array_drawing_rels->relationships[i]->target);
+	  char *_tmp_target = XML_Char_malloc(len_target + 1);
 	  snprintf(_tmp_target, len_target + 1, "xl%s", drawing_callbackdata->array_drawing_rels->relationships[i]->target + 2);
 	  int len_index_sheet = snprintf(NULL, 0, "%d", drawing_callbackdata->index_sheet);
 	  int len_from_row = snprintf(NULL, 0, "%u", drawing_callbackdata->twocellanchor.from.row);
 	  char *from_col_name = int_to_column_name(drawing_callbackdata->twocellanchor.from.col);
-	  int len_from_col_name = strlen(from_col_name);
-	  int len_output_file_name = strlen(OUTPUT_FILE_NAME);
+	  int len_from_col_name = XML_Char_len(from_col_name);
+	  int len_output_file_name = XML_Char_len(OUTPUT_FILE_NAME);
 	  if (drawing_callbackdata->is_pic == '1') {
 	    drawing_callbackdata->index_image++;
 	    struct zip_stat sb;
@@ -149,8 +149,8 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 
 	      char *img_name = strdup(token);
 	      free(img_zf_name);
-	      int len_output_img_file_path = strlen(OUTPUT_DIR) + strlen(img_name) + 1;
-	      char *OUTPUT_IMG_FILE_PATH = malloc(len_output_img_file_path + 1);
+	      int len_output_img_file_path = XML_Char_len(OUTPUT_DIR) + XML_Char_len(img_name) + 1;
+	      char *OUTPUT_IMG_FILE_PATH = XML_Char_malloc(len_output_img_file_path + 1);
 	      snprintf(OUTPUT_IMG_FILE_PATH, len_output_img_file_path + 1, "%s/%s", OUTPUT_DIR, img_name);
 	      img_fd = open(OUTPUT_IMG_FILE_PATH, O_WRONLY | O_CREAT, 0644);
 	      if (img_fd < 0) {
@@ -184,12 +184,12 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 		}
 		free(token);
 
-		len_resource_url = strlen(RESOURCE_URL);
-		len_img_name = strlen(img_name);
-		int len_img_ext = strlen(img_ext);
+		len_resource_url = XML_Char_len(RESOURCE_URL);
+		len_img_name = XML_Char_len(img_name);
+		int len_img_ext = XML_Char_len(img_ext);
 		// 17: /img/%s?format_img=
 		len_img_url = len_img_name + len_resource_url + len_img_ext + len_output_file_name + 18;
-		IMG_URL = malloc(len_img_url + 1);
+		IMG_URL = XML_Char_malloc(len_img_url + 1);
 		snprintf(IMG_URL, len_img_url + 1, "%s%s/img/%s?format_img=%s", RESOURCE_URL, OUTPUT_FILE_NAME, img_name, img_ext);
 	      } else {
 		IMG_URL = strdup(OUTPUT_IMG_FILE_PATH);
@@ -211,7 +211,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	      int len_div_img = len_index_sheet + len_index_img + len_img_url
 		+ len_height + len_width + len_from_col_name + len_from_row
 		+ len_from_colOff + len_from_rowOff + 141;
-	      char *DIV_IMG = malloc(len_div_img + 1);
+	      char *DIV_IMG = XML_Char_malloc(len_div_img + 1);
 	      snprintf(
 		DIV_IMG, len_div_img + 1,
 		"<div id=\"chunk_%d_%d_img\" data-img-url=\"%s\" data-height=\"%zu\" data-width=\"%zu\" data-from-col=\"%s\" data-from-row=\"%u\" data-from-coloff=\"%zu\" data-from-rowoff=\"%zu\">",
@@ -232,22 +232,22 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	    int len_index_graphicframe = snprintf(NULL, 0, "%d", drawing_callbackdata->index_graphicframe);
 	    //chunk_%d_%d_chart
 	    int len_chart_json_file_name = len_index_sheet + len_index_graphicframe + 18;
-	    char *chart_json_file_name = malloc(len_chart_json_file_name + 1);
+	    char *chart_json_file_name = XML_Char_malloc(len_chart_json_file_name + 1);
 	    snprintf(
               chart_json_file_name, len_chart_json_file_name + 1,
 	      "chunk_%d_%d_chart", drawing_callbackdata->index_sheet,
 	      drawing_callbackdata->index_graphicframe
 	    );
 	    drawing_callbackdata->array_chart_metadata.chart_metadata[drawing_callbackdata->index_graphicframe]->file_name = strdup(chart_json_file_name);
-            int len_output_chart_file_path  = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + len_chart_json_file_name + 5 + 1;
-            char *OUTPUT_CHART_FILE_PATH = malloc(len_output_chart_file_path   + 1);
+            int len_output_chart_file_path  = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + len_chart_json_file_name + 5 + 1;
+            char *OUTPUT_CHART_FILE_PATH = XML_Char_malloc(len_output_chart_file_path   + 1);
             snprintf(OUTPUT_CHART_FILE_PATH, len_output_chart_file_path   + 1, "%s/%s/%s.json", OUTPUT_DIR, CHUNKS_DIR_NAME, chart_json_file_name);
 	    char *CHART_URL = NULL;
 	    int len_chart_url, len_resource_url;
 	    if (strstr(RESOURCE_URL, "https") != NULL) {
-	      len_resource_url = strlen(RESOURCE_URL);
+	      len_resource_url = XML_Char_len(RESOURCE_URL);
 	      len_chart_url = len_output_chart_file_path + len_resource_url + + len_output_file_name + 6;
-	      CHART_URL = malloc(len_chart_url + 1);
+	      CHART_URL = XML_Char_malloc(len_chart_url + 1);
 	      snprintf(CHART_URL , len_chart_url + 1, "%s%s/json/%s", RESOURCE_URL, OUTPUT_FILE_NAME, chart_json_file_name);
 	    } else {
 	      CHART_URL = strdup(OUTPUT_CHART_FILE_PATH);
@@ -261,10 +261,10 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	    int len_width = snprintf(NULL, 0, "%zu", width);
 	    int len_from_colOff = snprintf(NULL, 0, "%zu", from_colOff);
 	    int len_from_rowOff = snprintf(NULL, 0, "%zu", from_rowOff);
-	    int len_chart_name = strlen(drawing_callbackdata->twocellanchor.graphic_frame.name);
+	    int len_chart_name = XML_Char_len(drawing_callbackdata->twocellanchor.graphic_frame.name);
 	    int len_div_chart = len_chart_json_file_name + len_chart_url
 	      + len_chart_name + len_from_col_name + len_from_row + len_from_colOff + len_from_rowOff + len_height + len_width + 145;
-	    char *DIV_CHART = malloc(len_div_chart + 1);
+	    char *DIV_CHART = XML_Char_malloc(len_div_chart + 1);
 	    snprintf(
 	      DIV_CHART, len_div_chart + 1,
 	      "<div id=\"%s\" data-chart-url=\"%s\" data-name=\"%s\" data-from-col=\"%s\" data-from-row=\"%u\" data-from-rowoff=\"%zu\" data-from-coloff=\"%zu\" data-height=\"%zu\" data-width=\"%zu\">",
@@ -333,7 +333,7 @@ void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const 
       drawing_callbackdata->array_chart_metadata.chart_metadata,
       (drawing_callbackdata->index_graphicframe + 1) * sizeof(struct ChartMetaData *)
     );
-    drawing_callbackdata->array_chart_metadata.chart_metadata[drawing_callbackdata->index_graphicframe] = malloc(sizeof(struct ChartMetaData));
+    drawing_callbackdata->array_chart_metadata.chart_metadata[drawing_callbackdata->index_graphicframe] = XML_Char_malloc(sizeof(struct ChartMetaData));
     drawing_callbackdata->array_chart_metadata.length = drawing_callbackdata->index_graphicframe + 1;
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
   }
@@ -464,12 +464,12 @@ void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const 
   if (XML_Char_icmp(name,"xdr:cNvPr") == 0) {
     for (int i=0 ; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "name") == 0) {
-        int len_name = strlen(attrs[i + 1]);
+        int len_name = XML_Char_len(attrs[i + 1]);
 	if (drawing_callbackdata->is_pic == '1') {
-          drawing_callbackdata->twocellanchor.pic.name = malloc(len_name + 1);
+          drawing_callbackdata->twocellanchor.pic.name = XML_Char_malloc(len_name + 1);
           memcpy(drawing_callbackdata->twocellanchor.pic.name, attrs[i + 1], len_name + 1);
 	} else if (drawing_callbackdata->is_graphicframe == '1') {
-          drawing_callbackdata->twocellanchor.graphic_frame.name = malloc(len_name + 1);
+          drawing_callbackdata->twocellanchor.graphic_frame.name = XML_Char_malloc(len_name + 1);
           memcpy(drawing_callbackdata->twocellanchor.graphic_frame.name, attrs[i + 1], len_name + 1);
 	}
       }
@@ -480,8 +480,8 @@ void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const 
   } else if (XML_Char_icmp(name,"a:blip") == 0) {
     for (int i=0 ; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "r:embed") == 0) {
-        int len_embedId = strlen(attrs[i + 1]);
-        drawing_callbackdata->twocellanchor.pic.blip_embed = malloc(len_embedId + 1);
+        int len_embedId = XML_Char_len(attrs[i + 1]);
+        drawing_callbackdata->twocellanchor.pic.blip_embed = XML_Char_malloc(len_embedId + 1);
         memcpy(drawing_callbackdata->twocellanchor.pic.blip_embed , attrs[i + 1], len_embedId + 1);
       }
     }
@@ -541,8 +541,8 @@ void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const 
   if (XML_Char_icmp(name, "a:hlinkClick") == 0) {
     for (int i = 0; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "r:id") == 0) {
-	int len_hlinkClickId = strlen(attrs[i + 1]);
-	drawing_callbackdata->twocellanchor.pic.hlinkClick_id = malloc(len_hlinkClickId + 1);
+	int len_hlinkClickId = XML_Char_len(attrs[i + 1]);
+	drawing_callbackdata->twocellanchor.pic.hlinkClick_id = XML_Char_malloc(len_hlinkClickId + 1);
 	memcpy(drawing_callbackdata->twocellanchor.pic.hlinkClick_id, attrs[i + 1], len_hlinkClickId + 1);
       }
     }
