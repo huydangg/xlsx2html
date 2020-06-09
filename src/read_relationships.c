@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <read_relationships.h>
+#include <errno.h>
 
 
 void rels_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
@@ -17,7 +18,6 @@ void rels_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     array_rels_callbackdata->relationships[array_rels_callbackdata->length-1] = XML_Char_malloc(sizeof(struct Relationship));
     for (int i = 0; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "Id") == 0) {
-	printf("IDDDDDDDDDDDDDDDD: %s\n", attrs[i + 1]);
 	int len_id = XML_Char_len(attrs[i + 1]);
         array_rels_callbackdata->relationships[array_rels_callbackdata->length-1]->id = XML_Char_malloc(len_id + 1);
 	memcpy(array_rels_callbackdata->relationships[array_rels_callbackdata->length-1]->id, attrs[i + 1], len_id + 1);

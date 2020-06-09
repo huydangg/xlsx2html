@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <read_workbook.h>
+#include <errno.h>
+
+
 struct ArraySheets array_sheets;
 
 
@@ -25,7 +28,7 @@ void workbook_start_element(void *callbackdata, const XML_Char *name, const XML_
     array_sheets.length = 0;
     array_sheets.sheets = XML_Char_malloc(sizeof(struct Sheet *));
     if (array_sheets.sheets == NULL) {
-      fprintf(stderr, "Error when XML_Char_malloc sheets_data");
+      debug_print("%s\n", strerror(errno));
       // TODO: Handle error
     } else {
       XML_SetElementHandler(xmlparser, sheet_main_start_element, NULL);
@@ -46,7 +49,7 @@ void sheet_main_start_element(void *callbackdata, const XML_Char *name, const XM
       if (_tmp_sheets_callbackdata) {
 	array_sheets.sheets = _tmp_sheets_callbackdata;
       } else {
-	fprintf(stderr, "Error when resize sheets");
+        debug_print("%s\n", strerror(errno));
 	array_sheets.length--;
 	// TODO: Handle error
       }

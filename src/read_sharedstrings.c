@@ -2,6 +2,7 @@
 #include <read_sharedstrings.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 struct SharedStringsPosition sharedStrings_position;
 
@@ -26,9 +27,11 @@ int clean_ss_data(const char *file_name) {
 char* concat(const char *s1, const char *s2) {
   const size_t len1 = XML_Char_len(s1);
   const size_t len2 = XML_Char_len(s2);
-  char *result = XML_Char_malloc(len1 + len2 + 1); // +1 for the null-terminator
+ // +1 for the null-terminator
+
+  char *result = XML_Char_malloc(len1 + len2 + 1);
   if (result == NULL) {
-    fprintf(stderr, "Cannot concat()");
+    debug_print("%s\n", strerror(errno));
     return NULL;
   }
   // in real code you would check for errors in XML_Char_malloc here
@@ -82,14 +85,6 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
   if (XML_Char_icmp(name, "t") == 0) {
     char *font_style = NULL;
     if (font.name != NULL) {
-      printf("---------------------------------------------\n");
-      printf("FONT SIZE: %f\n", font.sz);
-      printf("FONT NAME: %s\n", font.name);
-      printf("FONT IS BOLD: %c\n", font.isBold);
-      printf("FONT IS ITALIC: %c\n", font.isItalic);
-      printf("FONT UNDERLINE: %s\n", font.underline);
-      printf("FONT COLOR RGB: %s\n", font.color.rgb);
-
       //12: "font-family:" | 1: ';'
       const int LEN_FONT_NAME = 14 + XML_Char_len(font.name); //ex
       char font_name[LEN_FONT_NAME];
@@ -166,7 +161,6 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
         }
         free(font.underline);
       }
-      printf("FONT STYLE STRING: %s\n", font_style);
       fprintf(sharedStrings_file_callbackdata, "<span style=\"%s\">", font_style);
       free(font_style);
     } else {

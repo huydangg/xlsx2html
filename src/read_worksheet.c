@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <read_styles.h>
 #include <read_sharedstrings.h>
+#include <errno.h>
+
 
 unsigned int NUM_OF_CELLS;
 unsigned int START_CELL_IN_NUMBER_BY_ROW; //default is 1
@@ -106,12 +108,12 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
   FILE *fchunk0;
   fchunk0 = fopen(THE_FIRST_CHUNK_PATH, "ab+");
   if (fchunk0 == NULL) {
-    fprintf(stderr, "Cannot open chunk0 file to read\n");
+    debug_print("%s: %s\n", strerror(errno), THE_FIRST_CHUNK_PATH);
     free(THE_FIRST_CHUNK_PATH);
     return -1;
   }
   if (end_col_number == -1) {
-    fprintf(stderr, "Error when convert column name to number\n");
+    debug_print("End col number is -1\n");
     free(THE_FIRST_CHUNK_PATH);
     return -1;
   }
@@ -131,7 +133,6 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
     fputs(TH_STRING, fchunk0);
     fputs("\n", fchunk0);
     char *column_name = int_to_column_name((unsigned int)i);
-    printf("COLUMN_NAME: %s\n", column_name);
     fputs(column_name, fchunk0);
     fputs("\n", fchunk0);
     free(column_name);
@@ -232,8 +233,8 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     worksheet_callbackdata->array_cols.length = 0;
     worksheet_callbackdata->array_cols.cols = XML_Char_malloc(sizeof(struct Col *));
     if (worksheet_callbackdata->array_cols.cols == NULL) {
-	fprintf(stderr, "Error when allocted array_cols.cols");
-	// TODO: Handle Error
+      debug_print("%s\n", strerror(errno));
+      // TODO: Handle Error
     } else {
       XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
     }
@@ -250,7 +251,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     free(CHUNKS_DIR_PATH);
     worksheet_callbackdata->worksheet_file = fopen(CHUNK_FILE_PATH, "w");
     if (worksheet_callbackdata->worksheet_file == NULL) {
-      fprintf(stderr, "Cannot open %s to write\n", CHUNK_FILE_PATH);
+      debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);
       exit(-1);
     }
     free(CHUNK_FILE_PATH);
@@ -269,7 +270,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     free(CHUNKS_DIR_PATH);
     worksheet_callbackdata->fmergecell = fopen(JSON_FILE_PATH, "wb");
     if (worksheet_callbackdata->fmergecell == NULL) {
-      fprintf(stderr, "Can not open chunk_%d_mc.json for write", INDEX_CURRENT_SHEET);
+      debug_print("%s: %s\n", strerror(errno), JSON_FILE_PATH);
       return;
     }
     fputs("{", worksheet_callbackdata->fmergecell);
@@ -284,7 +285,6 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
       if (XML_Char_icmp(attrs[i], "r:id") == 0) {
         worksheet_callbackdata->array_drawingids.drawing_ids[worksheet_callbackdata->array_drawingids.length - 1] = strdup(attrs[i + 1]);
       }
-      printf("ID DRAWING: %s\n", attrs[i]);
     }
     XML_SetElementHandler(xmlparser, NULL, worksheet_end_element);
   }
@@ -298,7 +298,7 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     int  status = generate_columns(worksheet_callbackdata->array_cols, worksheet_callbackdata->end_col_number, INDEX_CURRENT_SHEET);
     if (status == -1) {
-      fprintf(stderr, "Error when generated chunk0 of  Sheet\n");
+      debug_print("%s\n", strerror(errno));
       return;
     }
     for (int index_col = 0; index_col < worksheet_callbackdata->array_cols.length; index_col++) {
@@ -329,7 +329,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
       if (_tmp_cols) {
 	worksheet_callbackdata->array_cols.cols = _tmp_cols;
       } else {
-	fprintf(stderr, "Error when allocted array_cols.cols");
+        debug_print("%s\n", strerror(errno));
 	// TODO: Handle Error
       }
     }
@@ -435,7 +435,6 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	  mergecell_range[count][len_token] = '\0';
 	  count++;
 	}
-	printf("MERGE CELL RANGEEEEEEEEEE: %s | %s\n", mergecell_range[0], mergecell_range[1]);
         //You can't free _tmp_range because its value can be changed by calls to strsep().
 	//The value of tofree consistently points to the start of the memory you want to free.
 	free(tofree);
@@ -825,7 +824,7 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
       if (XML_Char_icmp(worksheet_callbackdata->type_content, "s") == 0) {
         FILE *sharedStrings_file = fopen(SHAREDSTRINGS_HTML_FILE_PATH, "rb");
         if (sharedStrings_file == NULL) {
-          fprintf(stderr, "Cannot open %s file to read\n", SHAREDSTRINGS_HTML_FILE_PATH);
+          debug_print("%s: %s\n", strerror(errno), SHAREDSTRINGS_HTML_FILE_PATH);
           return;
         }
         int len_pos_arr = sharedStrings_position.length;

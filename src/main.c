@@ -73,10 +73,9 @@ int load_relationships(zip_t *zip, char *zip_file_name, void *callbackdata) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   zip_error_t *err_zip = zip_get_error(zip);
   if (archive == NULL) {
-    printf("%s\n", zip_error_strerror(err_zip));
+    debug_print("%s: %s\n", zip_error_strerror(err_zip), zip_file_name);
     return -1;
   }
-
   int status = process_zip_file(archive, callbackdata, NULL, rels_start_element, rels_end_element);
   return status;
 }
@@ -85,7 +84,7 @@ int load_drawings(zip_t *zip, char *zip_file_name, void *callbackdata) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   zip_error_t *err_zip = zip_get_error(zip);
   if (archive == NULL) {
-    printf("%s\n", zip_error_strerror(err_zip));
+    debug_print("%s: %s\n", zip_error_strerror(err_zip), zip_file_name);
     return -1;
   }
   int status = process_zip_file(archive, callbackdata, NULL, drawings_start_element, drawings_end_element);
@@ -96,7 +95,7 @@ int load_chart(zip_t *zip, char *zip_file_name, void *callbackdata) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   zip_error_t *err_zip = zip_get_error(zip);
   if (archive == NULL) {
-    printf("%s\n", zip_error_strerror(err_zip));
+    debug_print("%s: %s\n", zip_error_strerror(err_zip), zip_file_name);
     return -1;
   }
   int status = process_zip_file(archive, callbackdata, NULL, chart_start_element, chart_end_element);
@@ -108,19 +107,14 @@ int load_workbook(zip_t *zip) {
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
   int status = process_zip_file(archive, NULL, NULL, workbook_start_element, workbook_end_element);
   for(int i = 0; i < array_sheets.length; i++) {
-    printf("Name %s\n", array_sheets.sheets[i]->name);
-    printf("sheetID: %s\n", array_sheets.sheets[i]->sheetId);
-    printf("Path name: %s\n", array_sheets.sheets[i]->path_name);
     //35: xl/worksheets/_rels/sheet%d.xml.rels
     int len_zip_sheet_rels_file_name = XML_Char_len(array_sheets.sheets[i]->sheetId) + 35;
     char *zip_sheet_rels_file_name = XML_Char_malloc(len_zip_sheet_rels_file_name + 1);
     snprintf(zip_sheet_rels_file_name, len_zip_sheet_rels_file_name + 1, "xl/worksheets/_rels/sheet%s.xml.rels", array_sheets.sheets[i]->sheetId);
-    printf("ZIP FILE NAME RELS: %s\n", zip_sheet_rels_file_name);
     array_sheets.sheets[i]->array_worksheet_rels.length = 0;
     array_sheets.sheets[i]->array_worksheet_rels.relationships = NULL;
     int status_sheet_rels = load_relationships(zip, zip_sheet_rels_file_name, &array_sheets.sheets[i]->array_worksheet_rels);
     free(zip_sheet_rels_file_name);
-    printf("STATUSSS: %d\n", status_sheet_rels);
     if (status_sheet_rels != 1) {
       continue;
     }
@@ -174,72 +168,24 @@ void destroy_styles() {
 int load_styles(zip_t *zip) {
   const char *zip_file_name = "xl/styles.xml";
   zip_file_t *archive = open_zip_file(zip, zip_file_name);
+  zip_error_t *err_zip = zip_get_error(zip);
+  if (archive == NULL) {
+    debug_print("%s: %s\n", zip_error_strerror(err_zip), zip_file_name);
+    return -1;
+  }
   // Load NumFMT first
   int status = process_zip_file(archive, NULL, NULL, styles_start_element, styles_end_element);
-  for (int i = 0; i < array_numfmts.length; i++) {
-    printf("Format code: %s\n", array_numfmts.numfmts[i].formatCode);
-    printf("Format id: %s\n", array_numfmts.numfmts[i].numFmtId);
-  }
-  printf("Count font: %d\n", array_fonts.length);
-  for (int i = 0; i < array_fonts.length; i++) {
-    printf("Font size: %f\n", array_fonts.fonts[i].sz);
-    printf("Font name: %s\n", array_fonts.fonts[i].name);
-    printf("Font is bold: %c\n", array_fonts.fonts[i].isBold);
-    printf("Font is italic: %c\n", array_fonts.fonts[i].isItalic);
-    printf("Font underline: %s\n", array_fonts.fonts[i].underline);
-    printf("Font color rgb: %s\n", array_fonts.fonts[i].color.rgb);
-  }
-  printf("Count fills: %d\n", array_fills.length);
-  for (int i = 0; i < array_fills.length; i++) {
-    printf("Fill pattern type: %s\n", array_fills.fills[i].patternFill.patternType);
-    printf("Fill bg_color rgb: %s\n", array_fills.fills[i].patternFill.bgColor.rgb);
-    printf("Fill fg_color rgb: %s\n", array_fills.fills[i].patternFill.fgColor.rgb);
-  }
-  printf("Count border: %d\n", array_borders.length);
-  for (int i = 0; i < array_borders.length; i++) {
-    printf("---------------------------------------------------------\n");
-    printf("Border left style: %s\n", array_borders.borders[i].left.style);
-    printf("Border left color rgb: %s\n", array_borders.borders[i].left.color.rgb);
-    printf("Border right style: %s\n", array_borders.borders[i].right.style);
-    printf("Border right color rgb: %s\n", array_borders.borders[i].right.color.rgb);
-    printf("Border top style: %s\n", array_borders.borders[i].top.style);
-    printf("Border top color rgb: %s\n", array_borders.borders[i].top.color.rgb);
-    printf("Border bottom style: %s\n", array_borders.borders[i].bottom.style);
-    printf("Border bottom color rgb: %s\n", array_borders.borders[i].bottom.color.rgb);
-  }
-  for (int i = 0; i < array_cellStyleXfs.length; i++) {
-    printf("---------------------------------------------------------\n");
-    printf("Xf borderId: %d\n", array_cellStyleXfs.Xfs[i].borderId);
-    printf("Xf fillId: %d\n", array_cellStyleXfs.Xfs[i].fillId);
-    printf("Xf fontId: %d\n", array_cellStyleXfs.Xfs[i].fontId);
-    printf("Xf numFmtId: %d\n", array_cellStyleXfs.Xfs[i].numFmtId);
-    printf("Xf alignment horizontal: %s\n", array_cellStyleXfs.Xfs[i].alignment.horizontal);
-    printf("Xf alignment vertical: %s\n", array_cellStyleXfs.Xfs[i].alignment.vertical);
-    printf("Xf alignment textRotation: %s\n", array_cellStyleXfs.Xfs[i].alignment.textRotation);
-    printf("Xf alignment isWrapText: %c\n", array_cellStyleXfs.Xfs[i].alignment.isWrapText);
-  }
-  printf("Count cellXfs: %d\n", array_cellXfs.length);
-  for (int i = 0; i < array_cellXfs.length; i++) {
-    printf("---------------------------------------------------------\n");
-    printf("Xf borderId: %d\n", array_cellXfs.Xfs[i].borderId);
-    printf("Xf fillId: %d\n", array_cellXfs.Xfs[i].fillId);
-    printf("Xf fontId: %d\n", array_cellXfs.Xfs[i].fontId);
-    printf("Xf numFmtId: %d\n", array_cellXfs.Xfs[i].numFmtId);
-    printf("Xf xfId: %d\n", array_cellXfs.Xfs[i].xfId);
-    printf("Xf alignment horizontal: %s\n", array_cellXfs.Xfs[i].alignment.horizontal);
-    printf("Xf alignment vertical: %s\n", array_cellXfs.Xfs[i].alignment.vertical);
-    printf("Xf alignment textRotation: %s\n", array_cellXfs.Xfs[i].alignment.textRotation);
-    printf("Xf alignment isWrapText: %c\n", array_cellXfs.Xfs[i].alignment.isWrapText);
-  }
   return status;
 }
 
 int load_worksheets(zip_t *zip) {
-  printf("Length sheets: %d\n", array_sheets.length);
   for(int i = 0; i < array_sheets.length; i++) {
-    printf("---------------------------------------------------------\n");
-    printf("Loading %s\n", array_sheets.sheets[i]->path_name);
     zip_file_t *archive = open_zip_file(zip, array_sheets.sheets[i]->path_name);
+    zip_error_t *err_zip = zip_get_error(zip);
+    if (archive == NULL) {
+      debug_print("%s: %s\n", zip_error_strerror(err_zip), array_sheets.sheets[i]->path_name);
+      return -1;
+    }
     struct WorkSheet worksheet;
     worksheet.start_col = 'A';
     worksheet.start_row = '1';
@@ -278,14 +224,6 @@ int load_worksheets(zip_t *zip) {
 	    if (status_drawing_rels == -1) {
 	     //TODO: Handle error
 	    }
-
-	    for (int index_drawing_rels = 0; index_drawing_rels < array_sheets.sheets[i]->array_drawing_rels.length; index_drawing_rels++) {
-	      printf("-----------------------------------------DRAWING----------------------------------------------------\n");
-              printf("RELS ID: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->id);
-              printf("RELS TARGET: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->target);
-              printf("RELS TYPE: %s\n", array_sheets.sheets[i]->array_drawing_rels.relationships[index_drawing_rels]->type);
-	      printf("-----------------------------------------------------------------------------------------------------\n");
-	    }
 	    free(zip_drawing_rels_file_name);
 	    free(_tmp_target);
 	    goto SKIP_REMOVE;
@@ -314,8 +252,6 @@ int load_worksheets(zip_t *zip) {
         }
         if (index_drawingid == worksheet.array_drawingids.length - 1) {
           int _tmp_length = array_sheets.sheets[i]->array_worksheet_rels.length;
-	  printf("_TMP_LENGTHHHHHHHHHHH: %d\n", _tmp_length - 1);
-	  printf("Removingggggggggggggg %s\n", array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
           if (index_rels < _tmp_length - 1) {
 	    free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id);
 	    free(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
@@ -357,7 +293,7 @@ SKIP_REMOVE:
 }
 
 int load_sharedStrings(zip_t *zip) {
-  const char *file_name = "xl/sharedStrings.xml";
+  const char *zip_file_name = "xl/sharedStrings.xml";
   int len_sharedStrings_html_file_name = XML_Char_len(OUTPUT_FILE_NAME) + XML_Char_len(SHAREDSTRINGS_HTML_FILE_SUFFIX);
   char *SHAREDSTRINGS_HTML_FILE_NAME = XML_Char_malloc(len_sharedStrings_html_file_name + 1);
   snprintf(SHAREDSTRINGS_HTML_FILE_NAME, len_sharedStrings_html_file_name + 1, "%s%s", OUTPUT_FILE_NAME, SHAREDSTRINGS_HTML_FILE_SUFFIX);
@@ -370,13 +306,18 @@ int load_sharedStrings(zip_t *zip) {
   FILE *sharedStrings_file;
   sharedStrings_file = fopen(SHAREDSTRINGS_HTML_FILE_PATH, "wb+");
   if (sharedStrings_file == NULL) {
-    fprintf(stderr, "Cannot open %s to write\n", SHAREDSTRINGS_HTML_FILE_PATH);
+    debug_print("%s: %s\n", strerror(errno), SHAREDSTRINGS_HTML_FILE_PATH);
     return -1;
   }
-  zip_file_t *archive = open_zip_file(zip, file_name);
+  zip_file_t *archive = open_zip_file(zip, zip_file_name);
+  zip_error_t *err_zip = zip_get_error(zip);
+  if (archive == NULL) {
+    debug_print("%s: %s\n", zip_error_strerror(err_zip), zip_file_name);
+    return -1;
+  }
   int status_sharedStrings = process_zip_file(archive, sharedStrings_file, NULL, sharedStrings_main_start_element, sharedStrings_main_end_element);
   if (status_sharedStrings == -1) {
-    fprintf(stderr, "Error when load sharedStrings\n");
+    debug_print("%s\n", strerror(errno));
     fclose(sharedStrings_file);
     return -1;
   }
@@ -397,7 +338,7 @@ int process_zip_file(zip_file_t *archive, void *callbackdata, XML_CharacterDataH
   while(buf && (buflen = zip_fread(archive, buf, PARSE_BUFFER_SIZE)) >= 0) {
     done = buflen < PARSE_BUFFER_SIZE;
     if((status = XML_ParseBuffer(xmlparser, (int)buflen, (done ? 1 : 0))) == XML_STATUS_ERROR) {
-      fprintf(stderr, "%" XML_FMT_STR " at line %" XML_FMT_INT_MOD "u\n",
+      debug_print("%" XML_FMT_STR " at line %" XML_FMT_INT_MOD "u\n",
               XML_ErrorString(XML_GetErrorCode(xmlparser)),
               XML_GetCurrentLineNumber(xmlparser));
        XML_ParserFree(xmlparser); 
@@ -419,7 +360,7 @@ void embed_css(FILE *f, const char *css_path) {
   FILE *fcss;
   fcss = fopen(_css_path, "rb");
   if (fcss == NULL) {
-    fprintf(stderr, "Cannot open css file to read");
+    debug_print("%s: %s\n", strerror(errno), css_path);
   }
   char c;
   while ((c = fgetc(fcss)) != EOF) {
@@ -433,7 +374,7 @@ void embed_js(FILE *f, const char *js_path) {
   FILE *fjs;
   fjs = fopen(_js_path, "rb");
   if (fjs == NULL) {
-    fprintf(stderr, "Cannot open js file to read");
+    debug_print("%s: %s\n", strerror(errno), js_path);
   }
   char c;
   while ((c = fgetc(fjs)) != EOF) {
@@ -473,13 +414,13 @@ void pre_process(zip_t *zip) {
   FILE *fmanifest;
   fmanifest = fopen(MANIFEST_PATH, "rb");
   if (fmanifest == NULL) {
-    fprintf(stderr, "Cannot open manifest file to read");
+    debug_print("%s: %s\n", strerror(errno), MANIFEST_PATH);
     return;
   }
   FILE *findexhtml;
   findexhtml = fopen(INDEX_HTML_PATH, "ab+");
   if (findexhtml == NULL) {
-    fprintf(stderr, "Cannot open index html file to read\n");
+    debug_print("%s: %s\n", strerror(errno), INDEX_HTML_PATH);
     return;
   }
   int len_chunks_dir_path = XML_Char_len(CHUNKS_DIR_PATH);
@@ -578,7 +519,6 @@ void pre_process(zip_t *zip) {
           }
 
 	  for (int index_rels = 0; index_rels < array_sheets.sheets[index_sheet]->array_worksheet_rels.length; index_rels++) { 
-	    printf("ZIP DRAWING INDEX: %d\n", index_rels);
             int len_zip_drawing_file_name = XML_Char_len(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
 	    char *zip_drawing_file_name = XML_Char_malloc(len_zip_drawing_file_name + 1);
 	    snprintf(
@@ -591,7 +531,6 @@ void pre_process(zip_t *zip) {
 	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
 	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->type);
 	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]);
-	    printf("ZIP DRAWING FILE NAME: %s\n", zip_drawing_file_name);
 	    struct DrawingCallbackData drawing_callbackdata;
             drawings_callbackdata_initialize(&drawing_callbackdata, &array_sheets.sheets[index_sheet]->array_drawing_rels, findexhtml, zip, index_sheet);
 	    int status_drawings = load_drawings(zip, zip_drawing_file_name, &drawing_callbackdata);
@@ -599,7 +538,6 @@ void pre_process(zip_t *zip) {
 	      //TODO: Handle error
 	    }
 
-	    printf("------------------------------DRAWING_CALLBACK----------------------------------------------------\n");
 	    for (int i_drawing_callback = 0; i_drawing_callback < drawing_callbackdata.array_chart_metadata.length; i_drawing_callback++) {
 	      for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
 		if (strcmp(
@@ -625,11 +563,6 @@ void pre_process(zip_t *zip) {
                   int status_chart = load_chart(zip, zip_chart_file_name, &chart_callbackdata);
 		  free(zip_chart_file_name);
 		  fclose(chart_callbackdata.fchart);
-
-		  printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id);
-		  printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_name);
-		  printf("%s\n", drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path);
-		  printf("\n");
 		}
 	      }
 
@@ -639,7 +572,6 @@ void pre_process(zip_t *zip) {
 	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]);
 	    }
 	    free(drawing_callbackdata.array_chart_metadata.chart_metadata);
-	    printf("----------------------------------------------------------------------------------------------------\n");
 	    free(zip_drawing_file_name);
 	  }
 	  for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
@@ -820,7 +752,7 @@ int main(int argc, char **argv) {
   if (readlink("/proc/self/exe", path, dest_len) != -1) {
     dirname(path);
     //strcat(path, "/");
-    printf("WORKING DIR: %s\n", path);
+    debug_print("WORKING DIR: %s\n", path);
     WORKING_DIR = path;
   }
   if (has_output_dir == '0') {
@@ -840,7 +772,7 @@ int main(int argc, char **argv) {
 
   zip_t *zip = open_zip(ORIGIN_FILE_PATH);
   if (zip == NULL){
-    fprintf(stderr, "File not found: %s | %s\n", ORIGIN_FILE_PATH, strerror(errno));
+    debug_print("%s: %s\n", strerror(errno), ORIGIN_FILE_PATH);
     goto OPEN_ZIP_FAILED;
   }
 
@@ -849,14 +781,14 @@ int main(int argc, char **argv) {
   if (stat(OUTPUT_DIR, &st) == -1) {
     int status = mkdir_p(OUTPUT_DIR, 0755);
     if (status != 0) {
-      fprintf(stderr, "Error when create a output dir! %s\n", strerror(errno));
+      debug_print("%s: %s\n", strerror(errno), OUTPUT_DIR);
       goto LOAD_RESOURCES_FAILED;
     }
   }
   int len_chunks_dir_path = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1;
   char *_tmp_chunks_dir_path = XML_Char_malloc(len_chunks_dir_path  + 1);
   if (_tmp_chunks_dir_path == NULL) {
-    fprintf(stderr, "Allocate memory error");
+    debug_print("%s\n", strerror(errno));
   }
   snprintf(_tmp_chunks_dir_path, len_chunks_dir_path + 1, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
   CHUNKS_DIR_PATH = strdup(_tmp_chunks_dir_path);
@@ -864,31 +796,31 @@ int main(int argc, char **argv) {
   if (stat(CHUNKS_DIR_PATH, &st) == -1) {
     int status = mkdir_p(CHUNKS_DIR_PATH, 0755);
     if (status != 0) {
-      fprintf(stderr, "Error when create a chunks dir! %s\n", strerror(errno));
+      debug_print("%s: %s\n", strerror(errno), CHUNKS_DIR_PATH);
       goto LOAD_RESOURCES_FAILED;
     }
   }
   int status_workbook = load_workbook(zip);
   if (status_workbook != 1) {
-    fprintf(stderr, "Failed to read workbook");
+    debug_print("%s\n", strerror(errno));
     goto LOAD_RESOURCES_FAILED;
   }
   int status_styles = load_styles(zip);
   if (status_styles != 1) {
-    fprintf(stderr, "Failed to read styles");
+    debug_print("%s\n", strerror(errno));
     destroy_workbook();
     goto LOAD_RESOURCES_FAILED;
   }
   int status_sharedStrings = load_sharedStrings(zip);
   if (status_sharedStrings != 1) {
-    fprintf(stderr, "Failed to read sharedStrings");
+    debug_print("%s\n", strerror(errno));
     destroy_styles();
     destroy_workbook();
     goto LOAD_RESOURCES_FAILED;
   }
   int status_worksheets = load_worksheets(zip);
   if (status_worksheets != 1) {
-    fprintf(stderr, "Failed to read worksheets");
+    debug_print("%s\n", strerror(errno));
     destroy_styles();
     destroy_workbook();
     goto LOAD_RESOURCES_FAILED;
@@ -910,7 +842,7 @@ OPEN_ZIP_FAILED:
   free((char *)OUTPUT_DIR);
   int status_clean_ss_data = clean_ss_data(SHAREDSTRINGS_HTML_FILE_PATH);
   if (status_clean_ss_data != 0)
-    fprintf(stderr, "Unable to delete the file %s", SHAREDSTRINGS_HTML_FILE_PATH);
+    debug_print("%s\n", strerror(errno));
   free((char *)SHAREDSTRINGS_HTML_FILE_PATH);
   exit(EXIT_SUCCESS);
 }

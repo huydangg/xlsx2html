@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <read_styles.h>
+#include <errno.h>
 
 struct ArrayNumFMTs array_numfmts;
 struct ArrayFonts array_fonts;

@@ -2,12 +2,14 @@
 #include <read_chart.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
+int err;
 
 int chart_callbackdata_initialize (struct ChartCallBackData *data, char* json_path, int index_sheet) {
   data->fchart = fopen(json_path, "wb");
   if (data->fchart == NULL) {
-    fprintf(stderr, "Cannot open %s to write\n", json_path);
+    debug_print("%s: %s\n", strerror(errno), json_path);
     return -1;
   }
   data->text = NULL;

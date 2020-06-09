@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <main.h>
+#include <errno.h>
 
 struct GraphicFrame new_graphicframe() {
   struct GraphicFrame graphic_frame;
@@ -89,7 +90,6 @@ void drawings_skip_tag_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  //printf("LV000000000000000000: <%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (XML_Char_icmp(name,"xdr:twoCellAnchor") == 0) {
     for (int i = 0; attrs[i]; i+=2) {
@@ -105,7 +105,6 @@ void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_
 
 void drawings_end_element(void *callbackdata, const XML_Char *name) {
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
-  //printf("LV000000000000000000: </%s>\n", name);
   if (XML_Char_icmp(name,"xdr:twoCellAnchor") == 0) {
     //TODO: Record image html syntax with data from rels drawings to findexhtml
     //At last, free twocellanchor obj
@@ -135,7 +134,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	    if (zip_stat(drawing_callbackdata->zip, _tmp_target, 0, &sb) == 0) {
 	      img_zf = zip_fopen(drawing_callbackdata->zip, sb.name, 0);
 	      if (!img_zf) {
-	        fprintf(stderr, "Error during unzip img file");
+	        debug_print("%s: %s\n", strerror(errno), sb.name);
 	        continue;
 	      }
 	      char *img_zf_name = strdup(sb.name);
@@ -154,7 +153,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	      snprintf(OUTPUT_IMG_FILE_PATH, len_output_img_file_path + 1, "%s/%s", OUTPUT_DIR, img_name);
 	      img_fd = open(OUTPUT_IMG_FILE_PATH, O_WRONLY | O_CREAT, 0644);
 	      if (img_fd < 0) {
-	        fprintf(stderr, "Error during create a new image");
+	        debug_print("%s: %s\n", strerror(errno), OUTPUT_IMG_FILE_PATH);
 	        continue;
 	      }
 	      char buf[100];
@@ -163,7 +162,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	      while (sum != sb.size) {
 		len = zip_fread(img_zf, buf, 100);
 		if (len < 0) {
-		  fprintf(stderr, "Error during extract image");
+	          debug_print("%s\n", strerror(errno));
 		  break;
 		}
 		write(img_fd, buf, len);
@@ -307,7 +306,6 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  //printf("LV111111111: <%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (XML_Char_icmp(name, "xdr:from") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
@@ -340,7 +338,6 @@ void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const 
 }
 
 void drawings_lv1_end_element(void *callbackdata, const XML_Char *name) {
-  //printf("LV111111111: </%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (XML_Char_icmp(name, "xdr:from") == 0) {
     if (drawing_callbackdata->_tmp_offset.col != 0) {
@@ -371,7 +368,6 @@ void drawings_lv1_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_lv2_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  //printf("LV222222222: <%s>\n", name);
   if (XML_Char_icmp(name, "xdr:col") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, drawings_lv2_end_element);
     XML_SetCharacterDataHandler(xmlparser, drawings_content_handler);
@@ -400,7 +396,6 @@ void drawings_lv2_start_element(void *callbackdata, const XML_Char *name, const 
 }
 
 void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
-  //printf("LV222222222: </%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (XML_Char_icmp(name, "xdr:col") == 0) {
     if (drawing_callbackdata->text != NULL) {
@@ -459,7 +454,6 @@ void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  //printf("LV333333333333333333333: <%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (XML_Char_icmp(name,"xdr:cNvPr") == 0) {
     for (int i=0 ; attrs[i]; i+=2) {
@@ -511,7 +505,6 @@ void drawings_lv3_start_element(void *callbackdata, const XML_Char *name, const 
 }
 
 void drawings_lv3_end_element(void *callbackdata, const XML_Char *name) {
-  //printf("LV333333333333333333333: </%s>\n", name);
   if (XML_Char_icmp(name,"xdr:cNvPr") == 0) {
     XML_SetElementHandler(xmlparser, drawings_lv3_start_element, drawings_lv2_end_element);
   } else if(XML_Char_icmp(name, "xdr:cNvPicPr") == 0) {
@@ -536,7 +529,6 @@ void drawings_lv3_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  //printf("LV44444444444444444: <%s>\n", name);
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (XML_Char_icmp(name, "a:hlinkClick") == 0) {
     for (int i = 0; attrs[i]; i+=2) {
@@ -566,7 +558,6 @@ void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const 
 }
 
 void drawings_lv4_end_element(void *callbackdata, const XML_Char *name) {
-  //printf("LV44444444444444444: </%s>\n", name);
   XML_SetElementHandler(xmlparser, drawings_lv4_start_element, drawings_lv3_end_element);
 }
 
