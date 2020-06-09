@@ -405,7 +405,7 @@ void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
   if (XML_Char_icmp(name, "xdr:col") == 0) {
     if (drawing_callbackdata->text != NULL) {
       drawing_callbackdata->text[drawing_callbackdata->textlen] = '\0';
-      drawing_callbackdata->_tmp_offset.col = strtol(drawing_callbackdata->text, NULL, 10) + 1;
+      drawing_callbackdata->_tmp_offset.col = XML_Char_tol(drawing_callbackdata->text) + 1;
       free(drawing_callbackdata->text);
       drawing_callbackdata->text = NULL;
       drawing_callbackdata->textlen = 0;
@@ -415,7 +415,7 @@ void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
   } else if(XML_Char_icmp(name, "xdr:colOff") == 0) {
     if (drawing_callbackdata->text != NULL) {
       drawing_callbackdata->text[drawing_callbackdata->textlen] = '\0';
-      drawing_callbackdata->_tmp_offset.colOff = strtol(drawing_callbackdata->text, NULL, 10);
+      drawing_callbackdata->_tmp_offset.colOff = XML_Char_tol(drawing_callbackdata->text);
       free(drawing_callbackdata->text);
       drawing_callbackdata->text = NULL;
       drawing_callbackdata->textlen = 0;
@@ -425,7 +425,7 @@ void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
   } else if(XML_Char_icmp(name, "xdr:row") == 0) {
     if (drawing_callbackdata->text != NULL) {
       drawing_callbackdata->text[drawing_callbackdata->textlen] = '\0';
-      drawing_callbackdata->_tmp_offset.row = strtol(drawing_callbackdata->text, NULL, 10) + 1;
+      drawing_callbackdata->_tmp_offset.row = XML_Char_tol(drawing_callbackdata->text) + 1;
       free(drawing_callbackdata->text);
       drawing_callbackdata->text = NULL;
       drawing_callbackdata->textlen = 0;
@@ -435,7 +435,7 @@ void drawings_lv2_end_element(void *callbackdata, const XML_Char *name) {
   } else if(XML_Char_icmp(name, "xdr:rowOff") == 0) {
     if (drawing_callbackdata->text != NULL) {
       drawing_callbackdata->text[drawing_callbackdata->textlen] = '\0';
-      drawing_callbackdata->_tmp_offset.rowOff = strtol(drawing_callbackdata->text, NULL, 10);
+      drawing_callbackdata->_tmp_offset.rowOff = XML_Char_tol(drawing_callbackdata->text);
       free(drawing_callbackdata->text);
       drawing_callbackdata->text = NULL;
       drawing_callbackdata->textlen = 0;

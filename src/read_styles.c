@@ -18,7 +18,7 @@ void styles_start_element(void *callbackdata, const XML_Char *name, const XML_Ch
     array_numfmts.length = 0;
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "count") == 0) {
-	array_numfmts.numfmts = calloc((unsigned short int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct NumFMT));
+	array_numfmts.numfmts = calloc((unsigned short int)XML_Char_tol((char *)attrs[i + 1]), sizeof(struct NumFMT));
 	break;
       }
     }
@@ -28,7 +28,7 @@ void styles_start_element(void *callbackdata, const XML_Char *name, const XML_Ch
     array_fonts.length = 0;
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "count") == 0) {
-	array_fonts.fonts = calloc((unsigned short int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct Font));
+	array_fonts.fonts = calloc((unsigned short int)XML_Char_tol((char *)attrs[i + 1]), sizeof(struct Font));
 	break;
       }
     }
@@ -38,7 +38,7 @@ void styles_start_element(void *callbackdata, const XML_Char *name, const XML_Ch
     array_fills.length = 0;
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "count") == 0) {
-	array_fills.fills = calloc((unsigned short int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct Fill));
+	array_fills.fills = calloc((unsigned short int)XML_Char_tol((char *)attrs[i + 1]), sizeof(struct Fill));
 	break;
       }
     }
@@ -48,7 +48,7 @@ void styles_start_element(void *callbackdata, const XML_Char *name, const XML_Ch
     array_borders.length = 0;
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "count") == 0) {
-	array_borders.borders = calloc((unsigned short int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct BorderCell));
+	array_borders.borders = calloc((unsigned short int)XML_Char_tol((char *)attrs[i + 1]), sizeof(struct BorderCell));
 	break;
       }
     }
@@ -58,7 +58,7 @@ void styles_start_element(void *callbackdata, const XML_Char *name, const XML_Ch
     array_cellStyleXfs.length = 0;
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "count") == 0) {
-	array_cellStyleXfs.Xfs = calloc((unsigned short int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct Xf));
+	array_cellStyleXfs.Xfs = calloc((unsigned short int)XML_Char_tol((char *)attrs[i + 1]), sizeof(struct Xf));
 	break;
       }
     }
@@ -68,7 +68,7 @@ void styles_start_element(void *callbackdata, const XML_Char *name, const XML_Ch
     array_cellXfs.length = 0;
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "count") == 0) {
-	array_cellXfs.Xfs = calloc((unsigned short int)strtol((char *)attrs[i + 1], NULL, 10), sizeof(struct Xf));
+	array_cellXfs.Xfs = calloc((unsigned short int)XML_Char_tol((char *)attrs[i + 1]), sizeof(struct Xf));
 	break;
       }
     }
@@ -331,15 +331,15 @@ void xf_main_start_element(void *callbackdata, const XML_Char *name, const XML_C
     xfs_callbackdata[_tmp_count - 1].isApplyBorder = '1';
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "borderId") == 0) {
-        xfs_callbackdata[_tmp_count - 1].borderId = (unsigned short)strtol(attrs[i + 1], NULL, 10);
+        xfs_callbackdata[_tmp_count - 1].borderId = (unsigned short)XML_Char_tol(attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "fillId") == 0) {
-        xfs_callbackdata[_tmp_count - 1].fillId	= (unsigned short)strtol(attrs[i + 1], NULL, 10);
+        xfs_callbackdata[_tmp_count - 1].fillId	= (unsigned short)XML_Char_tol(attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "fontId") == 0) {
-        xfs_callbackdata[_tmp_count - 1].fontId	= (unsigned short)strtol(attrs[i + 1], NULL, 10);
+        xfs_callbackdata[_tmp_count - 1].fontId	= (unsigned short)XML_Char_tol(attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "numFmtId") == 0) {
-        xfs_callbackdata[_tmp_count - 1].numFmtId = (unsigned short)strtol(attrs[i + 1], NULL, 10);
+        xfs_callbackdata[_tmp_count - 1].numFmtId = (unsigned short)XML_Char_tol(attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "xfId") == 0) {
-	xfs_callbackdata[_tmp_count - 1].xfId = (unsigned short)strtol(attrs[i + 1], NULL, 10);
+	xfs_callbackdata[_tmp_count - 1].xfId = (unsigned short)XML_Char_tol(attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "applyAlignment") == 0) {
         xfs_callbackdata[_tmp_count - 1].isApplyAlignment = XML_Char_icmp(attrs[i + 1], "true") == 0 ? '1' : '0';
       } else if (XML_Char_icmp(attrs[i], "applyNumberFormat") == 0) {

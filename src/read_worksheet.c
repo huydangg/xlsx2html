@@ -219,7 +219,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
         worksheet_callbackdata->end_row = _tmp_end_row;
 	worksheet_callbackdata->end_col = _tmp_end_col;
 	worksheet_callbackdata->end_col_number = column_name_to_number(_tmp_end_col);
-	NUM_OF_CELLS = strtol(_tmp_end_row, NULL, 10) * worksheet_callbackdata->end_col_number;
+	NUM_OF_CELLS = XML_Char_tol(_tmp_end_row) * worksheet_callbackdata->end_col_number;
 	NUM_OF_CHUNKS = NUM_OF_CELLS / CHUNK_SIZE_LIMIT;
 	if (NUM_OF_CELLS % CHUNK_SIZE_LIMIT != 0) {
           NUM_OF_CHUNKS += 1;
@@ -339,11 +339,11 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
       if (XML_Char_icmp(attrs[i], "hidden") == 0) {
         worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->isHidden = XML_Char_icmp(attrs[i + 1], "true") == 0 ? '1' : '0'; 
       } else if (XML_Char_icmp(attrs[i], "min") == 0) {
-	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->min = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
+	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->min = (unsigned short int)XML_Char_tol((char *)attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "max") == 0) {
 	if (worksheet_callbackdata->has_dimension != '1')
-	  worksheet_callbackdata->end_col_number = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
-	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->max = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
+	  worksheet_callbackdata->end_col_number = (unsigned short int)XML_Char_tol((char *)attrs[i + 1]);
+	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->max = (unsigned short int)XML_Char_tol((char *)attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "width") == 0) {
 	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->width = strtof((char *)attrs[i + 1], NULL);
       }
@@ -360,7 +360,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
         if (worksheet_callbackdata->ROW_NUMBER != 0) {
 	  pre_row_number = worksheet_callbackdata->ROW_NUMBER + 1;
         }
-	worksheet_callbackdata->ROW_NUMBER = (unsigned short)strtol(attrs[i + 1], NULL, 10);
+	worksheet_callbackdata->ROW_NUMBER = (unsigned short)XML_Char_tol(attrs[i + 1]);
 	len_row_number = snprintf(NULL, 0, "%d", worksheet_callbackdata->ROW_NUMBER);
       } else if (XML_Char_icmp(attrs[i], "ht") == 0) {
 	//<th style="height:px;"
@@ -510,7 +510,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
         memcpy(worksheet_callbackdata->cell_name, attrs[i + 1], 1 + XML_Char_len(attrs[i + 1]));
         CURRENT_CELL_IN_NUMBER_BY_ROW = (unsigned int)get_col_nr(attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "s") == 0) {
-        worksheet_callbackdata->index_style = (int)strtol(attrs[i + 1], NULL, 10);
+        worksheet_callbackdata->index_style = (int)XML_Char_tol(attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "t") == 0) {
         worksheet_callbackdata->type_content = XML_Char_realloc(worksheet_callbackdata->type_content, 1 + XML_Char_len(attrs[i + 1]));
 	memcpy(worksheet_callbackdata->type_content, attrs[i + 1], 1 + XML_Char_len(attrs[i + 1]));
@@ -829,7 +829,7 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
           return;
         }
         int len_pos_arr = sharedStrings_position.length;
-        int index_sharedStrings_current = (int)strtol(worksheet_callbackdata->worksheet_content, NULL, 10);
+        int index_sharedStrings_current = (int)XML_Char_tol(worksheet_callbackdata->worksheet_content);
         unsigned long start_pos = sharedStrings_position.positions[index_sharedStrings_current];
         unsigned long end_pos = -1;
         if (index_sharedStrings_current + 1 <= len_pos_arr) {
@@ -855,7 +855,7 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
 	}
 	int index_numFmt;
 	for (index_numFmt = 0; index_numFmt < array_numfmts.length; index_numFmt++) {
-	  int numFmtIdInt = strtol(array_numfmts.numfmts[index_numFmt].numFmtId, NULL, 10);
+	  int numFmtIdInt = XML_Char_tol(array_numfmts.numfmts[index_numFmt].numFmtId);
 	  if (numFmtIdInt == numFmt_id) {
 	    break;
 	  }

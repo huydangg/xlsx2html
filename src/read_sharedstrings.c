@@ -43,7 +43,7 @@ void sharedStrings_main_start_element(void *callbackdata, const XML_Char *name, 
   if (XML_Char_icmp(name, "sst") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "uniqueCount") == 0) {
-	sharedStrings_position.positions = XML_Char_malloc((int)strtol(attrs[i + 1], NULL, 10) * sizeof(long int));
+	sharedStrings_position.positions = XML_Char_malloc((int)XML_Char_tol(attrs[i + 1]) * sizeof(long int));
 	current_index = -1;
       }
     }
