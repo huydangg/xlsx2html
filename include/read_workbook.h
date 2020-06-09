@@ -1,7 +1,6 @@
 #ifndef INCLUDED_READ_WORKBOOK_H
 #define INCLUDED_READ_WORKBOOK_H
 
-#include <expat.h>
 #include <read_relationships.h>
 
 struct Sheet {

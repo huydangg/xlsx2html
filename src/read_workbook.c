@@ -1,8 +1,8 @@
+#include <private.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <read_workbook.h>
-
 struct ArraySheets array_sheets;
 
 
@@ -21,7 +21,7 @@ XML_Char *insert_substr_to_str_at_pos(XML_Char *des, const XML_Char *substr, int
 
 void workbook_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  if (strcmp(name, "sheets") == 0) {
+  if (XML_Char_icmp(name, "sheets") == 0) {
     array_sheets.length = 0;
     array_sheets.sheets = malloc(sizeof(struct Sheet *));
     if (array_sheets.sheets == NULL) {
@@ -38,7 +38,7 @@ void workbook_end_element(void *callbackdata, const XML_Char *name) {
 }
 
 void sheet_main_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
-  if (strcmp(name, "sheet") == 0){
+  if (XML_Char_icmp(name, "sheet") == 0){
     struct Sheet **_tmp_sheets_callbackdata;
     array_sheets.length++;
     if (array_sheets.length > 1) {
@@ -53,14 +53,14 @@ void sheet_main_start_element(void *callbackdata, const XML_Char *name, const XM
     }
     array_sheets.sheets[array_sheets.length - 1] = malloc(sizeof(struct Sheet));
     for(int i = 0; attrs[i]; i += 2){
-      if(strcmp(attrs[i], "state") == 0){
-        array_sheets.sheets[array_sheets.length - 1]->isHidden = strcmp(attrs[i + 1], "hidden") == 0 ? '1' : '0';
+      if(XML_Char_icmp(attrs[i], "state") == 0){
+        array_sheets.sheets[array_sheets.length - 1]->isHidden = XML_Char_icmp(attrs[i + 1], "hidden") == 0 ? '1' : '0';
       }
-      if (strcmp(attrs[i], "name") == 0){
+      if (XML_Char_icmp(attrs[i], "name") == 0){
 	array_sheets.sheets[array_sheets.length - 1]->name = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	memcpy(array_sheets.sheets[array_sheets.length - 1]->name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
-      if (strcmp(attrs[i], "sheetId") == 0){
+      if (XML_Char_icmp(attrs[i], "sheetId") == 0){
 	array_sheets.sheets[array_sheets.length - 1]->sheetId = malloc(sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	memcpy(array_sheets.sheets[array_sheets.length - 1]->sheetId, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	char *pattern_name = "xl/worksheets/sheet.xml";

@@ -1,3 +1,4 @@
+#include <private.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -145,7 +146,7 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
 
 // When tag <row> is empty.
 void generate_cells(void *callbackdata, const XML_Char *name) {
-  if (strcmp(name, "row") == 0) {
+  if (XML_Char_icmp(name, "row") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     int len_row_number = snprintf(NULL, 0, "%d", worksheet_callbackdata->ROW_NUMBER);
     int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
@@ -205,15 +206,15 @@ void get_end_col_end_row_from_range(const XML_Char *range, char **end_row, char 
 void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
   struct WorkSheet *worksheet_callbackdata = callbackdata;
-  if (strcmp(name, "worksheet") == 0) {
+  if (XML_Char_icmp(name, "worksheet") == 0) {
     worksheet_callbackdata->has_dimension = '0';
-  } else if (strcmp(name, "dimension") == 0) {
+  } else if (XML_Char_icmp(name, "dimension") == 0) {
     INDEX_CURRENT_SHEET = worksheet_callbackdata->index_sheet;
     worksheet_callbackdata->has_dimension = '1';
     char *_tmp_end_row = worksheet_callbackdata->end_row;
     char *_tmp_end_col = worksheet_callbackdata->end_col;
     for (int i = 0; attrs[i]; i += 2) {
-      if (strcmp(attrs[i], "ref") == 0) {
+      if (XML_Char_icmp(attrs[i], "ref") == 0) {
         get_end_col_end_row_from_range(attrs[i + 1], &_tmp_end_row, &_tmp_end_col);
         worksheet_callbackdata->end_row = _tmp_end_row;
 	worksheet_callbackdata->end_col = _tmp_end_col;
@@ -227,7 +228,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
       }
     }
     XML_SetElementHandler(xmlparser, NULL, worksheet_end_element);
-  } else if (strcmp(name, "cols") == 0) {
+  } else if (XML_Char_icmp(name, "cols") == 0) {
     worksheet_callbackdata->array_cols.length = 0;
     worksheet_callbackdata->array_cols.cols = malloc(sizeof(struct Col *));
     if (worksheet_callbackdata->array_cols.cols == NULL) {
@@ -236,7 +237,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     } else {
       XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
     }
-  } else if (strcmp(name, "sheetData") == 0) {
+  } else if (XML_Char_icmp(name, "sheetData") == 0) {
     worksheet_callbackdata->ROW_NUMBER = 0;
     CURRENT_CHUNK = 1;
     int LEN_CHUNKS_DIR_PATH = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1 + 1;
@@ -254,7 +255,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     }
     free(CHUNK_FILE_PATH);
     XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
-  } else if (strcmp(name, "mergeCells") == 0) {
+  } else if (XML_Char_icmp(name, "mergeCells") == 0) {
     worksheet_callbackdata->hasMergedCells = '1';
     int LEN_CHUNKS_DIR_PATH = strlen(OUTPUT_DIR) + strlen(CHUNKS_DIR_NAME) + 1 + 1;
     char *CHUNKS_DIR_PATH = malloc(LEN_CHUNKS_DIR_PATH);
@@ -273,14 +274,14 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     }
     fputs("{", worksheet_callbackdata->fmergecell);
     XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
-  } else if (strcmp(name, "drawing") == 0) {
+  } else if (XML_Char_icmp(name, "drawing") == 0) {
     worksheet_callbackdata->array_drawingids.length++;
     worksheet_callbackdata->array_drawingids.drawing_ids = realloc(
       worksheet_callbackdata->array_drawingids.drawing_ids,
       worksheet_callbackdata->array_drawingids.length * sizeof(char *)
     );
     for (int i = 0; attrs[i]; i+=2) {
-      if (strcmp(attrs[i], "r:id") == 0) {
+      if (XML_Char_icmp(attrs[i], "r:id") == 0) {
         worksheet_callbackdata->array_drawingids.drawing_ids[worksheet_callbackdata->array_drawingids.length - 1] = strdup(attrs[i + 1]);
       }
       printf("ID DRAWING: %s\n", attrs[i]);
@@ -290,10 +291,10 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
 }
 
 void worksheet_end_element(void *callbackdata, const XML_Char *name) {
-  if (strcmp(name, "sheetData") == 0) {
+  if (XML_Char_icmp(name, "sheetData") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     fclose(worksheet_callbackdata->worksheet_file);
-  } else if (strcmp(name, "cols") == 0) {
+  } else if (XML_Char_icmp(name, "cols") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     int  status = generate_columns(worksheet_callbackdata->array_cols, worksheet_callbackdata->end_col_number, INDEX_CURRENT_SHEET);
     if (status == -1) {
@@ -305,12 +306,12 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
     }
     free(worksheet_callbackdata->array_cols.cols);
 
-  } else if (strcmp(name, "mergeCells") == 0) {
+  } else if (XML_Char_icmp(name, "mergeCells") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     fseek(worksheet_callbackdata->fmergecell, -1, SEEK_CUR);
     fputs("}", worksheet_callbackdata->fmergecell);
     fclose(worksheet_callbackdata->fmergecell);
-  } else if (strcmp(name, "drawing") == 0) {
+  } else if (XML_Char_icmp(name, "drawing") == 0) {
 
   }
 
@@ -319,7 +320,7 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
 
 void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  if (strcmp(name, "col") == 0) {
+  if (XML_Char_icmp(name, "col") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     struct Col **_tmp_cols;
     worksheet_callbackdata->array_cols.length++;
@@ -335,33 +336,33 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1] = malloc(sizeof(struct Col));
     worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->isHidden = '0';
     for (int i = 0; attrs[i]; i += 2) {
-      if (strcmp(attrs[i], "hidden") == 0) {
-        worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->isHidden = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0'; 
-      } else if (strcmp(attrs[i], "min") == 0) {
+      if (XML_Char_icmp(attrs[i], "hidden") == 0) {
+        worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->isHidden = XML_Char_icmp(attrs[i + 1], "true") == 0 ? '1' : '0'; 
+      } else if (XML_Char_icmp(attrs[i], "min") == 0) {
 	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->min = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
-      } else if (strcmp(attrs[i], "max") == 0) {
+      } else if (XML_Char_icmp(attrs[i], "max") == 0) {
 	if (worksheet_callbackdata->has_dimension != '1')
 	  worksheet_callbackdata->end_col_number = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
 	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->max = (unsigned short int)strtol((char *)attrs[i + 1], NULL, 10);
-      } else if (strcmp(attrs[i], "width") == 0) {
+      } else if (XML_Char_icmp(attrs[i], "width") == 0) {
 	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->width = strtof((char *)attrs[i + 1], NULL);
       }
     }
     XML_SetElementHandler(xmlparser, NULL, col_row_end_element);
-  } else if(strcmp(name, "row") == 0) {
+  } else if(XML_Char_icmp(name, "row") == 0) {
     //TODO: Need to calculate number of chunks first.
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     float row_height_in_px  = 0.0;
     unsigned short pre_row_number = 0;
     int len_row_number = 0;
     for (int i = 0; attrs[i]; i+=2) {
-      if (strcmp(attrs[i], "r") == 0) {
+      if (XML_Char_icmp(attrs[i], "r") == 0) {
         if (worksheet_callbackdata->ROW_NUMBER != 0) {
 	  pre_row_number = worksheet_callbackdata->ROW_NUMBER + 1;
         }
 	worksheet_callbackdata->ROW_NUMBER = (unsigned short)strtol(attrs[i + 1], NULL, 10);
 	len_row_number = snprintf(NULL, 0, "%d", worksheet_callbackdata->ROW_NUMBER);
-      } else if (strcmp(attrs[i], "ht") == 0) {
+      } else if (XML_Char_icmp(attrs[i], "ht") == 0) {
 	//<th style="height:px;"
 	row_height_in_px = strtof((char *)attrs[i + 1], NULL) * (20 * 1.0 / 15);
       }
@@ -419,10 +420,10 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     fputs("\n", worksheet_callbackdata->worksheet_file);
     START_CELL_IN_NUMBER_BY_ROW = 1;
     XML_SetElementHandler(xmlparser, cell_start_element, generate_cells);
-  } else if (strcmp(name, "mergeCell") == 0) {
+  } else if (XML_Char_icmp(name, "mergeCell") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     for (int i = 0; attrs[i]; i+=2) {
-      if (strcmp(attrs[i], "ref") == 0) {
+      if (XML_Char_icmp(attrs[i], "ref") == 0) {
 	char **mergecell_range = malloc(2 * sizeof(char *));
 	int count = 0;
 	char *token, *_tmp_range, *tofree;
@@ -463,9 +464,9 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 }
 
 void col_row_end_element(void *callbackdata, const XML_Char *name) {
-  if (strcmp(name, "col") == 0) {
+  if (XML_Char_icmp(name, "col") == 0) {
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
-  } else if (strcmp(name, "row") == 0) {
+  } else if (XML_Char_icmp(name, "row") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     int len_row_number = snprintf(NULL, 0, "%d", worksheet_callbackdata->ROW_NUMBER);
     int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
@@ -492,25 +493,25 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
     fputs("</tr>", worksheet_callbackdata->worksheet_file);
     fputs("\n", worksheet_callbackdata->worksheet_file);
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
-  } else if (strcmp(name, "mergeCell") == 0) {
+  } else if (XML_Char_icmp(name, "mergeCell") == 0) {
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
   }
 }
 
 void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) { 
   (void)attrs;
-  if (strcmp(name, "c") == 0) {
+  if (XML_Char_icmp(name, "c") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     worksheet_callbackdata->cell_name = NULL;
     worksheet_callbackdata->type_content = NULL;
     for (int i = 0; attrs[i]; i+=2) {
-      if (strcmp(attrs[i], "r") == 0) {
+      if (XML_Char_icmp(attrs[i], "r") == 0) {
 	worksheet_callbackdata->cell_name = realloc(worksheet_callbackdata->cell_name, 1 + strlen(attrs[i + 1]));
         memcpy(worksheet_callbackdata->cell_name, attrs[i + 1], 1 + strlen(attrs[i + 1]));
         CURRENT_CELL_IN_NUMBER_BY_ROW = (unsigned int)get_col_nr(attrs[i + 1]);
-      } else if (strcmp(attrs[i], "s") == 0) {
+      } else if (XML_Char_icmp(attrs[i], "s") == 0) {
         worksheet_callbackdata->index_style = (int)strtol(attrs[i + 1], NULL, 10);
-      } else if (strcmp(attrs[i], "t") == 0) {
+      } else if (XML_Char_icmp(attrs[i], "t") == 0) {
         worksheet_callbackdata->type_content = realloc(worksheet_callbackdata->type_content, 1 + strlen(attrs[i + 1]));
 	memcpy(worksheet_callbackdata->type_content, attrs[i + 1], 1 + strlen(attrs[i + 1]));
       }
@@ -571,11 +572,11 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       }
     }
     if (horizontal != NULL) {
-      if (strcmp(horizontal, "center") == 0) {
+      if (XML_Char_icmp(horizontal, "center") == 0) {
         //18: text-align:center;
         horizontal_style = realloc(horizontal_style, 18 + 1);
         snprintf(horizontal_style, 18 + 1, "text-align:center;");
-      } else if (strcmp(horizontal, "general") == 0) {
+      } else if (XML_Char_icmp(horizontal, "general") == 0) {
         //16: text-align:left;
         horizontal_style = realloc(horizontal_style, 16 + 1);
         snprintf(horizontal_style, 16 + 1, "text-align:left;");
@@ -587,7 +588,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       free(horizontal);
     }
     if (vertical != NULL) {
-      if (strcmp(vertical, "center") == 0) {
+      if (XML_Char_icmp(vertical, "center") == 0) {
         //22: vertical-align:middle;
         vertical_style = realloc(vertical_style, 22 + 1);
         snprintf(vertical_style, 22 + 1, "vertical-align:middle;");
@@ -709,7 +710,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	font_style = concat(tmp_font_style, font_color_rgb);
 	free(tmp_font_style);
       }
-      if (array_fonts.fonts[font_id].underline != NULL && strcmp(array_fonts.fonts[font_id].underline, "none") != 0) {
+      if (array_fonts.fonts[font_id].underline != NULL && XML_Char_icmp(array_fonts.fonts[font_id].underline, "none") != 0) {
 	const int LEN_FONT_TEXT_DECORATION_LINE = 32;
         char font_text_decoration_line[LEN_FONT_TEXT_DECORATION_LINE];
 	memcpy(font_text_decoration_line, "text-decoration-line:underline;", LEN_FONT_TEXT_DECORATION_LINE);
@@ -717,7 +718,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	free(font_style);
 	font_style = concat(tmp_font_style, font_text_decoration_line);
 	free(tmp_font_style);
-        if (strcmp(array_fonts.fonts[font_id].underline, "single") == 0) {
+        if (XML_Char_icmp(array_fonts.fonts[font_id].underline, "single") == 0) {
 	  const int LEN_FONT_TEXT_DECORATION_STYLE = 30;
           char font_text_decoration_style[LEN_FONT_TEXT_DECORATION_STYLE];
 	  memcpy(font_text_decoration_style, "text-decoration-style:single;", LEN_FONT_TEXT_DECORATION_STYLE);
@@ -725,7 +726,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	  free(font_style);
 	  font_style = concat(tmp_font_style, font_text_decoration_style);
 	  free(tmp_font_style);
-        } else if(strcmp(array_fonts.fonts[font_id].underline, "double") == 0) {
+        } else if(XML_Char_icmp(array_fonts.fonts[font_id].underline, "double") == 0) {
 	  const int LEN_FONT_TEXT_DECORATION_STYLE = 30;
           char font_text_decoration_style[LEN_FONT_TEXT_DECORATION_STYLE];
 	  memcpy(font_text_decoration_style, "text-decoration-style:double;", LEN_FONT_TEXT_DECORATION_STYLE);
@@ -790,7 +791,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 }
 
 void cell_end_element(void *callbackdata, const XML_Char *name) {
-  if (strcmp(name, "c") == 0) {
+  if (XML_Char_icmp(name, "c") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     fputs("</td>", worksheet_callbackdata->worksheet_file);
     fputs("\n", worksheet_callbackdata->worksheet_file);
@@ -805,23 +806,23 @@ void cell_end_element(void *callbackdata, const XML_Char *name) {
 }
 
 void cell_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
-  if (strcmp(name, "v") == 0) {
+  if (XML_Char_icmp(name, "v") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     worksheet_callbackdata->worksheet_content = NULL;
     worksheet_callbackdata->len_worksheet_content = 0;
     XML_SetElementHandler(xmlparser, NULL, cell_item_end_element);
     XML_SetCharacterDataHandler(xmlparser, worksheet_content_handler);
-  } else if (strcmp(name, "f") == 0) {
+  } else if (XML_Char_icmp(name, "f") == 0) {
     XML_SetElementHandler(xmlparser, NULL, cell_item_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   }
 }
 
 void cell_item_end_element(void *callbackdata, const XML_Char *name) {
-  if (strcmp(name, "v") == 0) {
+  if (XML_Char_icmp(name, "v") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     if (worksheet_callbackdata->worksheet_content != NULL && worksheet_callbackdata->type_content != NULL) {
-      if (strcmp(worksheet_callbackdata->type_content, "s") == 0) {
+      if (XML_Char_icmp(worksheet_callbackdata->type_content, "s") == 0) {
         FILE *sharedStrings_file = fopen(SHAREDSTRINGS_HTML_FILE_PATH, "rb");
         if (sharedStrings_file == NULL) {
           fprintf(stderr, "Cannot open %s file to read\n", SHAREDSTRINGS_HTML_FILE_PATH);
@@ -844,7 +845,7 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
           }
         }
         fclose(sharedStrings_file);
-      } else if (strcmp(worksheet_callbackdata->type_content, "n") == 0) {
+      } else if (XML_Char_icmp(worksheet_callbackdata->type_content, "n") == 0) {
         unsigned short numFmt_id = -1;
 	if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyNumberFormat == '1') {
 	  numFmt_id = array_cellXfs.Xfs[worksheet_callbackdata->index_style].numFmtId;
@@ -859,7 +860,7 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
 	    break;
 	  }
 	}
-	if (strcmp(array_numfmts.numfmts[index_numFmt].formatCode, "General") == 0) {
+	if (XML_Char_icmp(array_numfmts.numfmts[index_numFmt].formatCode, "General") == 0) {
           fputs("<span>", worksheet_callbackdata->worksheet_file);
 	} else {
 	  // <span class="n" data-format-code="">
@@ -884,7 +885,7 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
     }
     XML_SetElementHandler(xmlparser, NULL, cell_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
-  } else if (strcmp(name, "f") == 0) {
+  } else if (XML_Char_icmp(name, "f") == 0) {
     XML_SetElementHandler(xmlparser, cell_item_start_element, cell_item_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   }

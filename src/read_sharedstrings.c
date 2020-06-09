@@ -1,5 +1,7 @@
+#include <private.h>
 #include <read_sharedstrings.h>
 #include <string.h>
+#include <stdio.h>
 
 struct SharedStringsPosition sharedStrings_position;
 
@@ -38,9 +40,9 @@ char* concat(const char *s1, const char *s2) {
 void sharedStrings_main_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
 
-  if (strcmp(name, "sst") == 0) {
+  if (XML_Char_icmp(name, "sst") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
-      if (strcmp(attrs[i], "uniqueCount") == 0) {
+      if (XML_Char_icmp(attrs[i], "uniqueCount") == 0) {
 	sharedStrings_position.positions = malloc((int)strtol(attrs[i + 1], NULL, 10) * sizeof(long int));
 	current_index = -1;
       }
@@ -51,7 +53,7 @@ void sharedStrings_main_start_element(void *callbackdata, const XML_Char *name, 
 }
 
 void sharedStrings_main_end_element(void *callbackdata, const XML_Char *name) {
-  if (strcmp(name, "sst") == 0) {
+  if (XML_Char_icmp(name, "sst") == 0) {
     sharedStrings_position.length = current_index;
     XML_SetElementHandler(xmlparser, sharedStrings_main_start_element, NULL);
   }
@@ -60,7 +62,7 @@ void sharedStrings_main_end_element(void *callbackdata, const XML_Char *name) {
 void sharedStrings_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
   FILE *sharedStrings_file_callbackdata = callbackdata;
-  if (strcmp(name, "si") == 0) {
+  if (XML_Char_icmp(name, "si") == 0) {
     current_index++;
     fflush(sharedStrings_file_callbackdata);
     sharedStrings_position.positions[current_index] = ftell(sharedStrings_file_callbackdata);
@@ -69,7 +71,7 @@ void sharedStrings_lv1_start_element(void *callbackdata, const XML_Char *name, c
 }
 
 void sharedStrings_lv1_end_element(void *callbackdata, const XML_Char *name) {
-  if (strcmp(name, "si") == 0) {
+  if (XML_Char_icmp(name, "si") == 0) {
     XML_SetElementHandler(xmlparser, sharedStrings_lv1_start_element, sharedStrings_main_end_element);
   }
 }
@@ -77,7 +79,7 @@ void sharedStrings_lv1_end_element(void *callbackdata, const XML_Char *name) {
 void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
   FILE *sharedStrings_file_callbackdata = callbackdata;
-  if (strcmp(name, "t") == 0) {
+  if (XML_Char_icmp(name, "t") == 0) {
     char *font_style = NULL;
     if (font.name != NULL) {
       printf("---------------------------------------------\n");
@@ -137,7 +139,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
 	free(tmp_font_style);
         free(font.color.rgb);
       }
-      if (font.underline != NULL && strcmp(font.underline, "none") != 0) {
+      if (font.underline != NULL && XML_Char_icmp(font.underline, "none") != 0) {
 	const int LEN_FONT_TEXT_DECORATION_LINE = 32;
         char font_text_decoration_line[LEN_FONT_TEXT_DECORATION_LINE];
 	memcpy(font_text_decoration_line, "text-decoration-line:underline;", LEN_FONT_TEXT_DECORATION_LINE);
@@ -145,7 +147,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
 	free(font_style);
 	font_style = concat(tmp_font_style, font_text_decoration_line);
 	free(tmp_font_style);
-        if (strcmp(font.underline, "single") == 0) {
+        if (XML_Char_icmp(font.underline, "single") == 0) {
 	  const int LEN_FONT_TEXT_DECORATION_STYLE = 30;
           char font_text_decoration_style[LEN_FONT_TEXT_DECORATION_STYLE];
 	  memcpy(font_text_decoration_style, "text-decoration-style:single;", LEN_FONT_TEXT_DECORATION_STYLE);
@@ -153,7 +155,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
 	  free(font_style);
 	  font_style = concat(tmp_font_style, font_text_decoration_style);
 	  free(tmp_font_style);
-        } else if(strcmp(font.underline, "double") == 0) {
+        } else if(XML_Char_icmp(font.underline, "double") == 0) {
 	  const int LEN_FONT_TEXT_DECORATION_STYLE = 30;
           char font_text_decoration_style[LEN_FONT_TEXT_DECORATION_STYLE];
 	  memcpy(font_text_decoration_style, "text-decoration-style:double;", LEN_FONT_TEXT_DECORATION_STYLE);
@@ -174,7 +176,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
     font = new_font();
     XML_SetElementHandler(xmlparser, NULL, sharedStrings_lv2_end_element);
     XML_SetCharacterDataHandler(xmlparser, sharedStrings_content_handler);
-  } else if(strcmp(name, "rPr") == 0) {
+  } else if(XML_Char_icmp(name, "rPr") == 0) {
     font = new_font();
     XML_SetElementHandler(xmlparser, sharedStrings_rPritem_start_element, sharedStrings_rPritem_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
@@ -182,12 +184,12 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
 }
 
 void sharedStrings_lv2_end_element(void *callbackdata, const XML_Char *name) {
-  if (strcmp(name, "t") == 0) {
+  if (XML_Char_icmp(name, "t") == 0) {
     FILE *sharedStrings_file_callbackdata = callbackdata;
     fprintf(sharedStrings_file_callbackdata, "</span>");
     XML_SetElementHandler(xmlparser, sharedStrings_lv2_start_element, sharedStrings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
-  } else if (strcmp(name, "rPr") == 0){
+  } else if (XML_Char_icmp(name, "rPr") == 0){
     XML_SetElementHandler(xmlparser, sharedStrings_lv2_start_element, sharedStrings_lv1_end_element);
     XML_SetCharacterDataHandler(xmlparser, NULL);
   }
@@ -195,46 +197,46 @@ void sharedStrings_lv2_end_element(void *callbackdata, const XML_Char *name) {
 
 void sharedStrings_rPritem_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   (void)attrs;
-  if (strcmp(name, "sz") == 0) {
+  if (XML_Char_icmp(name, "sz") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
-      if (strcmp(attrs[i], "val") == 0) {
+      if (XML_Char_icmp(attrs[i], "val") == 0) {
 	font.sz = strtof((char *)attrs[i + 1], NULL);
       }
     }
   }
-  if (strcmp(name, "rFont") == 0) {
+  if (XML_Char_icmp(name, "rFont") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
-      if (strcmp(attrs[i], "val") == 0) {
+      if (XML_Char_icmp(attrs[i], "val") == 0) {
 	font.name = realloc(font.name, sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	memcpy(font.name, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
   }
-  if (strcmp(name, "b") == 0) {
+  if (XML_Char_icmp(name, "b") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
-      if (strcmp(attrs[i], "val") == 0) {
-	font.isBold = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0';
+      if (XML_Char_icmp(attrs[i], "val") == 0) {
+	font.isBold = XML_Char_icmp(attrs[i + 1], "true") == 0 ? '1' : '0';
       }
     }
   }
-  if (strcmp(name, "i") == 0) {
+  if (XML_Char_icmp(name, "i") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
-      if (strcmp(attrs[i], "val") == 0) {
-	font.isItalic = strcmp(attrs[i + 1], "true") == 0 ? '1' : '0';
+      if (XML_Char_icmp(attrs[i], "val") == 0) {
+	font.isItalic = XML_Char_icmp(attrs[i + 1], "true") == 0 ? '1' : '0';
       }
     }
   }
-  if (strcmp(name, "u") == 0) {
+  if (XML_Char_icmp(name, "u") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
-      if (strcmp(attrs[i], "val") == 0) {
+      if (XML_Char_icmp(attrs[i], "val") == 0) {
 	font.underline = realloc(font.underline, sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	memcpy(font.underline, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }
     }
   }
-  if (strcmp(name, "color") == 0) {
+  if (XML_Char_icmp(name, "color") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
-      if (strcmp(attrs[i], "val") == 0) {
+      if (XML_Char_icmp(attrs[i], "val") == 0) {
 	font.color.rgb = realloc(font.color.rgb, sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
 	memcpy(font.color.rgb, attrs[i + 1], sizeof(XML_Char) * (strlen(attrs[i + 1]) + 1));
       }

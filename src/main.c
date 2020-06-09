@@ -7,6 +7,9 @@
 #include <limits.h>
 #include <libgen.h>
 #include <errno.h>
+#include <private.h>
+#include <stdio.h>
+#include <version.h>
 
 XML_Parser xmlparser;
 const char *ORIGIN_FILE_PATH;

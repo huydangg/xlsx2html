@@ -2,7 +2,6 @@
 #define INCLUDED_PRIVATE_H
 
 
-#include <zip.h>
 #include <expat.h>
 
 #ifdef XML_LARGE_SIZE
@@ -17,6 +16,17 @@
 #else
 #  define XML_FMT_STR "s"
 #endif
+
+//UTF-8 version
+#define X(s) s
+#define XML_Char_icmp strcasecmp
+#define XML_Char_len strlen
+#define XML_Char_malloc(n) (malloc(n))
+#define XML_Char_realloc(m,n) (realloc((m), (n)))
+#define XML_Char_tol(s) strtol((s), NULL, 10)
+#define XML_Char_tod(s) strtod((s), NULL)
+#define XML_Char_snprintf snprintf
+
 
 struct Color {
   XML_Char *rgb;

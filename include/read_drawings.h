@@ -4,7 +4,6 @@
 #include <expat.h>
 #include <read_relationships.h>
 #include <zip.h>
-#include <private.h>
 
 struct Offset {
   unsigned int col;

@@ -1,8 +1,7 @@
 #ifndef INCLUDED_READ_SHAREDSTRINGS_H
 #define INCLUDED_READ_SHAREDSTRINGS_H
 
-#include <private.h>
-
+#include <expat.h>
 //Mapping index with position.
 # define SHAREDSTRINGS_HTML_FILE_SUFFIX ".ss"
 
