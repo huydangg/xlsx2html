@@ -384,7 +384,7 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
     } else if (XML_Char_icmp(name, "c:f") == 0) {
       if (chart_callbackdata->text != NULL) {
 	chart_callbackdata->text[chart_callbackdata->textlen] = '\0';
-        chart_callbackdata->f = realloc(chart_callbackdata->f, chart_callbackdata->textlen + 1);
+        chart_callbackdata->f = XML_Char_realloc(chart_callbackdata->f, chart_callbackdata->textlen + 1);
 	memcpy(chart_callbackdata->f, chart_callbackdata->text, chart_callbackdata->textlen + 1);
 	free(chart_callbackdata->text);
       }
@@ -420,7 +420,7 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
 
 void chart_content_handler(void *callbackdata, const XML_Char *buf, int len) {
   struct ChartCallBackData *chart_callbackdata = callbackdata;
-  if ((chart_callbackdata->text = realloc(chart_callbackdata->text, chart_callbackdata->textlen + len + 1)) == NULL) {
+  if ((chart_callbackdata->text = XML_Char_realloc(chart_callbackdata->text, chart_callbackdata->textlen + len + 1)) == NULL) {
     chart_callbackdata->textlen = 0;
   } else {
     memcpy(chart_callbackdata->text + chart_callbackdata->textlen, buf, len);

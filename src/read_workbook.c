@@ -42,7 +42,7 @@ void sheet_main_start_element(void *callbackdata, const XML_Char *name, const XM
     struct Sheet **_tmp_sheets_callbackdata;
     array_sheets.length++;
     if (array_sheets.length > 1) {
-      _tmp_sheets_callbackdata = realloc(array_sheets.sheets, sizeof(struct Sheet *) * array_sheets.length);
+      _tmp_sheets_callbackdata = XML_Char_realloc(array_sheets.sheets, sizeof(struct Sheet *) * array_sheets.length);
       if (_tmp_sheets_callbackdata) {
 	array_sheets.sheets = _tmp_sheets_callbackdata;
       } else {

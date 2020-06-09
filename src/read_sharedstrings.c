@@ -207,7 +207,7 @@ void sharedStrings_rPritem_start_element(void *callbackdata, const XML_Char *nam
   if (XML_Char_icmp(name, "rFont") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "val") == 0) {
-	font.name = realloc(font.name, sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	font.name = XML_Char_realloc(font.name, sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
 	memcpy(font.name, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
@@ -229,7 +229,7 @@ void sharedStrings_rPritem_start_element(void *callbackdata, const XML_Char *nam
   if (XML_Char_icmp(name, "u") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "val") == 0) {
-	font.underline = realloc(font.underline, sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	font.underline = XML_Char_realloc(font.underline, sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
 	memcpy(font.underline, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
@@ -237,7 +237,7 @@ void sharedStrings_rPritem_start_element(void *callbackdata, const XML_Char *nam
   if (XML_Char_icmp(name, "color") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "val") == 0) {
-	font.color.rgb = realloc(font.color.rgb, sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
+	font.color.rgb = XML_Char_realloc(font.color.rgb, sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
 	memcpy(font.color.rgb, attrs[i + 1], sizeof(XML_Char) * (XML_Char_len(attrs[i + 1]) + 1));
       }
     }
@@ -263,7 +263,7 @@ void sharedStrings_content_handler(void *callbackdata, const XML_Char *buf, int 
   if (value[len_value - 1] == '\n') {
     //5: <br/>
     len_value = len_value + 4;
-    if ((value = realloc(value, len_value + 1)) == NULL) {
+    if ((value = XML_Char_realloc(value, len_value + 1)) == NULL) {
       return;
     }
     memcpy(value + len - 1, "<br/>", 5);

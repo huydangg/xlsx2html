@@ -329,7 +329,7 @@ void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const 
   } else if (XML_Char_icmp(name, "xdr:graphicFrame") == 0) {
     drawing_callbackdata->is_graphicframe = '1';
     drawing_callbackdata->index_graphicframe++;
-    drawing_callbackdata->array_chart_metadata.chart_metadata = realloc(
+    drawing_callbackdata->array_chart_metadata.chart_metadata = XML_Char_realloc(
       drawing_callbackdata->array_chart_metadata.chart_metadata,
       (drawing_callbackdata->index_graphicframe + 1) * sizeof(struct ChartMetaData *)
     );
@@ -572,7 +572,7 @@ void drawings_lv4_end_element(void *callbackdata, const XML_Char *name) {
 
 void drawings_content_handler(void *callbackdata, const XML_Char *buf, int len) {
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
-  if ((drawing_callbackdata->text = realloc(drawing_callbackdata->text, drawing_callbackdata->textlen + len + 1)) == NULL) {
+  if ((drawing_callbackdata->text = XML_Char_realloc(drawing_callbackdata->text, drawing_callbackdata->textlen + len + 1)) == NULL) {
     drawing_callbackdata->textlen = 0;
   } else {
     memcpy(drawing_callbackdata->text + drawing_callbackdata->textlen, buf, len);

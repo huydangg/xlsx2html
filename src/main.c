@@ -303,7 +303,7 @@ int load_worksheets(zip_t *zip) {
               free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
               free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->type);
               free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]);
-              array_sheets.sheets[i]->array_worksheet_rels.relationships = realloc(
+              array_sheets.sheets[i]->array_worksheet_rels.relationships = XML_Char_realloc(
                 array_sheets.sheets[i]->array_worksheet_rels.relationships,
                 (_tmp_length - 1) * sizeof(struct Relationship *)
 	      );
@@ -332,7 +332,7 @@ int load_worksheets(zip_t *zip) {
             free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->target);
             free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]->type);
             free(array_sheets.sheets[i]->array_worksheet_rels.relationships[_tmp_length - 1]);
-	    array_sheets.sheets[i]->array_worksheet_rels.relationships = realloc(
+	    array_sheets.sheets[i]->array_worksheet_rels.relationships = XML_Char_realloc(
               array_sheets.sheets[i]->array_worksheet_rels.relationships,
 	      (_tmp_length - 1) * sizeof(struct Relationship *)
 	    );
@@ -661,7 +661,7 @@ void pre_process(zip_t *zip) {
 	  char *BUTTON_HTML = NULL;
 	  if (index_sheet == 0) {
 	    int len_button_html = 1 + XML_Char_len(array_sheets.sheets[index_sheet]->name) + 87;
-	    BUTTON_HTML = realloc(BUTTON_HTML, len_button_html + 1);
+	    BUTTON_HTML = XML_Char_realloc(BUTTON_HTML, len_button_html + 1);
 	    snprintf(
               BUTTON_HTML, len_button_html + 1,
 	      "<button id=\"btn_%d\" style=\"font-weight:bold;\"onclick=\"handleButtonClick(event)\">%s</button>",
@@ -670,7 +670,7 @@ void pre_process(zip_t *zip) {
 	  } else {
 	    int len_index_sheet = snprintf(NULL, 0, "%d", index_sheet);
 	    int len_button_html = len_index_sheet + XML_Char_len(array_sheets.sheets[index_sheet]->name) + 62;
-	    BUTTON_HTML = realloc(BUTTON_HTML, len_button_html + 1);
+	    BUTTON_HTML = XML_Char_realloc(BUTTON_HTML, len_button_html + 1);
 	    snprintf(
               BUTTON_HTML , len_button_html + 1,
 	      "<button id=\"btn_%d\" onclick=\"handleButtonClick(event)\">%s</button>",

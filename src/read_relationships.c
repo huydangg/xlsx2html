@@ -10,7 +10,7 @@ void rels_start_element(void *callbackdata, const XML_Char *name, const XML_Char
   struct ArrayRelationships *array_rels_callbackdata = callbackdata;
   if (XML_Char_icmp(name, "Relationship") == 0) {
     array_rels_callbackdata->length++;
-    array_rels_callbackdata->relationships = realloc(
+    array_rels_callbackdata->relationships = XML_Char_realloc(
       array_rels_callbackdata->relationships,
       array_rels_callbackdata->length * sizeof(struct Relationship *)
     );

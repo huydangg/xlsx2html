@@ -276,7 +276,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
     XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
   } else if (XML_Char_icmp(name, "drawing") == 0) {
     worksheet_callbackdata->array_drawingids.length++;
-    worksheet_callbackdata->array_drawingids.drawing_ids = realloc(
+    worksheet_callbackdata->array_drawingids.drawing_ids = XML_Char_realloc(
       worksheet_callbackdata->array_drawingids.drawing_ids,
       worksheet_callbackdata->array_drawingids.length * sizeof(char *)
     );
@@ -325,7 +325,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     struct Col **_tmp_cols;
     worksheet_callbackdata->array_cols.length++;
     if (worksheet_callbackdata->array_cols.length > 1) {
-      _tmp_cols = realloc(worksheet_callbackdata->array_cols.cols, worksheet_callbackdata->array_cols.length * sizeof(struct Col *));
+      _tmp_cols = XML_Char_realloc(worksheet_callbackdata->array_cols.cols, worksheet_callbackdata->array_cols.length * sizeof(struct Col *));
       if (_tmp_cols) {
 	worksheet_callbackdata->array_cols.cols = _tmp_cols;
       } else {
@@ -506,13 +506,13 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     worksheet_callbackdata->type_content = NULL;
     for (int i = 0; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "r") == 0) {
-	worksheet_callbackdata->cell_name = realloc(worksheet_callbackdata->cell_name, 1 + XML_Char_len(attrs[i + 1]));
+	worksheet_callbackdata->cell_name = XML_Char_realloc(worksheet_callbackdata->cell_name, 1 + XML_Char_len(attrs[i + 1]));
         memcpy(worksheet_callbackdata->cell_name, attrs[i + 1], 1 + XML_Char_len(attrs[i + 1]));
         CURRENT_CELL_IN_NUMBER_BY_ROW = (unsigned int)get_col_nr(attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "s") == 0) {
         worksheet_callbackdata->index_style = (int)strtol(attrs[i + 1], NULL, 10);
       } else if (XML_Char_icmp(attrs[i], "t") == 0) {
-        worksheet_callbackdata->type_content = realloc(worksheet_callbackdata->type_content, 1 + XML_Char_len(attrs[i + 1]));
+        worksheet_callbackdata->type_content = XML_Char_realloc(worksheet_callbackdata->type_content, 1 + XML_Char_len(attrs[i + 1]));
 	memcpy(worksheet_callbackdata->type_content, attrs[i + 1], 1 + XML_Char_len(attrs[i + 1]));
       }
     }
@@ -552,10 +552,10 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyAlignment == '1') {
       if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal != NULL) {
 	int len_horizontal = XML_Char_len(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal);
-	horizontal = realloc(horizontal, 1 + len_horizontal);
+	horizontal = XML_Char_realloc(horizontal, 1 + len_horizontal);
 	memcpy(horizontal, array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.horizontal, 1 + len_horizontal);
 	int len_vertical = XML_Char_len(array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.vertical);
-	vertical = realloc(vertical, 1 + len_vertical);
+	vertical = XML_Char_realloc(vertical, 1 + len_vertical);
 	memcpy(vertical, array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.vertical, 1 + len_vertical);
 	wrapText = array_cellXfs.Xfs[worksheet_callbackdata->index_style].alignment.isWrapText;
       }
@@ -563,10 +563,10 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       int id_cellXfs = array_cellXfs.Xfs[worksheet_callbackdata->index_style].xfId;
       if (array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal != NULL) {
 	int len_horizontal = XML_Char_len(array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal);
-	horizontal = realloc(horizontal, 1 + len_horizontal);
+	horizontal = XML_Char_realloc(horizontal, 1 + len_horizontal);
 	memcpy(horizontal, array_cellStyleXfs.Xfs[id_cellXfs].alignment.horizontal, 1 + len_horizontal);
 	int len_vertical = XML_Char_len(array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical);
-	vertical = realloc(vertical, 1 + len_vertical);
+	vertical = XML_Char_realloc(vertical, 1 + len_vertical);
 	memcpy(vertical, array_cellStyleXfs.Xfs[id_cellXfs].alignment.vertical, 1 + len_vertical);
 	wrapText = array_cellStyleXfs.Xfs[id_cellXfs].alignment.isWrapText;
       }
@@ -574,15 +574,15 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     if (horizontal != NULL) {
       if (XML_Char_icmp(horizontal, "center") == 0) {
         //18: text-align:center;
-        horizontal_style = realloc(horizontal_style, 18 + 1);
+        horizontal_style = XML_Char_realloc(horizontal_style, 18 + 1);
         snprintf(horizontal_style, 18 + 1, "text-align:center;");
       } else if (XML_Char_icmp(horizontal, "general") == 0) {
         //16: text-align:left;
-        horizontal_style = realloc(horizontal_style, 16 + 1);
+        horizontal_style = XML_Char_realloc(horizontal_style, 16 + 1);
         snprintf(horizontal_style, 16 + 1, "text-align:left;");
       } else {
         //12: text-align:;
-        horizontal_style = realloc(horizontal_style, XML_Char_len(horizontal) + 12 + 1);
+        horizontal_style = XML_Char_realloc(horizontal_style, XML_Char_len(horizontal) + 12 + 1);
         snprintf(horizontal_style, XML_Char_len(horizontal) + 12 + 1, "text-align:%s;", horizontal);
       }
       free(horizontal);
@@ -590,22 +590,22 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     if (vertical != NULL) {
       if (XML_Char_icmp(vertical, "center") == 0) {
         //22: vertical-align:middle;
-        vertical_style = realloc(vertical_style, 22 + 1);
+        vertical_style = XML_Char_realloc(vertical_style, 22 + 1);
         snprintf(vertical_style, 22 + 1, "vertical-align:middle;");
       } else {
         //16: vertical-align:;
-        vertical_style = realloc(vertical_style, XML_Char_len(vertical) + 16 + 1);
+        vertical_style = XML_Char_realloc(vertical_style, XML_Char_len(vertical) + 16 + 1);
         snprintf(vertical_style, XML_Char_len(vertical) + 16 + 1, "vertical-align:%s;", vertical);
       }
       free(vertical);
     }
     if (wrapText == '1') {
       //19: white-space:normal;
-      wraptext_style = realloc(wraptext_style, 19 + 1);
+      wraptext_style = XML_Char_realloc(wraptext_style, 19 + 1);
       snprintf(wraptext_style, 19 + 1, "white-space:normal;");
     } else {
       //19: white-space:nowrap;
-      wraptext_style = realloc(wraptext_style, 19 + 1);
+      wraptext_style = XML_Char_realloc(wraptext_style, 19 + 1);
       snprintf(wraptext_style, 19 + 1, "white-space:nowrap;");
     }
     char *border_left = NULL;
@@ -622,43 +622,43 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     if (border_id != -1) {
       if (array_borders.borders[border_id].left.style != NULL) {
         //25: border-left-style:solid;
-        border_left = realloc(border_left, 25 + 1);
+        border_left = XML_Char_realloc(border_left, 25 + 1);
         snprintf(border_left, 25 + 1, "border-left-style:solid;");
         //TODO: If border_left == 'medium', then set border_width to 2px.
       } else {
-        border_left = realloc(border_left, 26 + 1);
+        border_left = XML_Char_realloc(border_left, 26 + 1);
         snprintf(border_left, 26 + 1, "border-left-style:hidden;");
       }
       if (array_borders.borders[border_id].right.style != NULL) {
         //26: border-right-style:solid;
-        border_right = realloc(border_right, 26 + 1);
+        border_right = XML_Char_realloc(border_right, 26 + 1);
         snprintf(border_right, 26 + 1, "border-right-style:solid;");
         //TODO: If border_right == 'medium', then set border_width to 2px.
       } else {
-        border_right = realloc(border_right, 27 + 1);
+        border_right = XML_Char_realloc(border_right, 27 + 1);
         snprintf(border_right, 27 + 1, "border-right-style:hidden;");
       }
       if (array_borders.borders[border_id].top.style != NULL) {
         //24: border-top-style:solid;
-        border_top = realloc(border_top, 24 + 1);
+        border_top = XML_Char_realloc(border_top, 24 + 1);
         snprintf(border_top, 24 + 1, "border-top-style:solid;");
         //TODO: If border_top == 'medium', then set border_width to 2px.
       } else {
-        border_top = realloc(border_top, 25 + 1);
+        border_top = XML_Char_realloc(border_top, 25 + 1);
         snprintf(border_top, 25 + 1, "border-top-style:hidden;");
       }
       if (array_borders.borders[border_id].bottom.style != NULL) {
         //27: border-bottom-style:solid;
-        border_bottom = realloc(border_bottom, 27 + 1);
+        border_bottom = XML_Char_realloc(border_bottom, 27 + 1);
         snprintf(border_bottom, 27 + 1, "border-bottom-style:solid;");
         //TODO: If border_bottom == 'medium', then set border_width to 2px.
       } else {
-        border_bottom = realloc(border_bottom, 28 + 1);
+        border_bottom = XML_Char_realloc(border_bottom, 28 + 1);
         snprintf(border_bottom, 28 + 1, "border-bottom-style:hidden;");
       }
     }
     int len_borders = XML_Char_len(border_left) + XML_Char_len(border_right) + XML_Char_len(border_top) + XML_Char_len(border_bottom);
-    border_style = realloc(border_style, len_borders + 1);
+    border_style = XML_Char_realloc(border_style, len_borders + 1);
     snprintf(border_style, len_borders + 1, "%s%s%s%s", border_left, border_right, border_top, border_bottom);
     free(border_left);
     free(border_right);
@@ -741,7 +741,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       if (array_fills.fills[fill_id].patternFill.fgColor.rgb != NULL) {
         // 18: "background-color:;"
 	LEN_FILL_FGCOLOR_RGB = 18 + XML_Char_len(array_fills.fills[fill_id].patternFill.fgColor.rgb);
-	fill_style = realloc(fill_style, LEN_FILL_FGCOLOR_RGB + 1);
+	fill_style = XML_Char_realloc(fill_style, LEN_FILL_FGCOLOR_RGB + 1);
         snprintf(fill_style, LEN_FILL_FGCOLOR_RGB + 1, "background-color:%s;", array_fills.fills[fill_id].patternFill.fgColor.rgb);
       } else {
 	fill_style = calloc(1, sizeof(char));
@@ -763,7 +763,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       }
 
       int len_styles = XML_Char_len(horizontal_style) + XML_Char_len(vertical_style) + XML_Char_len(wraptext_style) + XML_Char_len(border_style) + XML_Char_len(font_style) + LEN_FILL_FGCOLOR_RGB;
-      styles = realloc(styles, len_styles + 1);
+      styles = XML_Char_realloc(styles, len_styles + 1);
       snprintf(styles, len_styles + 1, "%s%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style, fill_style);
       free(horizontal_style);
       free(vertical_style);
@@ -777,7 +777,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       //24: <td id="" style=""></td>
       //1: _
       int len_td_tag = 24 + len_styles + len_cellname + len_index_sheet + 1;
-      TD_TAG = realloc(TD_TAG, len_td_tag + 1);
+      TD_TAG = XML_Char_realloc(TD_TAG, len_td_tag + 1);
       snprintf(TD_TAG, len_td_tag + 1, "<td id=\"%d_%s\" style=\"%s\">", INDEX_CURRENT_SHEET, worksheet_callbackdata->cell_name, styles);
       fputs(TD_TAG, worksheet_callbackdata->worksheet_file);
       fputs("\n", worksheet_callbackdata->worksheet_file);
@@ -898,7 +898,7 @@ void worksheet_content_handler(void *callbackdata, const XML_Char *buf, int len)
   //The character data handler may be called multiple times with partial character data for a single element. 
   struct WorkSheet *worksheet_callbackdata = callbackdata;
   if (worksheet_callbackdata->worksheet_content == NULL && worksheet_callbackdata->len_worksheet_content == 0) {
-    if ((worksheet_callbackdata->worksheet_content = realloc(worksheet_callbackdata->worksheet_content, len + 1)) == NULL) {
+    if ((worksheet_callbackdata->worksheet_content = XML_Char_realloc(worksheet_callbackdata->worksheet_content, len + 1)) == NULL) {
       return;
     }
     memcpy(worksheet_callbackdata->worksheet_content, buf, len);
@@ -906,7 +906,7 @@ void worksheet_content_handler(void *callbackdata, const XML_Char *buf, int len)
     worksheet_callbackdata->len_worksheet_content += len + 1;
   } else {
     int len_worksheet_content = worksheet_callbackdata->len_worksheet_content;
-    if ((worksheet_callbackdata->worksheet_content = realloc(worksheet_callbackdata->worksheet_content, len_worksheet_content + len)) == NULL) {
+    if ((worksheet_callbackdata->worksheet_content = XML_Char_realloc(worksheet_callbackdata->worksheet_content, len_worksheet_content + len)) == NULL) {
       return;
     }
     memcpy(worksheet_callbackdata->worksheet_content + len_worksheet_content - 1, buf, len);
