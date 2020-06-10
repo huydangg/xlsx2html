@@ -206,8 +206,8 @@ int load_worksheets(zip_t *zip) {
 
     for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_worksheet_rels.length; index_rels++) {
       for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
-        if (strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id, worksheet.array_drawingids.drawing_ids[index_drawingid]) == 0) {
-	  if (strcmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
+        if (XML_Char_icmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->id, worksheet.array_drawingids.drawing_ids[index_drawingid]) == 0) {
+	  if (XML_Char_icmp(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->type, TYPE_DRAWING) == 0) {
 	    //23: xl/drawings/_rels/<token>.rels
 	    int count = 0;
 	    char *_tmp_target = strdup(array_sheets.sheets[i]->array_worksheet_rels.relationships[index_rels]->target);
@@ -432,17 +432,17 @@ void pre_process(zip_t *zip) {
     } else if (line[0] == '#') {
       continue;
     } else if (line[0] == '@') {
-      if (strcmp(line, "@base.min.css\n") == 0) {
+      if (XML_Char_icmp(line, "@base.min.css\n") == 0) {
 	fputs("<style>", findexhtml);
         embed_css(findexhtml, BASE_CSS_PATH);
 	fputs("</style>", findexhtml);
-      } else if (strcmp(line, "@xlsxmagic.min.js\n") == 0) {
+      } else if (XML_Char_icmp(line, "@xlsxmagic.min.js\n") == 0) {
 	fputs("<script>", findexhtml);
         embed_js(findexhtml, BASE_JS_PATH);
 	fputs("</script>", findexhtml);
       }
     } else if (line[0] == '$') {
-      if (strcmp(line, "$tables\n") == 0) {
+      if (XML_Char_icmp(line, "$tables\n") == 0) {
 	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
 	  int len_index_sheet = snprintf(NULL, 0, "%d", index_sheet);
 	  int len_div_table = 102 + len_index_sheet + XML_Char_len(array_sheets.sheets[index_sheet]->name);
@@ -526,7 +526,6 @@ void pre_process(zip_t *zip) {
 	      "xl%s", 
 	      array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target + 2
 	    );
-
 	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->id);
 	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
 	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->type);
@@ -540,7 +539,7 @@ void pre_process(zip_t *zip) {
 
 	    for (int i_drawing_callback = 0; i_drawing_callback < drawing_callbackdata.array_chart_metadata.length; i_drawing_callback++) {
 	      for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
-		if (strcmp(
+		if (XML_Char_icmp(
                   drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id,
 		  array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->id
 		  ) == 0) {
@@ -587,7 +586,7 @@ void pre_process(zip_t *zip) {
 	  fputs("</div>", findexhtml);
 	  fputs("\n", findexhtml);
         }
-      } else if (strcmp(line, "$buttons\n") == 0) {
+      } else if (XML_Char_icmp(line, "$buttons\n") == 0) {
         //<button id="btn-Form Responses 1">Form Responses 1</button>
 	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
 	  char *BUTTON_HTML = NULL;
@@ -638,6 +637,7 @@ void post_process() {
 }
 
 int main(int argc, char **argv) {
+  debug_print("%s\n", XLSXMAGIC_FULLNAME);
   int c;
   int digit_optind = 0;
   char has_origin_file_path = '0';
