@@ -226,7 +226,7 @@ int load_worksheets(zip_t *zip) {
 	    }
 	    free(zip_drawing_rels_file_name);
 	    free(_tmp_target);
-	    goto SKIP_REMOVE;
+	    break;
 	  } else {
             int _tmp_length = array_sheets.sheets[i]->array_worksheet_rels.length;
             if (index_rels < _tmp_length - 1) {
@@ -247,7 +247,7 @@ int load_worksheets(zip_t *zip) {
 	      );
 	    }
             array_sheets.sheets[i]->array_worksheet_rels.length--;
-            goto SKIP_REMOVE;
+	    break;
 	  }
         }
         if (index_drawingid == worksheet.array_drawingids.length - 1) {
@@ -276,9 +276,6 @@ int load_worksheets(zip_t *zip) {
           array_sheets.sheets[i]->array_worksheet_rels.length--;
         }
       }
-
-SKIP_REMOVE:
-      continue;
     }
 
     for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
