@@ -12,13 +12,11 @@
 #include <errno.h>
 
 
-unsigned int NUM_OF_CELLS;
 unsigned int START_CELL_IN_NUMBER_BY_ROW; //default is 1
 unsigned int CURRENT_CELL_IN_NUMBER_BY_ROW;
 unsigned int CURRENT_CHUNK = 0;
-unsigned short NUM_OF_CHUNKS;
-unsigned int COUNT_CELLS = 0;
 unsigned short INDEX_CURRENT_SHEET;
+unsigned long CURRENT_SIZE_IN_CHUNK = 0;
 
 
 void reversed(char *input) {
@@ -120,7 +118,6 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
   free(THE_FIRST_CHUNK_PATH);
   fputs("<tr>", fchunk0);
   fputs("<th style=\"width:35px;height:15px;\"></th>", fchunk0);
-  fputs("\n", fchunk0);
   for (int i = 1; i <= end_col_number; i++) {
     char TH_STRING[256];
     for (int index_col = 0; index_col < array_cols.length; index_col++) {
@@ -165,14 +162,13 @@ void generate_cells(void *callbackdata, const XML_Char *name) {
 	worksheet_callbackdata->ROW_NUMBER
       );
       fputs(td, worksheet_callbackdata->worksheet_file);
-      fputs("\n", worksheet_callbackdata->worksheet_file);
       free(col_name);
       free(td);
-      COUNT_CELLS++;
     }
 
     fputs("</tr>", worksheet_callbackdata->worksheet_file);
-    fputs("\n", worksheet_callbackdata->worksheet_file);
+    if (ftell(worksheet_callbackdata->worksheet_file) >= CHUNK_SIZE_LIMIT)
+      CURRENT_CHUNK++;
   }
   XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
 }
@@ -220,11 +216,6 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
         worksheet_callbackdata->end_row = _tmp_end_row;
 	worksheet_callbackdata->end_col = _tmp_end_col;
 	worksheet_callbackdata->end_col_number = column_name_to_number(_tmp_end_col);
-	NUM_OF_CELLS = XML_Char_tol(_tmp_end_row) * worksheet_callbackdata->end_col_number;
-	NUM_OF_CHUNKS = NUM_OF_CELLS / CHUNK_SIZE_LIMIT;
-	if (NUM_OF_CELLS % CHUNK_SIZE_LIMIT != 0) {
-          NUM_OF_CHUNKS += 1;
-	}
 	break;
       }
     }
@@ -294,6 +285,7 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
   if (XML_Char_icmp(name, "sheetData") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     fclose(worksheet_callbackdata->worksheet_file);
+    printf("%d | %ld \n", INDEX_CURRENT_SHEET, CURRENT_SIZE_IN_CHUNK);
   } else if (XML_Char_icmp(name, "cols") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     int  status = generate_columns(worksheet_callbackdata->array_cols, worksheet_callbackdata->end_col_number, INDEX_CURRENT_SHEET);
@@ -374,12 +366,10 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
       snprintf(TR_TAG, LEN_TR_TAG, "<tr id=\"%d\">", pre_row_number);
       fputs(TR_TAG, worksheet_callbackdata->worksheet_file);
       free(TR_TAG);
-      fputs("\n", worksheet_callbackdata->worksheet_file);
       int LEN_TH_TAG = 20 + len_pre_row_number;
       char TH_TAG[LEN_TH_TAG];
       snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"\">%d</th>", pre_row_number);
       fputs(TH_TAG, worksheet_callbackdata->worksheet_file);
-      fputs("\n", worksheet_callbackdata->worksheet_file);
 
       int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
       for (int i = 1; i <= worksheet_callbackdata->end_col_number; i++) {
@@ -396,13 +386,12 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	  pre_row_number
 	);
 	fputs(td, worksheet_callbackdata->worksheet_file);
-	fputs("\n", worksheet_callbackdata->worksheet_file);
 	free(col_name);
 	free(td);
-	COUNT_CELLS++;
       }
       fputs("</tr>", worksheet_callbackdata->worksheet_file);
-      fputs("\n", worksheet_callbackdata->worksheet_file);
+      if (ftell(worksheet_callbackdata->worksheet_file) >= CHUNK_SIZE_LIMIT)
+	CURRENT_CHUNK++;
       pre_row_number++;
     }
     int LEN_TR_TAG = 11 + len_row_number;
@@ -410,14 +399,12 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     snprintf(TR_TAG, LEN_TR_TAG, "<tr id=\"%d\">", worksheet_callbackdata->ROW_NUMBER);
     fputs(TR_TAG, worksheet_callbackdata->worksheet_file);
     free(TR_TAG);
-    fputs("\n", worksheet_callbackdata->worksheet_file);
     int len_row_height_in_px = snprintf(NULL, 0, "%.2f", row_height_in_px);
 
     int LEN_TH_TAG = 29 + len_row_height_in_px + len_row_number;
     char TH_TAG[LEN_TH_TAG];
     snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%.2fpx;\">%d</th>", row_height_in_px, worksheet_callbackdata->ROW_NUMBER);
     fputs(TH_TAG, worksheet_callbackdata->worksheet_file);
-    fputs("\n", worksheet_callbackdata->worksheet_file);
     START_CELL_IN_NUMBER_BY_ROW = 1;
     XML_SetElementHandler(xmlparser, cell_start_element, generate_cells);
   } else if (XML_Char_icmp(name, "mergeCell") == 0) {
@@ -482,15 +469,14 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
 	worksheet_callbackdata->ROW_NUMBER
       );
       fputs(td, worksheet_callbackdata->worksheet_file);
-      fputs("\n", worksheet_callbackdata->worksheet_file);
       free(col_name);
       free(td);
       START_CELL_IN_NUMBER_BY_ROW++;
-      COUNT_CELLS++;
     }
 
     fputs("</tr>", worksheet_callbackdata->worksheet_file);
-    fputs("\n", worksheet_callbackdata->worksheet_file);
+    if (ftell(worksheet_callbackdata->worksheet_file) >= CHUNK_SIZE_LIMIT)
+      CURRENT_CHUNK++;
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
   } else if (XML_Char_icmp(name, "mergeCell") == 0) {
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
@@ -531,12 +517,9 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
         worksheet_callbackdata->ROW_NUMBER
       );
       fputs(td, worksheet_callbackdata->worksheet_file);
-      fputs("\n", worksheet_callbackdata->worksheet_file);
       free(col_name);
       free(td);
-
       START_CELL_IN_NUMBER_BY_ROW++;
-      COUNT_CELLS++;
     }
     char *styles = NULL;
     char *horizontal_style = NULL;
@@ -779,9 +762,7 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       TD_TAG = XML_Char_realloc(TD_TAG, len_td_tag + 1);
       snprintf(TD_TAG, len_td_tag + 1, "<td id=\"%d_%s\" style=\"%s\">", INDEX_CURRENT_SHEET, worksheet_callbackdata->cell_name, styles);
       fputs(TD_TAG, worksheet_callbackdata->worksheet_file);
-      fputs("\n", worksheet_callbackdata->worksheet_file);
       START_CELL_IN_NUMBER_BY_ROW++;
-      COUNT_CELLS++;
       free(styles);
       free(TD_TAG);
       XML_SetElementHandler(xmlparser, cell_item_start_element, cell_end_element);
@@ -793,7 +774,6 @@ void cell_end_element(void *callbackdata, const XML_Char *name) {
   if (XML_Char_icmp(name, "c") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     fputs("</td>", worksheet_callbackdata->worksheet_file);
-    fputs("\n", worksheet_callbackdata->worksheet_file);
     free(worksheet_callbackdata->cell_name);
     worksheet_callbackdata->cell_name = NULL;
     if (worksheet_callbackdata->type_content != NULL) {
@@ -871,12 +851,10 @@ void cell_item_end_element(void *callbackdata, const XML_Char *name) {
 	}  
 	fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
 	fputs("</span>", worksheet_callbackdata->worksheet_file);
-	fputs("\n", worksheet_callbackdata->worksheet_file);
       } else {
         fputs("<span>", worksheet_callbackdata->worksheet_file);
         fputs(worksheet_callbackdata->worksheet_content, worksheet_callbackdata->worksheet_file);
         fputs("</span>", worksheet_callbackdata->worksheet_file);
-        fputs("\n", worksheet_callbackdata->worksheet_file);
       }
       free(worksheet_callbackdata->worksheet_content);
       worksheet_callbackdata->worksheet_content = NULL;
