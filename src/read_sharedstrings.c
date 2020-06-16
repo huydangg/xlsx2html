@@ -46,7 +46,7 @@ void sharedStrings_main_start_element(void *callbackdata, const XML_Char *name, 
   if (XML_Char_icmp(name, "sst") == 0) {
     for (int i = 0; attrs[i]; i += 2) {
       if (XML_Char_icmp(attrs[i], "uniqueCount") == 0) {
-	sharedStrings_position.positions = XML_Char_malloc((int)XML_Char_tol(attrs[i + 1]) * sizeof(long int));
+	sharedStrings_position.positions = XML_Char_malloc((int)XML_Char_tol(attrs[i + 1]) * sizeof(long));
 	current_index = -1;
       }
     }
@@ -91,7 +91,7 @@ void sharedStrings_lv2_start_element(void *callbackdata, const XML_Char *name, c
       snprintf(font_name, LEN_FONT_NAME, "font-family:%s;", font.name);
       font_style = strdup(font_name); 
       free(font.name);
-      if (font.sz != 0.0) {
+      if (font.sz != 0.0f) {
 	// 13: "font-size:px;" + 1: '\0' = 14
         const int LEN_FONT_SIZE = snprintf(NULL, 0, "%.2f", font.sz) + 14;
 	char font_size[LEN_FONT_SIZE];

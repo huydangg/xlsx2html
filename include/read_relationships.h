@@ -10,7 +10,7 @@ struct Relationship {
 };
 
 struct ArrayRelationships {
-  unsigned short int length;
+  unsigned short length;
   struct Relationship **relationships;
 };
 

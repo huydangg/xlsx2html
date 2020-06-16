@@ -343,11 +343,11 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
       if (XML_Char_icmp(attrs[i], "hidden") == 0) {
         worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->isHidden = XML_Char_icmp(attrs[i + 1], "true") == 0 ? '1' : '0'; 
       } else if (XML_Char_icmp(attrs[i], "min") == 0) {
-	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->min = (unsigned short int)XML_Char_tol((char *)attrs[i + 1]);
+	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->min = (unsigned short)XML_Char_tol((char *)attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "max") == 0) {
 	if (worksheet_callbackdata->has_dimension != '1')
-	  worksheet_callbackdata->end_col_number = (unsigned short int)XML_Char_tol((char *)attrs[i + 1]);
-	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->max = (unsigned short int)XML_Char_tol((char *)attrs[i + 1]);
+	  worksheet_callbackdata->end_col_number = (unsigned short)XML_Char_tol((char *)attrs[i + 1]);
+	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->max = (unsigned short)XML_Char_tol((char *)attrs[i + 1]);
       } else if (XML_Char_icmp(attrs[i], "width") == 0) {
 	worksheet_callbackdata->array_cols.cols[worksheet_callbackdata->array_cols.length - 1]->width = strtof((char *)attrs[i + 1], NULL);
       }

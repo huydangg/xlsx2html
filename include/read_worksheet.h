@@ -5,20 +5,20 @@
 #include <stdio.h>
 
 struct Col {
-  unsigned short int min;
-  unsigned short int max;
+  unsigned short min;
+  unsigned short max;
   float width;
   char isHidden;
 };
 
 struct ArrayCols {
-  unsigned short int length;
+  unsigned short length;
   struct Col **cols;
 };
 
 
 struct ArrayDrawingIds {
-  unsigned short int length;
+  unsigned short length;
   char **drawing_ids;
 };
 
@@ -41,12 +41,10 @@ struct WorkSheet {
   FILE *fmergecell;
   unsigned short ROW_NUMBER; // Temp current row
   char has_dimension;
-  unsigned num_of_chunks;
+  unsigned short num_of_chunks;
 };
 
 extern XML_Parser xmlparser;
-extern unsigned short NUM_OF_CHUNKS;
-extern unsigned int NUM_OF_CELLS;
 struct WorkSheet;
 
 void worksheet_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);

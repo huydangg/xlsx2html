@@ -8,8 +8,8 @@
 extern XML_Parser xmlparser;
 struct Font new_font();
 struct SharedStringsPosition {
-  long int *positions;
-  int length;
+  long *positions;
+  unsigned short length;
 };
 extern struct SharedStringsPosition sharedStrings_position;
 

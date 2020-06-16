@@ -106,8 +106,6 @@ void drawings_start_element(void *callbackdata, const XML_Char *name, const XML_
 void drawings_end_element(void *callbackdata, const XML_Char *name) {
   struct DrawingCallbackData *drawing_callbackdata = callbackdata;
   if (XML_Char_icmp(name,"xdr:twoCellAnchor") == 0) {
-    //TODO: Record image html syntax with data from rels drawings to findexhtml
-    //At last, free twocellanchor obj
     char *drawing_id = NULL; 
     if (drawing_callbackdata->is_pic == '1') {
       drawing_id = strdup(drawing_callbackdata->twocellanchor.pic.blip_embed);

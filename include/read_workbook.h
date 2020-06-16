@@ -15,7 +15,7 @@ struct Sheet {
 };
 
 struct ArraySheets {
-  unsigned short int length;
+  unsigned short length;
   struct Sheet **sheets;
 };
 
