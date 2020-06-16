@@ -195,6 +195,7 @@ int load_worksheets(zip_t *zip) {
     worksheet.hasMergedCells = '0';
     worksheet.array_drawingids.length = 0;
     worksheet.array_drawingids.drawing_ids = NULL;
+    worksheet.num_of_chunks = 1;
 
     int status_worksheet = process_zip_file(archive, &worksheet, NULL, worksheet_start_element, worksheet_end_element);
     if (status_worksheet != 1){
@@ -203,6 +204,7 @@ int load_worksheets(zip_t *zip) {
     array_sheets.sheets[i]->hasMergedCells = worksheet.hasMergedCells;
     array_sheets.sheets[i]->array_drawing_rels.length = 0;
     array_sheets.sheets[i]->array_drawing_rels.relationships = NULL;
+    array_sheets.sheets[i]->num_of_chunks = worksheet.num_of_chunks;
 
     for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_worksheet_rels.length; index_rels++) {
       for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
@@ -442,17 +444,19 @@ void pre_process(zip_t *zip) {
       if (XML_Char_icmp(line, "$tables\n") == 0) {
 	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
 	  int len_index_sheet = snprintf(NULL, 0, "%d", index_sheet);
-	  int len_div_table = 102 + len_index_sheet + XML_Char_len(array_sheets.sheets[index_sheet]->name);
+	  int len_num_of_chunks = snprintf(NULL, 0, "%d", array_sheets.sheets[index_sheet]->num_of_chunks + 1);
+	  int len_div_table = 124 + len_index_sheet + XML_Char_len(array_sheets.sheets[index_sheet]->name) + len_num_of_chunks;
 	  char *DIV_TABLE = XML_Char_malloc(len_div_table + 1);
 	  snprintf(
             DIV_TABLE, len_div_table + 1,
-            "<div id=\"sheet_%d\" name=\"%s\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display:none;\">",
-	    index_sheet, array_sheets.sheets[index_sheet]->name
+            "<div id=\"sheet_%d\" name=\"%s\" data-num-of-chunks=\"%d\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display:none;\">",
+	    index_sheet, array_sheets.sheets[index_sheet]->name,
+	    array_sheets.sheets[index_sheet]->num_of_chunks + 1
 	  );
           fputs(DIV_TABLE, findexhtml);
 	  free(DIV_TABLE);
 	  fputs("\n", findexhtml);
-	  for (int index_chunk = 0; index_chunk < 2; index_chunk++) {
+	  for (int index_chunk = 0; index_chunk <= array_sheets.sheets[index_sheet]->num_of_chunks; index_chunk++) {
 	    //7: chunk_%d_%d
 	    int len_chunk_html_file_name = snprintf(NULL, 0, "%d", index_chunk) + len_index_sheet + 7;
 	    char *CHUNK_HTML_FILE_NAME = XML_Char_malloc(len_chunk_html_file_name + 1);

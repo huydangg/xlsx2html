@@ -1,1 +1,1 @@
-# define CHUNK_SIZE_LIMIT 0x2710 // 10000 bytes
+# define CHUNK_SIZE_LIMIT 0x61A80 // 400000 bytes

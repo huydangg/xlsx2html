@@ -9,6 +9,7 @@ struct Sheet {
   XML_Char *path_name;
   char isHidden;
   char hasMergedCells;
+  unsigned short num_of_chunks;
   struct ArrayRelationships array_worksheet_rels;
   struct ArrayRelationships array_drawing_rels;
 };

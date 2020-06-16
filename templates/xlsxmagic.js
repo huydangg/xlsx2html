@@ -6,6 +6,7 @@ var currentSheetEle = null
 var currentTableChunkEle = null
 var currentTheadChunkEle = null
 var currentTbodyChunkEle = null
+var numOfChunksCurrentSheet = 0
 google['charts'].load('current', {'packages':['corechart']})
 const zip = (...arrs) => {
   return arrs[0].map((val, i) => (arrs.slice(1)).reduce((a, arr) => [...a, arr[i]], [val]));
@@ -106,7 +107,7 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
   var isDone = false
   var htmlFileName = "chunk_" + indexCurrentSheet + "_" + indexCurrentChunk
   var currentDivChunkEle = document.getElementById(htmlFileName)
-  if (currentDivChunkEle === null) {
+  if (currentDivChunkEle === null || indexCurrentChunk >= numOfChunksCurrentSheet) {
     return
   }
   var URL_HTML_CHUNK = currentDivChunkEle.getAttribute('data-chunk-url')
@@ -115,8 +116,8 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
       startTime = new Date().getTime()
       if (indexCurrentChunk === 0) {
 	currentTheadChunkEle.innerHTML = data
-      } else if (indexCurrentChunk == 1) {
-	currentTbodyChunkEle.innerHTML = data
+      } else {
+	currentTbodyChunkEle.innerHTML += data
         loadImg(indexCurrentSheet)
         google['charts']['setOnLoadCallback'](function(){loadChart(indexCurrentSheet, 0, new Date().getTime())})
       }
@@ -234,17 +235,25 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
       if (!cell) {
         return
       }
-      var colOff = divChartMetaData.getAttribute('data-from-coloff')
-      var rowOff = divChartMetaData.getAttribute('data-from-rowoff')
-      var reactCell = getOffset(cell)
-      var divChart = document.createElement('div')
-      divChart.id = indexCurrentSheet + '-' + indexChart
-      divChart.style.position = 'absolute'
-      divChart.style.top = reactCell.top + parseInt(rowOff, 10) + 'px'
-      divChart.style.left = reactCell.left + parseInt(colOff, 10) + 'px'
-      divChart.style.width = parseInt(width, 10) + 'px'
-      divChart.style.height = parseInt(height, 10) + 'px'
-      currentSheetEle.appendChild(divChart)
+      if (data['charts'][0]['type'] === 'barChart'
+	|| data['charts'][0]['type'] === 'bar3DChart'
+        || data['charts'][0]['type'] === 'lineChart'
+        || data['charts'][0]['type'] === 'pieChart'
+        || data['charts'][0]['type'] === 'pie3dChart'
+        || data['charts'][0]['type'] === 'areaChart'
+        || data['charts'][0]['type'] === 'area3DChart') {
+	      var colOff = divChartMetaData.getAttribute('data-from-coloff')
+	      var rowOff = divChartMetaData.getAttribute('data-from-rowoff')
+	      var reactCell = getOffset(cell)
+	      var divChart = document.createElement('div')
+	      divChart.id = indexCurrentSheet + '-' + indexChart
+	      divChart.style.position = 'absolute'
+	      divChart.style.top = reactCell.top + parseInt(rowOff, 10) + 'px'
+	      divChart.style.left = reactCell.left + parseInt(colOff, 10) + 'px'
+	      divChart.style.width = parseInt(width, 10) + 'px'
+	      divChart.style.height = parseInt(height, 10) + 'px'
+	      currentSheetEle.appendChild(divChart)
+      }
 
       var data_table = [];
       var options = {
@@ -461,6 +470,7 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 }
 function Viewer() {
   currentSheetEle = document.getElementById('sheet_' + indexCurrentSheet)
+  numOfChunksCurrentSheet = currentSheetEle.getAttribute('data-num-of-chunks')
   currentSheetEle.style.removeProperty("display")
   if (!document.getElementById('tb_' + indexCurrentSheet)) {
     currentTableChunkEle = currentSheetEle.appendChild(document.createElement('table'))

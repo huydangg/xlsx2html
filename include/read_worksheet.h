@@ -41,6 +41,7 @@ struct WorkSheet {
   FILE *fmergecell;
   unsigned short ROW_NUMBER; // Temp current row
   char has_dimension;
+  unsigned num_of_chunks;
 };
 
 extern XML_Parser xmlparser;
