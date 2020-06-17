@@ -445,11 +445,11 @@ void pre_process(zip_t *zip) {
 	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
 	  int len_index_sheet = snprintf(NULL, 0, "%d", index_sheet);
 	  int len_num_of_chunks = snprintf(NULL, 0, "%d", array_sheets.sheets[index_sheet]->num_of_chunks + 1);
-	  int len_div_table = 124 + len_index_sheet + XML_Char_len(array_sheets.sheets[index_sheet]->name) + len_num_of_chunks;
+	  int len_div_table = 47 + len_index_sheet + XML_Char_len(array_sheets.sheets[index_sheet]->name) + len_num_of_chunks;
 	  char *DIV_TABLE = XML_Char_malloc(len_div_table + 1);
 	  snprintf(
             DIV_TABLE, len_div_table + 1,
-            "<div id=\"sheet_%d\" name=\"%s\" data-num-of-chunks=\"%d\" style=\"position:relative;overflow:auto;width:100%%;height:95vh;display:none;\">",
+            "<div id=\"sheet_%d\" name=\"%s\" data-num-of-chunks=\"%d\">",
 	    index_sheet, array_sheets.sheets[index_sheet]->name,
 	    array_sheets.sheets[index_sheet]->num_of_chunks + 1
 	  );

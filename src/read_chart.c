@@ -282,7 +282,6 @@ void chart_barChart_item_start_element(void *callbackdata, const XML_Char *name,
          chart_callbackdata->has_tx = '0';
        if (chart_callbackdata->has_f == '1')
          chart_callbackdata->has_f = '0';
-
     }
     chart_callbackdata->has_cat = '1';
     fputs("\"cat\": [", chart_callbackdata->fchart);

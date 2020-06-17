@@ -32,6 +32,9 @@ p {
   width: 100%;
   overflow: auto;
 }
+div[id^="sheet_"]{
+  position:relative;overflow:auto;width:100%;height:95vh;display:none
+}
 @media print {
   div {
     overflow:initial !important

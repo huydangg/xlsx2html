@@ -471,7 +471,7 @@ function loadChart(indexCurrentSheet, indexChart, startTime) {
 function Viewer() {
   currentSheetEle = document.getElementById('sheet_' + indexCurrentSheet)
   numOfChunksCurrentSheet = currentSheetEle.getAttribute('data-num-of-chunks')
-  currentSheetEle.style.removeProperty("display")
+  currentSheetEle.style.display = 'block'
   if (!document.getElementById('tb_' + indexCurrentSheet)) {
     currentTableChunkEle = currentSheetEle.appendChild(document.createElement('table'))
     currentTableChunkEle.id = "tb_" + indexCurrentSheet
