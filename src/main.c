@@ -814,7 +814,7 @@ int main(int argc, char **argv) {
   }
   int status_sharedStrings = load_sharedStrings(zip);
   if (status_sharedStrings != 1) {
-    debug_print("%s\n", strerror(errno));
+    debug_print("WARNING: load_sharedStrings with status is %d\n", status_sharedStrings);
     destroy_styles();
     destroy_workbook();
     goto LOAD_RESOURCES_FAILED;
