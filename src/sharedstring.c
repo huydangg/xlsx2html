@@ -1,5 +1,5 @@
 #include <private.h>
-#include <read_sharedstrings.h>
+#include <sharedstring.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>

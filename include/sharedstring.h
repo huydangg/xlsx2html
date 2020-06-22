@@ -1,5 +1,5 @@
-#ifndef INCLUDED_READ_SHAREDSTRINGS_H
-#define INCLUDED_READ_SHAREDSTRINGS_H
+#ifndef INCLUDED_SHAREDSTRING_H
+#define INCLUDED_SHAREDSTRING_H
 
 #include <expat.h>
 //Mapping index with position.

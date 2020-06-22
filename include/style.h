@@ -1,5 +1,5 @@
-#ifndef INCLUDED_STYLES_H
-#define INCLUDED_STYLES_H
+#ifndef INCLUDED_STYLE_H
+#define INCLUDED_STYLE_H
 
 #include <private.h>
 
@@ -13,8 +13,6 @@ struct ArrayNumFMTs {
   unsigned short length;
   struct NumFMT *numfmts;
 };
-
-
 
 struct ArrayFonts {
   unsigned short length;

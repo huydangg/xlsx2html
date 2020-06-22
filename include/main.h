@@ -1,10 +1,10 @@
-#include <read_styles.h>
-#include <read_worksheet.h>
-#include <read_workbook.h>
-#include <read_sharedstrings.h>
-#include <read_relationships.h>
-#include <read_drawings.h>
-#include <read_chart.h>
+#include <style.h>
+#include <sheet.h>
+#include <book.h>
+#include <sharedstring.h>
+#include <relationship.h>
+#include <drawing.h>
+#include <chart.h>
 
 #define PARSE_BUFFER_SIZE 256
 

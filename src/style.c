@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <read_styles.h>
+#include <style.h>
 #include <errno.h>
 
 struct ArrayNumFMTs array_numfmts;

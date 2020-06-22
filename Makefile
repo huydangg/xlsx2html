@@ -1,5 +1,5 @@
 # The name of the source files
-SOURCES =  src/main.c src/read_styles.c src/read_worksheet.c src/read_workbook.c src/read_sharedstrings.c src/read_relationships.c src/read_drawings.c src/read_chart.c
+SOURCES =  src/main.c src/style.c src/sheet.c src/book.c src/sharedstring.c src/relationship.c src/drawing.c src/chart.c
 
 # The name of the executable
 EXE = result
@@ -51,13 +51,13 @@ clean:
 	-rm -f $(MAKE_FILE_DIR)/templates/*.min.css # Remove the templates files
 # Finally we need to tell "make" what source and header file each object file depends on
 src/main.o: src/main.c include/main.h 
-src/read_styles.o: src/read_styles.c include/read_styles.h 
-src/read_worksheet.o: src/read_worksheet.c include/read_worksheet.h
-src/read_workbook.o: src/read_workbook.c include/read_workbook.h
-src/read_sharedstrings.o: src/read_sharedstrings.c include/read_sharedstrings.h
-src/read_relationships.o: src/read_relationships.c include/read_relationships.h
-src/read_drawings.o: src/read_drawings.c include/read_drawings.h
-src/read_chart.o: src/read_chart.c include/read_chart.h
+src/style.o: src/style.c include/style.h 
+src/sheet.o: src/sheet.c include/sheet.h
+src/book.o: src/book.c include/book.h
+src/sharedstring.o: src/sharedstring.c include/sharedstring.h
+src/relationship.o: src/relationship.c include/relationship.h
+src/drawing.o: src/drawing.c include/drawing.h
+src/chart.o: src/chart.c include/chart.h
 include/private.o: include/private.h
 include/const.o: include/const.h
 include/version.o: include/version.h

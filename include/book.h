@@ -1,7 +1,7 @@
-#ifndef INCLUDED_READ_WORKBOOK_H
-#define INCLUDED_READ_WORKBOOK_H
+#ifndef INCLUDED_BOOK_H
+#define INCLUDED_BOOK_H
 
-#include <read_relationships.h>
+#include <relationship.h>
 
 struct Sheet {
   XML_Char *name;

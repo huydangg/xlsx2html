@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <read_relationships.h>
+#include <relationship.h>
 #include <errno.h>
 
 

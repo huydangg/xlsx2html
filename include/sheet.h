@@ -1,5 +1,5 @@
-#ifndef INCLUDED_READ_WORKSHEET_H
-#define INCLUDED_READ_WORKSHEET_H
+#ifndef INCLUDED_SHEET_H
+#define INCLUDED_SHEET_H
 
 #include <expat.h>
 #include <stdio.h>

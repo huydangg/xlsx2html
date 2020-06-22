@@ -1,5 +1,5 @@
-#ifndef INCLUDED_READ_CHART_H
-#define INCLUDED_READ_CHART_H
+#ifndef INCLUDED_CHART_H
+#define INCLUDED_CHART_H
 
 #include <expat.h>
 #include <stdio.h>

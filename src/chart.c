@@ -1,5 +1,5 @@
 #include <private.h>
-#include <read_chart.h>
+#include <chart.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>

@@ -3,12 +3,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <read_worksheet.h>
+#include <sheet.h>
 #include <const.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <read_styles.h>
-#include <read_sharedstrings.h>
+#include <style.h>
+#include <sharedstring.h>
 #include <errno.h>
 
 
