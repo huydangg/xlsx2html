@@ -441,7 +441,11 @@ void pre_process(zip_t *zip) {
 	fputs("</script>", findexhtml);
       }
     } else if (line[0] == '$') {
-      if (XML_Char_icmp(line, "$tables\n") == 0) {
+      if (XML_Char_icmp(line, "$version\n") == 0) {
+	fputs("<title>", findexhtml);
+	fputs(XLSXMAGIC_FULLNAME, findexhtml);
+	fputs("</title>", findexhtml);
+      } else if (XML_Char_icmp(line, "$tables\n") == 0) {
 	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
 	  int len_index_sheet = snprintf(NULL, 0, "%d", index_sheet);
 	  int len_num_of_chunks = snprintf(NULL, 0, "%d", array_sheets.sheets[index_sheet]->num_of_chunks + 1);

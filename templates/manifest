@@ -20,7 +20,8 @@
 
 @xlsxmagic.min.js
 
-<title>Document</title>
+$version
+
 </head>
 
 <body style="overflow: auto; height: 100vh">
