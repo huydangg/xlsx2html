@@ -7,6 +7,7 @@ var currentTableChunkEle = null
 var currentTheadChunkEle = null
 var currentTbodyChunkEle = null
 var numOfChunksCurrentSheet = 0
+var _tmp_data = ''
 google['charts'].load('current', {'packages':['corechart']})
 const zip = (...arrs) => {
   return arrs[0].map((val, i) => (arrs.slice(1)).reduce((a, arr) => [...a, arr[i]], [val]));
@@ -108,6 +109,8 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
   var htmlFileName = "chunk_" + indexCurrentSheet + "_" + indexCurrentChunk
   var currentDivChunkEle = document.getElementById(htmlFileName)
   if (currentDivChunkEle === null || indexCurrentChunk >= numOfChunksCurrentSheet) {
+    currentTbodyChunkEle.innerHTML += _tmp_data
+    _tmp_data = ''
     return
   }
   var URL_HTML_CHUNK = currentDivChunkEle.getAttribute('data-chunk-url')
@@ -117,9 +120,7 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
       if (indexCurrentChunk === 0) {
 	currentTheadChunkEle.innerHTML = data
       } else {
-	currentTbodyChunkEle.innerHTML += data
-        loadImg(indexCurrentSheet)
-        google['charts']['setOnLoadCallback'](function(){loadChart(indexCurrentSheet, 0, new Date().getTime())})
+	_tmp_data += data
       }
       indexCurrentChunk++
       loadChunks(indexCurrentSheet, indexCurrentChunk, startTime)
@@ -143,6 +144,8 @@ function loadChunks(indexCurrentSheet, indexCurrentChunk, startTime) {
        }
      })
   if (isFailed || isDone) {
+    currentTbodyChunkEle.innerHTML += _tmp_data
+    _tmp_data = ''
     return;
   }
 }
@@ -483,6 +486,8 @@ function Viewer() {
     if (mergedCellsData) {
       applyMergedCells(mergedCellsData)
     }
+    loadImg(indexCurrentSheet)
+    google['charts']['setOnLoadCallback'](function(){loadChart(indexCurrentSheet, 0, new Date().getTime())})
   }
 }
 function handleButtonClick(event) {
