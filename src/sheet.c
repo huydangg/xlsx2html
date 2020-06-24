@@ -176,6 +176,8 @@ void generate_cells(void *callbackdata, const XML_Char *name) {
       char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
       snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, worksheet_callbackdata->num_of_chunks);
       free(CHUNKS_DIR_PATH);
+      if (worksheet_callbackdata->worksheet_file != NULL)
+	fclose(worksheet_callbackdata->worksheet_file);
       worksheet_callbackdata->worksheet_file = fopen(CHUNK_FILE_PATH, "w");
       if (worksheet_callbackdata->worksheet_file == NULL) {
 	debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);
@@ -412,6 +414,8 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
 	snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, worksheet_callbackdata->num_of_chunks);
 	free(CHUNKS_DIR_PATH);
+	if (worksheet_callbackdata->worksheet_file != NULL)
+	  fclose(worksheet_callbackdata->worksheet_file);
 	worksheet_callbackdata->worksheet_file = fopen(CHUNK_FILE_PATH, "w");
 	if (worksheet_callbackdata->worksheet_file == NULL) {
 	  debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);
@@ -512,6 +516,9 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
       char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
       snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, worksheet_callbackdata->num_of_chunks);
       free(CHUNKS_DIR_PATH);
+
+      if (worksheet_callbackdata->worksheet_file != NULL)
+	fclose(worksheet_callbackdata->worksheet_file);
       worksheet_callbackdata->worksheet_file = fopen(CHUNK_FILE_PATH, "w");
       if (worksheet_callbackdata->worksheet_file == NULL) {
 	debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);
