@@ -59,13 +59,13 @@ extern const char *WORKING_DIR;
 extern const char *CHUNKS_DIR_PATH;
 extern const char *SHAREDSTRINGS_HTML_FILE_PATH;
 
-# define CHUNKS_DIR_NAME "chunks"
-# define BASE_CSS_FILE_NAME "base.min.css"
-# define BASE_JS_FILE_NAME "xlsxmagic.min.js"
-# define MANIFEST_FILE_NAME "manifest"
-# define TEMPLATES_DIR_NAME "templates"
-# define THIRD_PARTY_DIR_NAME "3rdparty"
-# define SSF_BIN_DIR_NAME "ssf/ssf-bin/ssf"
+#define CHUNKS_DIR_NAME "chunks"
+#define BASE_CSS_FILE_NAME "base.min.css"
+#define BASE_JS_FILE_NAME "xlsxmagic.min.js"
+#define MANIFEST_FILE_NAME "manifest"
+#define TEMPLATES_DIR_NAME "templates"
+#define THIRD_PARTY_DIR_NAME "3rdparty"
+#define SSF_BIN_DIR_NAME "ssf/ssf-bin/ssf"
 
 void reversed(char *input);
 

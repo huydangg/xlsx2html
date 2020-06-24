@@ -329,7 +329,11 @@ void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const 
       drawing_callbackdata->array_chart_metadata.chart_metadata,
       (drawing_callbackdata->index_graphicframe + 1) * sizeof(struct ChartMetaData *)
     );
+    if (drawing_callbackdata->array_chart_metadata.chart_metadata == NULL)
+      debug_print("Memory allocation error");
     drawing_callbackdata->array_chart_metadata.chart_metadata[drawing_callbackdata->index_graphicframe] = XML_Char_malloc(sizeof(struct ChartMetaData));
+    if (drawing_callbackdata->array_chart_metadata.chart_metadata[drawing_callbackdata->index_graphicframe] == NULL)
+      debug_print("Memory allocation error");
     drawing_callbackdata->array_chart_metadata.length = drawing_callbackdata->index_graphicframe + 1;
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
   }

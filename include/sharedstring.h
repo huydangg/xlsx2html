@@ -3,7 +3,7 @@
 
 #include <expat.h>
 //Mapping index with position.
-# define SHAREDSTRINGS_HTML_FILE_SUFFIX ".ss"
+#define SHAREDSTRINGS_HTML_FILE_SUFFIX ".ss"
 
 extern XML_Parser xmlparser;
 struct Font new_font();
