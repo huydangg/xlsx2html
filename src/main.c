@@ -10,6 +10,7 @@
 #include <private.h>
 #include <stdio.h>
 #include <version.h>
+#include <whereami.h>
 
 XML_Parser xmlparser;
 const char *ORIGIN_FILE_PATH;
@@ -189,8 +190,8 @@ int load_worksheets(zip_t *zip) {
     struct WorkSheet worksheet;
     worksheet.start_col = 'A';
     worksheet.start_row = '1';
-    worksheet.end_col = '\0';
-    worksheet.end_row = '\0';
+    worksheet.end_col = NULL;
+    worksheet.end_row = NULL;
     worksheet.index_sheet = i;
     worksheet.hasMergedCells = '0';
     worksheet.array_drawingids.length = 0;
@@ -743,7 +744,8 @@ int main(int argc, char **argv) {
     while (optind < argc)
       printf("%s ", argv[optind++]);
     printf("\n");
-    goto LOAD_RESOURCES_FAILED;
+
+    goto OPEN_ZIP_FAILED;
   }
   //Set default to test on local
   if (has_origin_file_path == '0') {
@@ -752,14 +754,16 @@ int main(int argc, char **argv) {
   if (has_output_file_name == '0') {
     OUTPUT_FILE_NAME = "index";
   }
-  char path[PATH_MAX] = {0};
-  int dest_len = PATH_MAX;
-  if (readlink("/proc/self/exe", path, dest_len) != -1) {
-    dirname(path);
-    //strcat(path, "/");
-    debug_print("WORKING DIR: %s\n", path);
-    WORKING_DIR = path;
-  }
+  char *path;
+  int length = wai_getExecutablePath(NULL, 0, NULL);
+  int dirname_length;
+  path = (char*)malloc(length + 1);
+  wai_getExecutablePath(path, length, &dirname_length);
+  //Get dir name
+  path[dirname_length] = '\0';
+  WORKING_DIR = strdup(path);
+  free(path);
+
   if (has_output_dir == '0') {
     char *OUTPUT_DIR_NAME = "output";
     int len_tmp_output_dir = XML_Char_len(WORKING_DIR) + XML_Char_len(OUTPUT_DIR_NAME) + 1;
@@ -778,7 +782,7 @@ int main(int argc, char **argv) {
   zip_t *zip = open_zip(ORIGIN_FILE_PATH);
   if (zip == NULL){
     debug_print("%s: %s\n", strerror(errno), ORIGIN_FILE_PATH);
-    goto OPEN_ZIP_FAILED;
+    goto LOAD_RESOURCES_FAILED;
   }
 
   // +1 for "/" +1 for '\0'
@@ -829,6 +833,7 @@ int main(int argc, char **argv) {
   }
   destroy_styles();
   pre_process(zip);
+  free((char *)WORKING_DIR);
 
 LOAD_RESOURCES_FAILED:
   zip_close(zip);

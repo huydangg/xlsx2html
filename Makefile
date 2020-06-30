@@ -1,5 +1,5 @@
 # The name of the source files
-SOURCES =  src/main.c src/style.c src/sheet.c src/book.c src/sharedstring.c src/relationship.c src/drawing.c src/chart.c
+SOURCES = lib/whereami.c src/main.c src/style.c src/sheet.c src/book.c src/sharedstring.c src/relationship.c src/drawing.c src/chart.c
 
 # The name of the executable
 EXE = result
@@ -11,7 +11,7 @@ FILES_CSS = $(MAKE_FILE_DIR)/bin/build_css.sh $(MAKE_FILE_DIR)
 FILES_SSF = $(MAKE_FILE_DIR)/bin/build_ssf.sh $(MAKE_FILE_DIR)
 
 # Flags for compilation (adding warnings are always good)
-CFLAGS = -g -Wall -Iinclude
+CFLAGS = -g -Wall -Iinclude -Ilib
 
 # Flags for linking (none for the moment)
 LDFLAGS =
@@ -50,6 +50,7 @@ clean:
 	-rm -f $(MAKE_FILE_DIR)/templates/*.min.js # Remove the templates files
 	-rm -f $(MAKE_FILE_DIR)/templates/*.min.css # Remove the templates files
 # Finally we need to tell "make" what source and header file each object file depends on
+lib/whereami.o: lib/whereami.c lib/whereami.h
 src/main.o: src/main.c include/main.h 
 src/style.o: src/style.c include/style.h 
 src/sheet.o: src/sheet.c include/sheet.h
