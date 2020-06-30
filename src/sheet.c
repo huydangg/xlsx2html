@@ -88,7 +88,7 @@ unsigned short column_name_to_number(const char *column_name) {
   for (i = 0, j = XML_Char_len(col_name) - 1; i < XML_Char_len(col_name); i += 1, j -= 1) {
     const char *ptr = strchr(base, col_name[i]);
     if (!ptr) {
-      return -1;
+      return 0;
     }
     int index = ptr - base;
     result += (int)pow((double)XML_Char_len(base), (double)j) * (index + 1);
@@ -109,9 +109,10 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
     free(THE_FIRST_CHUNK_PATH);
     return -1;
   }
-  if (end_col_number == -1) {
+  if (end_col_number == 0) {
     debug_print("End col number is -1\n");
     free(THE_FIRST_CHUNK_PATH);
+    fclose(fchunk0);
     return -1;
   }
   free(THE_FIRST_CHUNK_PATH);
@@ -696,14 +697,14 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     free(border_top);
     free(border_bottom);
 
-    unsigned short font_id = -1;
+    unsigned short font_id = 0;
     if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyFont == '1') {
       font_id = array_cellXfs.Xfs[worksheet_callbackdata->index_style].fontId;
     } else if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyFont == '0') {
       int id_cellXfs = array_cellXfs.Xfs[worksheet_callbackdata->index_style].xfId;
       font_id = array_cellStyleXfs.Xfs[id_cellXfs].fontId;
     }
-    if (font_id != -1 && array_fonts.fonts[font_id].name != NULL) {
+    if (array_fonts.fonts[font_id].name != NULL) {
       //12: "font-family:" | 1: ';'
       const int LEN_FONT_NAME = 14 + XML_Char_len(array_fonts.fonts[font_id].name); //ex
       char font_name[LEN_FONT_NAME];

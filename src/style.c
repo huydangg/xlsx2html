@@ -320,7 +320,7 @@ void border_item_lv2_end_element(void *callbackdata, const XML_Char *name) {
 void xf_main_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   struct Xf *xfs_callbackdata = callbackdata;
   if (XML_Char_icmp(name, "xf") == 0) {
-    int _tmp_count;
+    int _tmp_count = 0;
     if (xfs_callbackdata == array_cellStyleXfs.Xfs) {
        _tmp_count = ++array_cellStyleXfs.length;
     } else if (xfs_callbackdata == array_cellXfs.Xfs) {
@@ -362,7 +362,7 @@ void xf_main_end_element(void *callbackdata, const XML_Char *name) {
 void xf_item_lv1_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
   struct Xf *xfs_callbackdata = callbackdata;
   if (XML_Char_icmp(name, "alignment") == 0) {
-    int _tmp_count;
+    int _tmp_count = 0;
     if (xfs_callbackdata == array_cellStyleXfs.Xfs) {
        _tmp_count = array_cellStyleXfs.length;
     } else if (xfs_callbackdata == array_cellXfs.Xfs) {
