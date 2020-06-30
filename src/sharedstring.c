@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 struct SharedStringsPosition sharedStrings_position;
 
@@ -21,7 +22,12 @@ struct Font font;
 int current_index;
 
 int clean_ss_data(const char *file_name) {
-  return remove(file_name);
+  struct stat st = {0};
+  printf("%d\n", stat(file_name, &st));
+  if (stat(file_name, &st) != -1) {
+    return remove(file_name);
+  }
+  return 0;
 }
 
 char* concat(const char *s1, const char *s2) {
