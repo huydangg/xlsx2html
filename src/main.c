@@ -10,7 +10,7 @@
 #include <private.h>
 #include <stdio.h>
 #include <version.h>
-#include <whereami.h>
+#include <whereami.h> // wai_getExecutablePath()
 
 XML_Parser xmlparser;
 const char *ORIGIN_FILE_PATH;

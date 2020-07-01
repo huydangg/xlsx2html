@@ -27,7 +27,7 @@ int clean_ss_data(const char *file_name) {
   if (stat(file_name, &st) != -1) {
     return remove(file_name);
   }
-  return 0;
+  return -1;
 }
 
 char* concat(const char *s1, const char *s2) {
