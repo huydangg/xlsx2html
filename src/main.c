@@ -313,6 +313,7 @@ int load_sharedStrings(zip_t *zip) {
   zip_error_t *err_zip = zip_get_error(zip);
   if (archive == NULL) {
     debug_print("%s: %s\n", zip_error_strerror(err_zip), zip_file_name);
+    fclose(sharedStrings_file);
     return -1;
   }
   int status_sharedStrings = process_zip_file(archive, sharedStrings_file, NULL, sharedStrings_main_start_element, sharedStrings_main_end_element);
