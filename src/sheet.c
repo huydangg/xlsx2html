@@ -262,7 +262,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
       exit(-1);
     }
     free(CHUNK_FILE_PATH);
-    XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
+    XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
   } else if (XML_Char_icmp(name, "mergeCells") == 0) {
     worksheet_callbackdata->hasMergedCells = '1';
     int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
