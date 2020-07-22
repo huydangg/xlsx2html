@@ -112,6 +112,7 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
     }
     if (drawing_callbackdata->is_graphicframe == '1') {
       drawing_id = strdup(drawing_callbackdata->twocellanchor.graphic_frame.chart_id);
+      free(drawing_callbackdata->twocellanchor.graphic_frame.chart_id);
     }
     if (drawing_id != NULL) {
       for (int i = 0; i < drawing_callbackdata->array_drawing_rels->length; i++) {
@@ -291,7 +292,6 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
       free(drawing_callbackdata->twocellanchor.pic.hlinkClick_id);
     }
     free(drawing_id);
-    free(drawing_callbackdata->twocellanchor.graphic_frame.chart_id);
     if (drawing_callbackdata->twocellanchor.editAs != NULL) {
       free(drawing_callbackdata->twocellanchor.editAs);
       drawing_callbackdata->twocellanchor.editAs = NULL;

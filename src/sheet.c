@@ -169,9 +169,9 @@ void _generate_cells(unsigned int current_row, unsigned short max_col, unsigned 
       char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
       snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
       //12: chunk_%d_%d.html
-      int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET) + snprintf(NULL, 0, "%d", num_of_chunks) + 13;
+      int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", index_current_sheet) + snprintf(NULL, 0, "%d", *num_of_chunks) + 13;
       char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
-      snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, num_of_chunks);
+      snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, index_current_sheet, *num_of_chunks);
       free(CHUNKS_DIR_PATH);
       if (worksheet_file != NULL)
 	fclose(worksheet_file);
