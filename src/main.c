@@ -207,6 +207,7 @@ int load_worksheets(zip_t *zip) {
     array_sheets.sheets[i]->array_drawing_rels.relationships = NULL;
     array_sheets.sheets[i]->num_of_chunks = worksheet.num_of_chunks;
     array_sheets.sheets[i]->max_row = worksheet.ROW_NUMBER; 
+    array_sheets.sheets[i]->max_col_number = worksheet.end_col_number;
 
     for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_worksheet_rels.length; index_rels++) {
       for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
@@ -462,39 +463,6 @@ void pre_process(zip_t *zip) {
 	  );
           fputs(DIV_TABLE, findexhtml);
 	  free(DIV_TABLE);
-	  fputs("\n", findexhtml);
-	  for (int index_chunk = 0; index_chunk <= array_sheets.sheets[index_sheet]->num_of_chunks; index_chunk++) {
-	    //7: chunk_%d_%d
-	    int len_chunk_html_file_name = snprintf(NULL, 0, "%d", index_chunk) + len_index_sheet + 7;
-	    char *CHUNK_HTML_FILE_NAME = XML_Char_malloc(len_chunk_html_file_name + 1);
-	    snprintf(CHUNK_HTML_FILE_NAME, len_chunk_html_file_name + 1, "chunk_%d_%d", index_sheet, index_chunk);
-	    int len_resource_url, len_chunk_html_url;
-	    char *CHUNK_HTML_URL;
-	    if (strstr(RESOURCE_URL, "https") != NULL) {
-	      len_resource_url = XML_Char_len(RESOURCE_URL);
-	      int len_output_file_name = XML_Char_len(OUTPUT_FILE_NAME);
-	      len_chunk_html_url = len_chunk_html_file_name + len_resource_url + len_output_file_name + 7;
-	      CHUNK_HTML_URL = XML_Char_malloc(len_chunk_html_url + 1);
-	      snprintf(CHUNK_HTML_URL , len_chunk_html_url + 1, "%s%s/chunk/%s", RESOURCE_URL, OUTPUT_FILE_NAME, CHUNK_HTML_FILE_NAME);
-	    } else {
-	      len_chunk_html_url = len_chunk_html_file_name + len_chunks_dir_path + 7;
-	      CHUNK_HTML_URL = XML_Char_malloc(len_chunk_html_url + 1);
-	      snprintf(CHUNK_HTML_URL, len_chunk_html_url + 1, "%s/%s.chunk", CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME);
-	    }
-
-	    int len_div_chunk = len_chunk_html_file_name + len_chunk_html_url + 35;
-            char *DIV_CHUNK = XML_Char_malloc(len_div_chunk + 1);
-	    snprintf(
-              DIV_CHUNK, len_div_chunk + 1,
-	      "<div id=\"%s\" data-chunk-url=\"%s\"></div>",
-	      CHUNK_HTML_FILE_NAME, CHUNK_HTML_URL
-	    );
-	    free(CHUNK_HTML_URL);
-            fputs(DIV_CHUNK, findexhtml);
-	    free(DIV_CHUNK);
-	    fputs("\n", findexhtml);
-	    free(CHUNK_HTML_FILE_NAME);
-	  }
           if (array_sheets.sheets[index_sheet]->hasMergedCells == '1') {
 	    int len_chunk_mc_file_name = len_index_sheet + 9;
 	    char *CHUNK_MC_FILE_NAME = XML_Char_malloc(len_chunk_mc_file_name + 1);
@@ -545,16 +513,37 @@ void pre_process(zip_t *zip) {
 	      //TODO: Handle error
 	    }
 
-	    printf("TO ROW: %d\n", drawing_callbackdata.twocellanchor.from.col);
+	    printf("TO ROW: %d\n", drawing_callbackdata.twocellanchor.to.row);
 	    printf("MAX ROW: %d\n", array_sheets.sheets[index_sheet]->max_row);
-	    if (drawing_callbackdata.twocellanchor.to.row > array_sheets.sheets[index_sheet]->max_row) {
-	      array_sheets.sheets[index_sheet]->max_row = drawing_callbackdata.twocellanchor.to.row;
+	    if (array_sheets.sheets[index_sheet]->max_row < drawing_callbackdata.twocellanchor.to.row) {
 	      array_sheets.sheets[index_sheet]->num_of_chunks++;
-
+	      int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
+	      char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
+	      snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
+	      //12: chunk_%d_%d.html
+	      len_num_of_chunks = snprintf(NULL, 0, "%d", array_sheets.sheets[index_sheet]->num_of_chunks + 1);
+	      int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + len_index_sheet + len_num_of_chunks + 13;
+	      char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
+	      snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, index_sheet, array_sheets.sheets[index_sheet]->num_of_chunks);
+	      free(CHUNKS_DIR_PATH);
+	      FILE *worksheet_file = fopen(CHUNK_FILE_PATH, "w");
+	      if (worksheet_file == NULL) {
+		  debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);
+		  exit(-1);
+	      }
+	      free(CHUNK_FILE_PATH);
+	      while (array_sheets.sheets[index_sheet]->max_row++ < drawing_callbackdata.twocellanchor.to.row) {
+		_generate_cells(
+		    array_sheets.sheets[index_sheet]->max_row,
+		    array_sheets.sheets[index_sheet]->max_col_number, index_sheet,
+		    worksheet_file, &array_sheets.sheets[index_sheet]->num_of_chunks
+		);
+	      }
+	      fclose(worksheet_file);
 	    }
 
+	    array_sheets.sheets[index_sheet]->max_row = drawing_callbackdata.twocellanchor.to.row;
 	    drawing_callbackdata.twocellanchor = new_twocellanchor();
-
 
 	    for (int i_drawing_callback = 0; i_drawing_callback < drawing_callbackdata.array_chart_metadata.length; i_drawing_callback++) {
 	      for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
@@ -603,6 +592,39 @@ void pre_process(zip_t *zip) {
 	    free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships);
 	  if (array_sheets.sheets[index_sheet]->array_worksheet_rels.length !=0)
 	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships);
+
+	  for (int index_chunk = 0; index_chunk <= array_sheets.sheets[index_sheet]->num_of_chunks; index_chunk++) {
+	    //7: chunk_%d_%d
+	    int len_chunk_html_file_name = snprintf(NULL, 0, "%d", index_chunk) + len_index_sheet + 7;
+	    char *CHUNK_HTML_FILE_NAME = XML_Char_malloc(len_chunk_html_file_name + 1);
+	    snprintf(CHUNK_HTML_FILE_NAME, len_chunk_html_file_name + 1, "chunk_%d_%d", index_sheet, index_chunk);
+	    int len_resource_url, len_chunk_html_url;
+	    char *CHUNK_HTML_URL;
+	    if (strstr(RESOURCE_URL, "https") != NULL) {
+	      len_resource_url = XML_Char_len(RESOURCE_URL);
+	      int len_output_file_name = XML_Char_len(OUTPUT_FILE_NAME);
+	      len_chunk_html_url = len_chunk_html_file_name + len_resource_url + len_output_file_name + 7;
+	      CHUNK_HTML_URL = XML_Char_malloc(len_chunk_html_url + 1);
+	      snprintf(CHUNK_HTML_URL , len_chunk_html_url + 1, "%s%s/chunk/%s", RESOURCE_URL, OUTPUT_FILE_NAME, CHUNK_HTML_FILE_NAME);
+	    } else {
+	      len_chunk_html_url = len_chunk_html_file_name + len_chunks_dir_path + 7;
+	      CHUNK_HTML_URL = XML_Char_malloc(len_chunk_html_url + 1);
+	      snprintf(CHUNK_HTML_URL, len_chunk_html_url + 1, "%s/%s.chunk", CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME);
+	    }
+
+	    int len_div_chunk = len_chunk_html_file_name + len_chunk_html_url + 35;
+            char *DIV_CHUNK = XML_Char_malloc(len_div_chunk + 1);
+	    snprintf(
+              DIV_CHUNK, len_div_chunk + 1,
+	      "<div id=\"%s\" data-chunk-url=\"%s\"></div>",
+	      CHUNK_HTML_FILE_NAME, CHUNK_HTML_URL
+	    );
+	    free(CHUNK_HTML_URL);
+            fputs(DIV_CHUNK, findexhtml);
+	    free(DIV_CHUNK);
+	    fputs("\n", findexhtml);
+	    free(CHUNK_HTML_FILE_NAME);
+	  }
 	  fputs("</div>", findexhtml);
 	  fputs("\n", findexhtml);
         }

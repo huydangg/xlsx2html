@@ -295,7 +295,6 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
       worksheet_callbackdata->array_drawingids.drawing_ids,
       worksheet_callbackdata->array_drawingids.length * sizeof(char *)
     );
-    printf("Errrrr: %d\n", worksheet_callbackdata->array_drawingids.length);
     for (int i = 0; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "r:id") == 0) {
         worksheet_callbackdata->array_drawingids.drawing_ids[worksheet_callbackdata->array_drawingids.length - 1] = strdup(attrs[i + 1]);
