@@ -294,8 +294,8 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
     free(drawing_callbackdata->twocellanchor.graphic_frame.chart_id);
     if (drawing_callbackdata->twocellanchor.editAs != NULL) {
       free(drawing_callbackdata->twocellanchor.editAs);
+      drawing_callbackdata->twocellanchor.editAs = NULL;
     }
-    drawing_callbackdata->twocellanchor = new_twocellanchor();
   }
   drawing_callbackdata->is_pic = '0';
   drawing_callbackdata->is_graphicframe = '0';
@@ -313,8 +313,10 @@ void drawings_lv1_start_element(void *callbackdata, const XML_Char *name, const 
     drawing_callbackdata->is_pic = '1';
     XML_SetElementHandler(xmlparser, drawings_lv2_start_element, NULL);
   } else if (XML_Char_icmp(name, "xdr:sp") == 0) {
-    free(drawing_callbackdata->twocellanchor.editAs);
-    drawing_callbackdata->twocellanchor = new_twocellanchor();
+    if (drawing_callbackdata->twocellanchor.editAs != NULL) {
+      free(drawing_callbackdata->twocellanchor.editAs);
+      drawing_callbackdata->twocellanchor.editAs = NULL;
+    }
     drawing_callbackdata->skiptag = strdup(name);
     drawing_callbackdata->skiptagcount = 1;
     drawing_callbackdata->skip_start = NULL;
@@ -351,7 +353,8 @@ void drawings_lv1_end_element(void *callbackdata, const XML_Char *name) {
     }
     XML_SetElementHandler(xmlparser, drawings_lv1_start_element, drawings_lv1_end_element);
   } else if (XML_Char_icmp(name, "xdr:to") == 0) {
-    if (drawing_callbackdata->_tmp_offset.col != 0) {
+    printf("_TMP_OFFSET ROW: %d\n", drawing_callbackdata->_tmp_offset.row);
+    if (drawing_callbackdata->_tmp_offset.row != 0) {
       drawing_callbackdata->twocellanchor.to.col = drawing_callbackdata->_tmp_offset.col;
       drawing_callbackdata->twocellanchor.to.colOff = drawing_callbackdata->_tmp_offset.colOff;
       drawing_callbackdata->twocellanchor.to.row = drawing_callbackdata->_tmp_offset.row;

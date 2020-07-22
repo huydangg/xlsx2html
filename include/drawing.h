@@ -82,6 +82,7 @@ void drawings_lv4_end_element(void *callbackdata, const XML_Char *name);
 void drawings_content_handler(void *callbackdata, const XML_Char *buf, int len);
 
 void drawings_callbackdata_initialize(struct DrawingCallbackData *, struct ArrayRelationships *, FILE *, zip_t *, int);
+struct TwoCellAnchor new_twocellanchor();
 
 void drawings_skip_tag_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
 void drawings_skip_tag_end_element(void *callbackdata, const XML_Char *name);

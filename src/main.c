@@ -206,6 +206,7 @@ int load_worksheets(zip_t *zip) {
     array_sheets.sheets[i]->array_drawing_rels.length = 0;
     array_sheets.sheets[i]->array_drawing_rels.relationships = NULL;
     array_sheets.sheets[i]->num_of_chunks = worksheet.num_of_chunks;
+    array_sheets.sheets[i]->max_row = worksheet.ROW_NUMBER; 
 
     for (int index_rels = 0; index_rels < array_sheets.sheets[i]->array_worksheet_rels.length; index_rels++) {
       for (int index_drawingid = 0; index_drawingid < worksheet.array_drawingids.length; index_drawingid++) {
@@ -544,6 +545,17 @@ void pre_process(zip_t *zip) {
 	      //TODO: Handle error
 	    }
 
+	    printf("TO ROW: %d\n", drawing_callbackdata.twocellanchor.from.col);
+	    printf("MAX ROW: %d\n", array_sheets.sheets[index_sheet]->max_row);
+	    if (drawing_callbackdata.twocellanchor.to.row > array_sheets.sheets[index_sheet]->max_row) {
+	      array_sheets.sheets[index_sheet]->max_row = drawing_callbackdata.twocellanchor.to.row;
+	      array_sheets.sheets[index_sheet]->num_of_chunks++;
+
+	    }
+
+	    drawing_callbackdata.twocellanchor = new_twocellanchor();
+
+
 	    for (int i_drawing_callback = 0; i_drawing_callback < drawing_callbackdata.array_chart_metadata.length; i_drawing_callback++) {
 	      for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
 		if (XML_Char_icmp(
@@ -569,6 +581,7 @@ void pre_process(zip_t *zip) {
                   int status_chart = load_chart(zip, zip_chart_file_name, &chart_callbackdata);
 		  free(zip_chart_file_name);
 		  fclose(chart_callbackdata.fchart);
+		   
 		}
 	      }
 

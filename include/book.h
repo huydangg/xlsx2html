@@ -10,6 +10,7 @@ struct Sheet {
   char isHidden;
   char hasMergedCells;
   unsigned short num_of_chunks;
+  unsigned int max_row;
   struct ArrayRelationships array_worksheet_rels;
   struct ArrayRelationships array_drawing_rels;
 };

@@ -15,7 +15,6 @@
 unsigned int START_CELL_IN_NUMBER_BY_ROW; //default is 1
 unsigned int CURRENT_CELL_IN_NUMBER_BY_ROW;
 unsigned short INDEX_CURRENT_SHEET;
-unsigned long CURRENT_SIZE_IN_CHUNK = 0;
 
 
 void reversed(char *input) {
@@ -142,13 +141,10 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
 }
 
 
-// When tag <row> is empty.
-void generate_cells(void *callbackdata, const XML_Char *name) {
-  if (XML_Char_icmp(name, "row") == 0) {
-    struct WorkSheet *worksheet_callbackdata = callbackdata;
-    int len_row_number = snprintf(NULL, 0, "%d", worksheet_callbackdata->ROW_NUMBER);
-    int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
-    for (int i = 1; i <= worksheet_callbackdata->end_col_number; i++) {
+void _generate_cells(unsigned int current_row, unsigned short max_col, unsigned short index_current_sheet, FILE *worksheet_file, unsigned short *num_of_chunks) {
+    int len_row_number = snprintf(NULL, 0, "%d", current_row);
+    int len_index_sheet = snprintf(NULL, 0, "%d", index_current_sheet);
+    for (int i = 1; i <= max_col; i++) {
       //id: 0_B2
       char *col_name = int_to_column_name(i);
       int len_col_name = XML_Char_len(col_name);
@@ -158,34 +154,45 @@ void generate_cells(void *callbackdata, const XML_Char *name) {
       snprintf(
 	td, len_td_str + 1,
 	"<td id=\"%d_%s%d\" style=\"border-style:hidden;\"></td>",
-	INDEX_CURRENT_SHEET, col_name,
-	worksheet_callbackdata->ROW_NUMBER
+	index_current_sheet, col_name,
+	current_row
       );
-      fputs(td, worksheet_callbackdata->worksheet_file);
+      fputs(td, worksheet_file);
       free(col_name);
       free(td);
     }
 
-    fputs("</tr>", worksheet_callbackdata->worksheet_file);
-    if (ftell(worksheet_callbackdata->worksheet_file) >= CHUNK_SIZE_LIMIT) {
-      worksheet_callbackdata->num_of_chunks++;
+    fputs("</tr>", worksheet_file);
+    if (ftell(worksheet_file) >= CHUNK_SIZE_LIMIT) {
+      *num_of_chunks++;
       int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
       char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
       snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
       //12: chunk_%d_%d.html
-      int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET) + snprintf(NULL, 0, "%d", worksheet_callbackdata->num_of_chunks) + 13;
+      int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET) + snprintf(NULL, 0, "%d", num_of_chunks) + 13;
       char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
-      snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, worksheet_callbackdata->num_of_chunks);
+      snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, num_of_chunks);
       free(CHUNKS_DIR_PATH);
-      if (worksheet_callbackdata->worksheet_file != NULL)
-	fclose(worksheet_callbackdata->worksheet_file);
-      worksheet_callbackdata->worksheet_file = fopen(CHUNK_FILE_PATH, "w");
-      if (worksheet_callbackdata->worksheet_file == NULL) {
+      if (worksheet_file != NULL)
+	fclose(worksheet_file);
+      worksheet_file = fopen(CHUNK_FILE_PATH, "w");
+      if (worksheet_file == NULL) {
 	debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);
 	exit(-1);
       }
       free(CHUNK_FILE_PATH);
     }
+}
+
+// When tag <row> is empty.
+void generate_cells(void *callbackdata, const XML_Char *name) {
+  if (XML_Char_icmp(name, "row") == 0) {
+    struct WorkSheet *worksheet_callbackdata = callbackdata;
+    _generate_cells(
+	worksheet_callbackdata->ROW_NUMBER, worksheet_callbackdata->end_col_number,
+	INDEX_CURRENT_SHEET, worksheet_callbackdata->worksheet_file, 
+	&worksheet_callbackdata->num_of_chunks
+    );
   }
   XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
 }
@@ -288,6 +295,7 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
       worksheet_callbackdata->array_drawingids.drawing_ids,
       worksheet_callbackdata->array_drawingids.length * sizeof(char *)
     );
+    printf("Errrrr: %d\n", worksheet_callbackdata->array_drawingids.length);
     for (int i = 0; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "r:id") == 0) {
         worksheet_callbackdata->array_drawingids.drawing_ids[worksheet_callbackdata->array_drawingids.length - 1] = strdup(attrs[i + 1]);
