@@ -120,10 +120,6 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 	  int len_target = XML_Char_len(drawing_callbackdata->array_drawing_rels->relationships[i]->target);
 	  char *_tmp_target = XML_Char_malloc(len_target + 1);
 	  snprintf(_tmp_target, len_target + 1, "xl%s", drawing_callbackdata->array_drawing_rels->relationships[i]->target + 2);
-	  int len_index_sheet = snprintf(NULL, 0, "%d", drawing_callbackdata->index_sheet);
-	  int len_from_row = snprintf(NULL, 0, "%u", drawing_callbackdata->twocellanchor.from.row);
-	  char *from_col_name = int_to_column_name(drawing_callbackdata->twocellanchor.from.col);
-	  int len_from_col_name = XML_Char_len(from_col_name);
 	  int len_output_file_name = XML_Char_len(OUTPUT_FILE_NAME);
 	  if (drawing_callbackdata->is_pic == '1') {
 	    drawing_callbackdata->index_image++;
@@ -194,96 +190,12 @@ void drawings_end_element(void *callbackdata, const XML_Char *name) {
 		len_img_url = len_output_img_file_path;
 		free(OUTPUT_IMG_FILE_PATH);
 	      }
+	      drawing_callbackdata->img_url = strdup(IMG_URL);
 	      free(img_name);
-	      // http://officeopenxml.com/drwPicInSpread-oneCell.php
-	      // EMUs to pixels: value / 9525 (1 pixel = 9525 EMUs)
-	      size_t height = drawing_callbackdata->twocellanchor.pic.cy / 9525;
-	      size_t width = drawing_callbackdata->twocellanchor.pic.cx / 9525;
-	      int len_height = snprintf(NULL, 0, "%zu", height);
-	      int len_width = snprintf(NULL, 0, "%zu", width);
-	      size_t from_colOff = drawing_callbackdata->twocellanchor.from.colOff / 9525;
-	      size_t from_rowOff = drawing_callbackdata->twocellanchor.from.rowOff / 9525;
-	      int len_from_colOff = snprintf(NULL, 0, "%zu", from_colOff);
-	      int len_from_rowOff = snprintf(NULL, 0, "%zu", from_rowOff);
-	      int len_index_img = snprintf(NULL, 0, "%d", i);
-	      int len_div_img = len_index_sheet + len_index_img + len_img_url
-		+ len_height + len_width + len_from_col_name + len_from_row
-		+ len_from_colOff + len_from_rowOff + 141;
-	      char *DIV_IMG = XML_Char_malloc(len_div_img + 1);
-	      snprintf(
-		DIV_IMG, len_div_img + 1,
-		"<div id=\"chunk_%d_%d_img\" data-img-url=\"%s\" data-height=\"%zu\" data-width=\"%zu\" data-from-col=\"%s\" data-from-row=\"%u\" data-from-coloff=\"%zu\" data-from-rowoff=\"%zu\">",
-		drawing_callbackdata->index_sheet,
-		drawing_callbackdata->index_image,
-		IMG_URL, height, width,
-		from_col_name,
-		drawing_callbackdata->twocellanchor.from.row,
-		from_colOff, from_rowOff
-	      );
-	      fputs(DIV_IMG, drawing_callbackdata->findexhtml);
-	      fputs("</div>", drawing_callbackdata->findexhtml);
-	      fputs("\n", drawing_callbackdata->findexhtml);
-	      free(DIV_IMG);
 	      free(IMG_URL);
 	    }
 	  } else if (drawing_callbackdata->is_graphicframe == '1') {
-	    int len_index_graphicframe = snprintf(NULL, 0, "%d", drawing_callbackdata->index_graphicframe);
-	    //chunk_%d_%d_chart
-	    int len_chart_json_file_name = len_index_sheet + len_index_graphicframe + 18;
-	    char *chart_json_file_name = XML_Char_malloc(len_chart_json_file_name + 1);
-	    snprintf(
-              chart_json_file_name, len_chart_json_file_name + 1,
-	      "chunk_%d_%d_chart", drawing_callbackdata->index_sheet,
-	      drawing_callbackdata->index_graphicframe
-	    );
-	    drawing_callbackdata->array_chart_metadata.chart_metadata[drawing_callbackdata->index_graphicframe]->file_name = strdup(chart_json_file_name);
-            int len_output_chart_file_path  = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + len_chart_json_file_name + 5 + 1;
-            char *OUTPUT_CHART_FILE_PATH = XML_Char_malloc(len_output_chart_file_path   + 1);
-            snprintf(OUTPUT_CHART_FILE_PATH, len_output_chart_file_path   + 1, "%s/%s/%s.json", OUTPUT_DIR, CHUNKS_DIR_NAME, chart_json_file_name);
-	    char *CHART_URL = NULL;
-	    int len_chart_url, len_resource_url;
-	    if (strstr(RESOURCE_URL, "https") != NULL) {
-	      len_resource_url = XML_Char_len(RESOURCE_URL);
-	      len_chart_url = len_output_chart_file_path + len_resource_url + + len_output_file_name + 6;
-	      CHART_URL = XML_Char_malloc(len_chart_url + 1);
-	      snprintf(CHART_URL , len_chart_url + 1, "%s%s/json/%s", RESOURCE_URL, OUTPUT_FILE_NAME, chart_json_file_name);
-	    } else {
-	      CHART_URL = strdup(OUTPUT_CHART_FILE_PATH);
-	      len_chart_url = len_output_chart_file_path;
-	    }
-	    size_t height = drawing_callbackdata->twocellanchor.graphic_frame.cy / 9525;
-	    size_t width = drawing_callbackdata->twocellanchor.graphic_frame.cx / 9525;
-	    size_t from_colOff = drawing_callbackdata->twocellanchor.from.colOff / 9525;
-	    size_t from_rowOff = drawing_callbackdata->twocellanchor.from.rowOff / 9525;
-	    int len_height = snprintf(NULL, 0, "%zu", height);
-	    int len_width = snprintf(NULL, 0, "%zu", width);
-	    int len_from_colOff = snprintf(NULL, 0, "%zu", from_colOff);
-	    int len_from_rowOff = snprintf(NULL, 0, "%zu", from_rowOff);
-	    int len_chart_name = XML_Char_len(drawing_callbackdata->twocellanchor.graphic_frame.name);
-	    int len_div_chart = len_chart_json_file_name + len_chart_url
-	      + len_chart_name + len_from_col_name + len_from_row + len_from_colOff + len_from_rowOff + len_height + len_width + 145;
-	    char *DIV_CHART = XML_Char_malloc(len_div_chart + 1);
-	    snprintf(
-	      DIV_CHART, len_div_chart + 1,
-	      "<div id=\"%s\" data-chart-url=\"%s\" data-name=\"%s\" data-from-col=\"%s\" data-from-row=\"%u\" data-from-rowoff=\"%zu\" data-from-coloff=\"%zu\" data-height=\"%zu\" data-width=\"%zu\">",
-	      chart_json_file_name, CHART_URL,
-	      drawing_callbackdata->twocellanchor.graphic_frame.name,
-	      from_col_name,
-	      drawing_callbackdata->twocellanchor.from.row,
-	      from_rowOff, from_colOff,
-	      height, width
-	    );
-	    free(drawing_callbackdata->twocellanchor.graphic_frame.name);
-	    fputs(DIV_CHART, drawing_callbackdata->findexhtml);
-	    fputs("</div>", drawing_callbackdata->findexhtml);
-	    fputs("\n", drawing_callbackdata->findexhtml);
-	    free(DIV_CHART);
-	    drawing_callbackdata->array_chart_metadata.chart_metadata[drawing_callbackdata->index_graphicframe]->file_path = strdup(OUTPUT_CHART_FILE_PATH);
-	    free(chart_json_file_name);
-	    free(OUTPUT_CHART_FILE_PATH);
-	    free(CHART_URL);
 	  }
-	  free(from_col_name);
 	  free(_tmp_target);
 	}
       }

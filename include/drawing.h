@@ -64,7 +64,14 @@ struct DrawingCallbackData {
   int index_graphicframe;
   char is_pic;
   char is_graphicframe;
+  char *img_url;
+  char *chart_url;
   struct ArrayChartMetaData array_chart_metadata;
+};
+
+struct  ArrayDrawingCallbackData {
+  int length;
+  struct DrawingCallbackData **arr_drawing_callbackdata;
 };
 
 extern XML_Parser xmlparser;

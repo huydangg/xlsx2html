@@ -453,6 +453,138 @@ void pre_process(zip_t *zip) {
 	for (int index_sheet = 0; index_sheet < array_sheets.length; index_sheet++) {
 	  int len_index_sheet = snprintf(NULL, 0, "%d", index_sheet);
 	  int len_num_of_chunks = snprintf(NULL, 0, "%d", array_sheets.sheets[index_sheet]->num_of_chunks + 1);
+	  struct ArrayDrawingCallbackData array_drawing_callbackdata;
+	  array_drawing_callbackdata.length = 0;
+	  array_drawing_callbackdata.arr_drawing_callbackdata = NULL;
+
+	  for (int index_rels = 0; index_rels < array_sheets.sheets[index_sheet]->array_worksheet_rels.length; index_rels++) { 
+            int len_zip_drawing_file_name = XML_Char_len(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
+	    char *zip_drawing_file_name = XML_Char_malloc(len_zip_drawing_file_name + 1);
+	    snprintf(
+	      zip_drawing_file_name, len_zip_drawing_file_name + 1,
+	      "xl%s", 
+	      array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target + 2
+	    );
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->id);
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->type);
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]);
+	    struct DrawingCallbackData drawing_callbackdata;
+            drawings_callbackdata_initialize(&drawing_callbackdata, &array_sheets.sheets[index_sheet]->array_drawing_rels, findexhtml, zip, index_sheet);
+	    int status_drawings = load_drawings(zip, zip_drawing_file_name, &drawing_callbackdata);
+	    free(zip_drawing_file_name);
+	    if (status_drawings != -1) {
+	      //TODO: Handle error
+	      continue;
+	    }
+/*struct DrawingCallbackData {*/
+  /*struct ArrayRelationships *array_drawing_rels;*/
+  /*struct TwoCellAnchor twocellanchor;*/
+  /*struct Offset _tmp_offset;*/
+  /*zip_t *zip;*/
+  /*FILE *findexhtml;*/
+  /*XML_Char *text;*/
+  /*size_t textlen;*/
+  /*XML_Char* skiptag;                    //tag to skip*/
+  /*size_t skiptagcount;                  //nesting level for current tag to skip*/
+  /*XML_StartElementHandler skip_start;   //start handler to set after skipping*/
+  /*XML_EndElementHandler skip_end;       //end handler to set after skipping*/
+  /*XML_CharacterDataHandler skip_data;   //data handler to set after skipping*/
+  /*int index_sheet;*/
+  /*int index_image;*/
+  /*int index_graphicframe;*/
+  /*char is_pic;*/
+  /*char is_graphicframe;*/
+  /*struct ArrayChartMetaData array_chart_metadata;*/
+/*};*/
+	    array_drawing_callbackdata.length++;
+	    array_drawing_callbackdata.arr_drawing_callbackdata = XML_Char_realloc(
+		array_drawing_callbackdata.arr_drawing_callbackdata,
+		array_drawing_callbackdata.length * sizeof(struct DrawingCallbackData *)
+	    );
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels] = XML_Char_malloc(sizeof(struct DrawingCallbackData));
+	    memcpy((void *)&array_drawing_callbackdata.arr_drawing_callbackdata[index_rels], (void *)&drawing_callbackdata, sizeof(struct DrawingCallbackData));
+
+
+	    printf("TO ROW: %d\n", drawing_callbackdata.twocellanchor.to.row);
+	    printf("MAX ROW: %d\n", array_sheets.sheets[index_sheet]->max_row);
+	    // Occur if max row of the drawing is bigger than max row of the sheet
+	    if (array_sheets.sheets[index_sheet]->max_row < drawing_callbackdata.twocellanchor.to.row) {
+	      array_sheets.sheets[index_sheet]->num_of_chunks++;
+	      int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
+	      char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
+	      snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
+	      //12: chunk_%d_%d.html
+	      len_num_of_chunks = snprintf(NULL, 0, "%d", array_sheets.sheets[index_sheet]->num_of_chunks + 1);
+	      int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + len_index_sheet + len_num_of_chunks + 13;
+	      char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
+	      snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, index_sheet, array_sheets.sheets[index_sheet]->num_of_chunks);
+	      free(CHUNKS_DIR_PATH);
+	      FILE *worksheet_file = fopen(CHUNK_FILE_PATH, "w");
+	      if (worksheet_file == NULL) {
+		  debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);
+		  exit(-1);
+	      }
+	      free(CHUNK_FILE_PATH);
+	      while (array_sheets.sheets[index_sheet]->max_row++ < drawing_callbackdata.twocellanchor.to.row) {
+		_generate_cells(
+		    array_sheets.sheets[index_sheet]->max_row,
+		    array_sheets.sheets[index_sheet]->max_col_number, index_sheet,
+		    worksheet_file, &array_sheets.sheets[index_sheet]->num_of_chunks
+		);
+	      }
+	      fclose(worksheet_file);
+	    }
+
+	    array_sheets.sheets[index_sheet]->max_row = drawing_callbackdata.twocellanchor.to.row;
+	    drawing_callbackdata.twocellanchor = new_twocellanchor();
+
+	    for (int i_drawing_callback = 0; i_drawing_callback < drawing_callbackdata.array_chart_metadata.length; i_drawing_callback++) {
+	      for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
+		if (XML_Char_icmp(
+                  drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id,
+		  array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->id
+		  ) == 0) {
+		  struct ChartCallBackData chart_callbackdata;
+		  int status_init = chart_callbackdata_initialize(
+                    &chart_callbackdata,
+		    drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path,
+		    index_sheet
+		  );
+		  if (status_init == -1) {
+		    //TODO: Handle error
+		    continue;
+		  }
+                  int len_zip_chart_file_name = XML_Char_len(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->target);
+		  char *zip_chart_file_name = XML_Char_malloc(len_zip_chart_file_name + 1);
+		  snprintf(
+                    zip_chart_file_name, len_zip_chart_file_name + 1, "xl%s",
+		    array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->target + 2
+		  );
+                  int status_chart = load_chart(zip, zip_chart_file_name, &chart_callbackdata);
+		  free(zip_chart_file_name);
+		  fclose(chart_callbackdata.fchart);
+		}
+	      }
+
+	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id);
+	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_name);
+	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path);
+	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]);
+	    }
+	    free(drawing_callbackdata.array_chart_metadata.chart_metadata);
+	  }
+	  for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
+            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->id);
+            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->target);
+            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->type);
+            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]);
+	  }
+	  if (array_sheets.sheets[index_sheet]->array_drawing_rels.length !=0)
+	    free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships);
+	  if (array_sheets.sheets[index_sheet]->array_worksheet_rels.length !=0)
+	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships);
+
 	  int len_div_table = 47 + len_index_sheet + XML_Char_len(array_sheets.sheets[index_sheet]->name) + len_num_of_chunks;
 	  char *DIV_TABLE = XML_Char_malloc(len_div_table + 1);
 	  snprintf(
@@ -494,104 +626,83 @@ void pre_process(zip_t *zip) {
 	    free(CHUNK_MC_FILE_NAME);
           }
 
-	  for (int index_rels = 0; index_rels < array_sheets.sheets[index_sheet]->array_worksheet_rels.length; index_rels++) { 
-            int len_zip_drawing_file_name = XML_Char_len(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
-	    char *zip_drawing_file_name = XML_Char_malloc(len_zip_drawing_file_name + 1);
-	    snprintf(
-	      zip_drawing_file_name, len_zip_drawing_file_name + 1,
-	      "xl%s", 
-	      array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target + 2
-	    );
-	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->id);
-	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->target);
-	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]->type);
-	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships[index_rels]);
-	    struct DrawingCallbackData drawing_callbackdata;
-            drawings_callbackdata_initialize(&drawing_callbackdata, &array_sheets.sheets[index_sheet]->array_drawing_rels, findexhtml, zip, index_sheet);
-	    int status_drawings = load_drawings(zip, zip_drawing_file_name, &drawing_callbackdata);
-	    if (status_drawings != -1) {
-	      //TODO: Handle error
+	  // IMAGE RENDERING.
+	  for (int i_arr_drawing_callbackdata = 0; i_arr_drawing_callbackdata < array_drawing_callbackdata.length; i_arr_drawing_callbackdata++) {
+	    char *from_col_name = int_to_column_name(array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.from.col);
+	    int len_from_col_name = XML_Char_len(from_col_name);
+	    int len_from_row = snprintf(NULL, 0, "%u", array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.from.row);
+	    if (array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->is_pic == '1') {
+	      // http://officeopenxml.com/drwPicInSpread-oneCell.php
+	      // EMUs to pixels: value / 9525 (1 pixel = 9525 EMUs)
+	      int len_img_url = strlen(array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->img_url);
+	      size_t height = array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.pic.cy / 9525;
+	      size_t width = array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.pic.cx / 9525;
+	      int len_height = snprintf(NULL, 0, "%zu", height);
+	      int len_width = snprintf(NULL, 0, "%zu", width);
+	      size_t from_colOff = array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.from.colOff / 9525;
+	      size_t from_rowOff = array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.from.rowOff / 9525;
+	      int len_from_colOff = snprintf(NULL, 0, "%zu", from_colOff);
+	      int len_from_rowOff = snprintf(NULL, 0, "%zu", from_rowOff);
+	      int len_index_img = snprintf(NULL, 0, "%d", array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->index_image);
+	      int len_div_img = len_index_sheet + len_index_img + len_img_url
+		+ len_height + len_width + len_from_col_name + len_from_row
+		+ len_from_colOff + len_from_rowOff + 141;
+	      char *DIV_IMG = XML_Char_malloc(len_div_img + 1);
+	      snprintf(
+		DIV_IMG, len_div_img + 1,
+		"<div id=\"chunk_%d_%d_img\" data-img-url=\"%s\" data-height=\"%zu\" data-width=\"%zu\" data-from-col=\"%s\" data-from-row=\"%u\" data-from-coloff=\"%zu\" data-from-rowoff=\"%zu\">",
+		index_sheet,
+		array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->index_image,
+		array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->img_url, height, width,
+		from_col_name,
+		array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.from.row,
+		from_colOff, from_rowOff
+	      );
+	      fputs(DIV_IMG, findexhtml);
+	      fputs("</div>", findexhtml);
+	      fputs("\n", findexhtml);
+	    } else if (array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->is_graphicframe == '1') {
+	      int len_index_graphicframe = snprintf(NULL, 0, "%d", array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->index_graphicframe);
+	      int len_chart_url = strlen(array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->chart_url);
+	      //chunk_%d_%d_chart
+	      int len_chart_json_file_name = len_index_sheet + len_index_graphicframe + 18;
+	      char *chart_json_file_name = XML_Char_malloc(len_chart_json_file_name + 1);
+	      snprintf(
+		chart_json_file_name, len_chart_json_file_name + 1,
+		"chunk_%d_%d_chart", index_sheet,
+		array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->index_graphicframe
+	      );
+	      array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->array_chart_metadata.chart_metadata[array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->index_graphicframe]->file_name = strdup(chart_json_file_name);
+	      size_t height = array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.graphic_frame.cy / 9525;
+	      size_t width = array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.graphic_frame.cx / 9525;
+	      size_t from_colOff = array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.from.colOff / 9525;
+	      size_t from_rowOff = array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.from.rowOff / 9525;
+	      int len_height = snprintf(NULL, 0, "%zu", height);
+	      int len_width = snprintf(NULL, 0, "%zu", width);
+	      int len_from_colOff = snprintf(NULL, 0, "%zu", from_colOff);
+	      int len_from_rowOff = snprintf(NULL, 0, "%zu", from_rowOff);
+	      int len_chart_name = XML_Char_len(array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.graphic_frame.name);
+	      int len_div_chart = len_chart_json_file_name + len_chart_url
+		+ len_chart_name + len_from_col_name + len_from_row + len_from_colOff + len_from_rowOff + len_height + len_width + 145;
+	      char *DIV_CHART = XML_Char_malloc(len_div_chart + 1);
+	      snprintf(
+		DIV_CHART, len_div_chart + 1,
+		"<div id=\"%s\" data-chart-url=\"%s\" data-name=\"%s\" data-from-col=\"%s\" data-from-row=\"%u\" data-from-rowoff=\"%zu\" data-from-coloff=\"%zu\" data-height=\"%zu\" data-width=\"%zu\">",
+		chart_json_file_name, array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->chart_url,
+		array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.graphic_frame.name,
+		from_col_name,
+		array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.from.row,
+		from_rowOff, from_colOff,
+		height, width
+	      );
+	      free(array_drawing_callbackdata.arr_drawing_callbackdata[i_arr_drawing_callbackdata]->twocellanchor.graphic_frame.name);
+	      fputs(DIV_CHART, findexhtml);
+	      fputs("</div>", findexhtml);
+	      fputs("\n", findexhtml);
+	      free(DIV_CHART);
+	      free(chart_json_file_name);
 	    }
-
-	    printf("TO ROW: %d\n", drawing_callbackdata.twocellanchor.to.row);
-	    printf("MAX ROW: %d\n", array_sheets.sheets[index_sheet]->max_row);
-	    if (array_sheets.sheets[index_sheet]->max_row < drawing_callbackdata.twocellanchor.to.row) {
-	      array_sheets.sheets[index_sheet]->num_of_chunks++;
-	      int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
-	      char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
-	      snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
-	      //12: chunk_%d_%d.html
-	      len_num_of_chunks = snprintf(NULL, 0, "%d", array_sheets.sheets[index_sheet]->num_of_chunks + 1);
-	      int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + len_index_sheet + len_num_of_chunks + 13;
-	      char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
-	      snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, index_sheet, array_sheets.sheets[index_sheet]->num_of_chunks);
-	      free(CHUNKS_DIR_PATH);
-	      FILE *worksheet_file = fopen(CHUNK_FILE_PATH, "w");
-	      if (worksheet_file == NULL) {
-		  debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);
-		  exit(-1);
-	      }
-	      free(CHUNK_FILE_PATH);
-	      while (array_sheets.sheets[index_sheet]->max_row++ < drawing_callbackdata.twocellanchor.to.row) {
-		_generate_cells(
-		    array_sheets.sheets[index_sheet]->max_row,
-		    array_sheets.sheets[index_sheet]->max_col_number, index_sheet,
-		    worksheet_file, &array_sheets.sheets[index_sheet]->num_of_chunks
-		);
-	      }
-	      fclose(worksheet_file);
-	    }
-
-	    array_sheets.sheets[index_sheet]->max_row = drawing_callbackdata.twocellanchor.to.row;
-	    drawing_callbackdata.twocellanchor = new_twocellanchor();
-
-	    for (int i_drawing_callback = 0; i_drawing_callback < drawing_callbackdata.array_chart_metadata.length; i_drawing_callback++) {
-	      for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
-		if (XML_Char_icmp(
-                  drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id,
-		  array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->id
-		  ) == 0) {
-                  int len_zip_chart_file_name = XML_Char_len(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->target);
-		  char *zip_chart_file_name = XML_Char_malloc(len_zip_chart_file_name + 1);
-		  snprintf(
-                    zip_chart_file_name, len_zip_chart_file_name + 1, "xl%s",
-		    array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->target + 2
-		  );
-		  struct ChartCallBackData chart_callbackdata;
-		  int status_init = chart_callbackdata_initialize(
-                    &chart_callbackdata,
-		    drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path,
-		    index_sheet
-		  );
-		  if (status_init == -1) {
-		    //TODO: Handle error
-		    continue;
-		  }
-                  int status_chart = load_chart(zip, zip_chart_file_name, &chart_callbackdata);
-		  free(zip_chart_file_name);
-		  fclose(chart_callbackdata.fchart);
-		   
-		}
-	      }
-
-	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->id);
-	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_name);
-	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]->file_path);
-	      free(drawing_callbackdata.array_chart_metadata.chart_metadata[i_drawing_callback]);
-	    }
-	    free(drawing_callbackdata.array_chart_metadata.chart_metadata);
-	    free(zip_drawing_file_name);
 	  }
-	  for (int index_drawing_rel = 0; index_drawing_rel < array_sheets.sheets[index_sheet]->array_drawing_rels.length; index_drawing_rel++) {
-            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->id);
-            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->target);
-            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]->type);
-            free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[index_drawing_rel]);
-	  }
-	  if (array_sheets.sheets[index_sheet]->array_drawing_rels.length !=0)
-	    free(array_sheets.sheets[index_sheet]->array_drawing_rels.relationships);
-	  if (array_sheets.sheets[index_sheet]->array_worksheet_rels.length !=0)
-	    free(array_sheets.sheets[index_sheet]->array_worksheet_rels.relationships);
 
 	  for (int index_chunk = 0; index_chunk <= array_sheets.sheets[index_sheet]->num_of_chunks; index_chunk++) {
 	    //7: chunk_%d_%d
