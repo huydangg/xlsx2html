@@ -67,6 +67,8 @@ void drawings_callbackdata_initialize (struct DrawingCallbackData *data, struct 
   data->is_graphicframe = '0';
   data->array_chart_metadata.length = 0;
   data->array_chart_metadata.chart_metadata = NULL;
+  data->img_url = NULL;
+  data->chart_url = NULL;
 }
 
 void drawings_skip_tag_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs) {
