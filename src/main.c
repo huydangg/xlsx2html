@@ -497,13 +497,32 @@ void pre_process(zip_t *zip) {
   /*char is_graphicframe;*/
   /*struct ArrayChartMetaData array_chart_metadata;*/
 /*};*/
+/*struct Offset {*/
+  /*unsigned int col;*/
+  /*size_t colOff;*/
+  /*unsigned int row;*/
+  /*size_t rowOff;*/
+/*};*/
 	    array_drawing_callbackdata.length++;
 	    array_drawing_callbackdata.arr_drawing_callbackdata = XML_Char_realloc(
 		array_drawing_callbackdata.arr_drawing_callbackdata,
 		array_drawing_callbackdata.length * sizeof(struct DrawingCallbackData *)
 	    );
 	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels] = XML_Char_malloc(sizeof(struct DrawingCallbackData));
-	    memcpy((void *)&array_drawing_callbackdata.arr_drawing_callbackdata[index_rels], (void *)&drawing_callbackdata, sizeof(struct DrawingCallbackData));
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->twocellanchor.from.col = drawing_callbackdata.twocellanchor.from.col;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->twocellanchor.from.colOff = drawing_callbackdata.twocellanchor.from.colOff;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->twocellanchor.to.col = drawing_callbackdata.twocellanchor.to.col;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->twocellanchor.to.colOff = drawing_callbackdata.twocellanchor.to.colOff;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->twocellanchor.pic.cx = drawing_callbackdata.twocellanchor.pic.cx;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->twocellanchor.pic.cy = drawing_callbackdata.twocellanchor.pic.cy;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->index_image = drawing_callbackdata.index_image;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->index_graphicframe = drawing_callbackdata.index_graphicframe;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->is_pic = drawing_callbackdata.is_pic;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->is_graphicframe = drawing_callbackdata.is_graphicframe;
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->img_url = strdup(drawing_callbackdata.img_url);
+	    array_drawing_callbackdata.arr_drawing_callbackdata[index_rels]->chart_url = strdup(drawing_callbackdata.chart_url);
+
+
 
 
 	    printf("TO ROW: %d\n", drawing_callbackdata.twocellanchor.to.row);

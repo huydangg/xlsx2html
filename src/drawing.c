@@ -265,7 +265,6 @@ void drawings_lv1_end_element(void *callbackdata, const XML_Char *name) {
     }
     XML_SetElementHandler(xmlparser, drawings_lv1_start_element, drawings_lv1_end_element);
   } else if (XML_Char_icmp(name, "xdr:to") == 0) {
-    printf("_TMP_OFFSET ROW: %d\n", drawing_callbackdata->_tmp_offset.row);
     if (drawing_callbackdata->_tmp_offset.row != 0) {
       drawing_callbackdata->twocellanchor.to.col = drawing_callbackdata->_tmp_offset.col;
       drawing_callbackdata->twocellanchor.to.colOff = drawing_callbackdata->_tmp_offset.colOff;
