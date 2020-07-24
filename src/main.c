@@ -197,6 +197,8 @@ int load_worksheets(zip_t *zip) {
     worksheet.array_drawingids.length = 0;
     worksheet.array_drawingids.drawing_ids = NULL;
     worksheet.num_of_chunks = 1;
+    worksheet.has_cols = '0';
+    worksheet.array_cols.length = 0;
 
     int status_worksheet = process_zip_file(archive, &worksheet, NULL, worksheet_start_element, worksheet_end_element);
     if (status_worksheet != 1){
