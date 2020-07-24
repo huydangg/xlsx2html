@@ -117,23 +117,39 @@ int generate_columns(struct ArrayCols array_cols, unsigned short end_col_number,
   free(THE_FIRST_CHUNK_PATH);
   fputs("<tr>", fchunk0);
   fputs("<th style=\"width:35px;height:15px;\"></th>", fchunk0);
-  for (int i = 1; i <= end_col_number; i++) {
-    char TH_STRING[256];
-    for (int index_col = 0; index_col < array_cols.length; index_col++) {
-      if (i >= array_cols.cols[index_col]->min && i <= array_cols.cols[index_col]->max) {
-	float column_width_in_px = array_cols.cols[index_col]->width * (64 * 1.0 / 8.43);
-	snprintf(TH_STRING, sizeof(TH_STRING), "<th style=\"width:%gpx;\">", column_width_in_px);
-        break;
+  if (array_cols.length != 0) {
+    for (int i = 1; i <= end_col_number; i++) {
+      char TH_STRING[256];
+      for (int index_col = 0; index_col < array_cols.length; index_col++) {
+	if (i >= array_cols.cols[index_col]->min && i <= array_cols.cols[index_col]->max) {
+	  float column_width_in_px = array_cols.cols[index_col]->width * (64 * 1.0 / 8.43);
+	  snprintf(TH_STRING, sizeof(TH_STRING), "<th style=\"width:%gpx;\">", column_width_in_px);
+	  break;
+	}
       }
+      fputs(TH_STRING, fchunk0);
+      fputs("\n", fchunk0);
+      char *column_name = int_to_column_name((unsigned int)i);
+      fputs(column_name, fchunk0);
+      fputs("\n", fchunk0);
+      free(column_name);
+      fputs("</th>", fchunk0);
+      fputs("\n", fchunk0);
     }
-    fputs(TH_STRING, fchunk0);
-    fputs("\n", fchunk0);
-    char *column_name = int_to_column_name((unsigned int)i);
-    fputs(column_name, fchunk0);
-    fputs("\n", fchunk0);
-    free(column_name);
-    fputs("</th>", fchunk0);
-    fputs("\n", fchunk0);
+  } else {
+    for (int i = 1; i <= end_col_number; i++) {
+      char TH_STRING[256];
+      float column_width_in_px = 35;
+      snprintf(TH_STRING, sizeof(TH_STRING), "<th style=\"width:%gpx;\">", column_width_in_px);
+      fputs(TH_STRING, fchunk0);
+      fputs("\n", fchunk0);
+      char *column_name = int_to_column_name((unsigned int)i);
+      fputs(column_name, fchunk0);
+      fputs("\n", fchunk0);
+      free(column_name);
+      fputs("</th>", fchunk0);
+      fputs("\n", fchunk0);
+    }
   }
   fputs("</tr>", fchunk0);
   fclose(fchunk0);
@@ -254,6 +270,13 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
       XML_SetElementHandler(xmlparser, col_row_start_element, NULL);
     }
   } else if (XML_Char_icmp(name, "sheetData") == 0) {
+    if (worksheet_callbackdata->has_cols == '0') {
+      debug_print("Not found <cols>\n");
+      int status = generate_columns(worksheet_callbackdata->array_cols, worksheet_callbackdata->end_col_number, INDEX_CURRENT_SHEET);
+      if (status == -1) {
+	debug_print("Not found <dimension>\n");
+      }
+    }
     worksheet_callbackdata->ROW_NUMBER = 0;
     int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
     char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
@@ -310,10 +333,11 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
     fclose(worksheet_callbackdata->worksheet_file);
   } else if (XML_Char_icmp(name, "cols") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
+    worksheet_callbackdata->has_cols = '1';
     int  status = generate_columns(worksheet_callbackdata->array_cols, worksheet_callbackdata->end_col_number, INDEX_CURRENT_SHEET);
     if (status == -1) {
-      debug_print("%s\n", strerror(errno));
-      return;
+      debug_print("Not found <dimension>\n");
+      goto JUMP;
     }
     for (int index_col = 0; index_col < worksheet_callbackdata->array_cols.length; index_col++) {
       free(worksheet_callbackdata->array_cols.cols[index_col]);
@@ -328,7 +352,7 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
   } else if (XML_Char_icmp(name, "drawing") == 0) {
 
   }
-
+JUMP:
   XML_SetElementHandler(xmlparser, worksheet_start_element, NULL);
 }
 
