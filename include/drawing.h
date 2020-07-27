@@ -28,30 +28,16 @@ struct GraphicFrame {
 };
 
 struct TwoCellAnchor {
-  char *editAs;
   struct Offset from;
   struct Offset to;
   struct Pic pic;
   struct GraphicFrame graphic_frame;
 };
 
-struct ChartMetaData {
-  char *file_name;
-  char *file_path;
-  char *id;
-};
-
-struct ArrayChartMetaData {
-  int length;
-  struct ChartMetaData **chart_metadata;
-};
 
 struct DrawingCallbackData {
-  struct ArrayRelationships *array_drawing_rels;
   struct TwoCellAnchor twocellanchor;
   struct Offset _tmp_offset;
-  zip_t *zip;
-  FILE *findexhtml;
   XML_Char *text;
   size_t textlen;
   XML_Char* skiptag;                    //tag to skip
@@ -59,19 +45,14 @@ struct DrawingCallbackData {
   XML_StartElementHandler skip_start;   //start handler to set after skipping
   XML_EndElementHandler skip_end;       //end handler to set after skipping
   XML_CharacterDataHandler skip_data;   //data handler to set after skipping
-  int index_sheet;
-  int index_image;
-  int index_graphicframe;
   char is_pic;
   char is_graphicframe;
-  char *img_url;
-  char *chart_url;
-  struct ArrayChartMetaData array_chart_metadata;
 };
 
 struct  ArrayDrawingCallbackData {
   int length;
-  struct DrawingCallbackData **arr_drawing_callbackdata;
+  unsigned int max_row_drawing;
+  struct DrawingCallbackData **drawing_callbackdata;
 };
 
 extern XML_Parser xmlparser;
@@ -88,7 +69,7 @@ void drawings_lv4_start_element(void *callbackdata, const XML_Char *name, const 
 void drawings_lv4_end_element(void *callbackdata, const XML_Char *name);
 void drawings_content_handler(void *callbackdata, const XML_Char *buf, int len);
 
-void drawings_callbackdata_initialize(struct DrawingCallbackData *, struct ArrayRelationships *, FILE *, zip_t *, int);
+void drawings_callbackdata_initialize(struct DrawingCallbackData *);
 struct TwoCellAnchor new_twocellanchor();
 
 void drawings_skip_tag_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
