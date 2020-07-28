@@ -177,28 +177,7 @@ void _generate_cells(unsigned int current_row, unsigned short max_col, unsigned 
       free(col_name);
       free(td);
     }
-
     fputs("</tr>", _worksheet_file);
-    /*if (ftell(_worksheet_file) >= CHUNK_SIZE_LIMIT) {*/
-      /*(*num_of_chunks)++;*/
-      /*printf("NUM of CHUNKS: %d\n", *num_of_chunks);*/
-      /*int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;*/
-      /*char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);*/
-      /*snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);*/
-      /*//12: chunk_%d_%d.html*/
-      /*int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", index_current_sheet) + snprintf(NULL, 0, "%d", *num_of_chunks) + 13;*/
-      /*char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);*/
-      /*snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, index_current_sheet, *num_of_chunks);*/
-      /*debug_print("CHUNK FILE PATH: %s\n", CHUNK_FILE_PATH);*/
-      /*free(CHUNKS_DIR_PATH);*/
-      /*fclose(_worksheet_file);*/
-      /*_worksheet_file = fopen(CHUNK_FILE_PATH, "w");*/
-      /*if (_worksheet_file == NULL) {*/
-	/*debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);*/
-	/*exit(-1);*/
-      /*}*/
-      /*free(CHUNK_FILE_PATH);*/
-    /*}*/
 }
 
 // When tag <row> is empty.
@@ -331,7 +310,6 @@ void worksheet_start_element(void *callbackdata, const XML_Char *name, const XML
 
 void worksheet_end_element(void *callbackdata, const XML_Char *name) {
   if (XML_Char_icmp(name, "sheetData") == 0) {
-    struct WorkSheet *worksheet_callbackdata = callbackdata;
     if (worksheet_file != NULL)
       fclose(worksheet_file);
   } else if (XML_Char_icmp(name, "cols") == 0) {
@@ -346,7 +324,6 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
       free(worksheet_callbackdata->array_cols.cols[index_col]);
     }
     free(worksheet_callbackdata->array_cols.cols);
-
   } else if (XML_Char_icmp(name, "mergeCells") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
     fseek(worksheet_callbackdata->fmergecell, -1, SEEK_CUR);
@@ -457,7 +434,6 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
 	free(td);
       }
       fputs("</tr>", worksheet_file);
-
       pre_row_number++;
     }
 
@@ -486,7 +462,6 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     fputs(TR_TAG, worksheet_file);
     free(TR_TAG);
     int len_row_height_in_px = snprintf(NULL, 0, "%.2f", row_height_in_px);
-
     int LEN_TH_TAG = 29 + len_row_height_in_px + len_row_number;
     char TH_TAG[LEN_TH_TAG];
     snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%.2fpx;\">%d</th>", row_height_in_px, worksheet_callbackdata->ROW_NUMBER);
@@ -540,27 +515,6 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
   } else if (XML_Char_icmp(name, "row") == 0) {
     struct WorkSheet *worksheet_callbackdata = callbackdata;
-    if (ftell(worksheet_file) >= CHUNK_SIZE_LIMIT) {
-      worksheet_callbackdata->num_of_chunks++;
-      int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
-      char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
-      snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR, CHUNKS_DIR_NAME);
-      //12: chunk_%d_%d.html
-      int len_chunk_file_path = LEN_CHUNKS_DIR_PATH + snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET) + snprintf(NULL, 0, "%d", worksheet_callbackdata->num_of_chunks) + 13;
-      char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
-      if (CHUNK_FILE_PATH == NULL)
-	debug_print("AAAAAAAAAA");
-      snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1, "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, INDEX_CURRENT_SHEET, worksheet_callbackdata->num_of_chunks);
-      debug_print("CHUNK FILE PATH: %s\n", CHUNK_FILE_PATH);
-      free(CHUNKS_DIR_PATH);
-      fclose(worksheet_file);
-      worksheet_file = fopen(CHUNK_FILE_PATH, "w");
-      if (worksheet_file == NULL) {
-	debug_print("%s: %s\n", strerror(errno), CHUNK_FILE_PATH);
-	exit(-1);
-      }
-      free(CHUNK_FILE_PATH);
-    }
     int len_row_number = snprintf(NULL, 0, "%d", worksheet_callbackdata->ROW_NUMBER);
     int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
     while (START_CELL_IN_NUMBER_BY_ROW <= worksheet_callbackdata->end_col_number) {
@@ -580,7 +534,6 @@ void col_row_end_element(void *callbackdata, const XML_Char *name) {
       free(td);
       START_CELL_IN_NUMBER_BY_ROW++;
     }
-
     fputs("</tr>", worksheet_file);
     XML_SetElementHandler(xmlparser, col_row_start_element, worksheet_end_element);
   } else if (XML_Char_icmp(name, "mergeCell") == 0) {
@@ -606,7 +559,6 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
 	memcpy(worksheet_callbackdata->type_content, attrs[i + 1], 1 + XML_Char_len(attrs[i + 1]));
       }
     }
-
     int len_row_number = snprintf(NULL, 0, "%d", worksheet_callbackdata->ROW_NUMBER);
     int len_index_sheet = snprintf(NULL, 0, "%d", INDEX_CURRENT_SHEET);
     while (START_CELL_IN_NUMBER_BY_ROW < CURRENT_CELL_IN_NUMBER_BY_ROW) {
@@ -751,7 +703,6 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
     free(border_right);
     free(border_top);
     free(border_bottom);
-
     unsigned short font_id = 0;
     if (array_cellXfs.Xfs[worksheet_callbackdata->index_style].isApplyFont == '1') {
       font_id = array_cellXfs.Xfs[worksheet_callbackdata->index_style].fontId;
@@ -848,7 +799,6 @@ void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char
       if (font_style == NULL) {
 	font_style = calloc(1, sizeof(char));
       }
-
       int len_styles = XML_Char_len(horizontal_style) + XML_Char_len(vertical_style) + XML_Char_len(wraptext_style) + XML_Char_len(border_style) + XML_Char_len(font_style) + LEN_FILL_FGCOLOR_RGB;
       styles = XML_Char_realloc(styles, len_styles + 1);
       snprintf(styles, len_styles + 1, "%s%s%s%s%s%s", horizontal_style, vertical_style, wraptext_style, border_style, font_style, fill_style);

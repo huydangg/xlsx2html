@@ -30,7 +30,6 @@ struct WorkSheet {
   char *end_row;
   unsigned short index_sheet;
   char hasMergedCells;
-  FILE *worksheet_file;
   char *cell_name;
   char *type_content;
   unsigned short index_style;

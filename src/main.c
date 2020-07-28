@@ -510,7 +510,6 @@ void pre_process(zip_t *zip) {
 	      snprintf(TR_TAG, LEN_TR_TAG, "<tr id=\"%d\">", array_sheets.sheets[index_sheet]->max_row);
 	      fputs(TR_TAG, worksheet_file);
 	      free(TR_TAG);
-
 	      int LEN_TH_TAG = 29 + len_row_height_in_px + len_row_number;
 	      char TH_TAG[LEN_TH_TAG];
 	      snprintf(TH_TAG, LEN_TH_TAG, "<th style=\"height:%.2fpx;\">%d</th>", row_height_in_px, array_sheets.sheets[index_sheet]->max_row);
@@ -643,7 +642,6 @@ void pre_process(zip_t *zip) {
 			token = strtok(NULL, ".");
 		      }
 		      free(token);
-
 		      len_resource_url = XML_Char_len(RESOURCE_URL);
 		      len_img_name = XML_Char_len(img_name);
 		      int len_img_ext = XML_Char_len(img_ext);
@@ -768,7 +766,6 @@ void pre_process(zip_t *zip) {
 	      free(_tmp_target);
 	    }
 	    free(drawing_id);
-
 	  }
 	  for (int i_drawing = 0; i_drawing < array_drawing_callbackdata.length; i_drawing++) {
 	    if (array_drawing_callbackdata.drawing_callbackdata[i_drawing]->is_pic == '1') {
@@ -813,7 +810,6 @@ void pre_process(zip_t *zip) {
 	      CHUNK_HTML_URL = XML_Char_malloc(len_chunk_html_url + 1);
 	      snprintf(CHUNK_HTML_URL, len_chunk_html_url + 1, "%s/%s.chunk", CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME);
 	    }
-
 	    int len_div_chunk = len_chunk_html_file_name + len_chunk_html_url + 35;
             char *DIV_CHUNK = XML_Char_malloc(len_div_chunk + 1);
 	    snprintf(
@@ -829,7 +825,6 @@ void pre_process(zip_t *zip) {
 	  }
 	  fputs("</div>", findexhtml);
 	  fputs("\n", findexhtml);
-
         }
       } else if (XML_Char_icmp(line, "$buttons\n") == 0) {
         //<button id="btn-Form Responses 1">Form Responses 1</button>
