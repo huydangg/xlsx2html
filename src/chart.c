@@ -133,7 +133,11 @@ void chart_title_item_end_element(void *callbackdata, const XML_Char *name) {
   struct ChartCallBackData *chart_callbackdata = callbackdata;
   if (XML_Char_icmp(name, "a:t") == 0) {
     fputs("\"", chart_callbackdata->fchart);
-    chart_callbackdata->text[chart_callbackdata->textlen] = '\0';
+    if (chart_callbackdata->text[chart_callbackdata->textlen - 1] == '\n') {
+      chart_callbackdata->text[chart_callbackdata->textlen - 1] = '\0';
+    } else {
+      chart_callbackdata->text[chart_callbackdata->textlen] = '\0';
+    }
     fputs(chart_callbackdata->text, chart_callbackdata->fchart);
     fputs("\"", chart_callbackdata->fchart);
     free(chart_callbackdata->text);
