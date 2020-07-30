@@ -587,10 +587,8 @@ void pre_process(zip_t *zip) {
 		array_sheets.sheets[index_sheet]->array_drawing_rels.relationships[i_drawing_rel]->id
 		) == 0) {
 		if (array_drawing_callbackdata.drawing_callbackdata[i_drawing]->is_pic == '1') {
-		  index_image++;
 		  struct zip_stat sb;
 		  struct zip_file *img_zf;
-		  int img_fd;
 		  if (zip_stat(zip, _tmp_target, 0, &sb) == 0) {
 		    img_zf = zip_fopen(zip, sb.name, 0);
 		    if (!img_zf) {
@@ -605,13 +603,30 @@ void pre_process(zip_t *zip) {
 		      token = strtok(NULL, "/");
 		      count++;
 		    }
-
 		    char *img_name = strdup(token);
+		    token = strtok(img_name, ".");
+		    char *img_ext = strdup(token);
+		    while (token != NULL) {
+		      free(img_ext);
+		      img_ext = NULL;
+		      img_ext = strdup(token);
+		      token = strtok(NULL, ".");
+		    }
+		    free(token);
 		    free(img_zf_name);
+		    if (XML_Char_icmp(img_ext, "wmf") == 0) {
+		      free(img_name);
+		      free(img_ext);
+		      free(_tmp_target);
+		      free(from_col_name);
+		      zip_fclose(img_zf);
+		      continue;
+		    }
+		    index_image++;
 		    int len_output_img_file_path = XML_Char_len(OUTPUT_DIR) + XML_Char_len(img_name) + 1;
 		    char *OUTPUT_IMG_FILE_PATH = XML_Char_malloc(len_output_img_file_path + 1);
 		    snprintf(OUTPUT_IMG_FILE_PATH, len_output_img_file_path + 1, "%s/%s", OUTPUT_DIR, img_name);
-		    img_fd = open(OUTPUT_IMG_FILE_PATH, O_WRONLY | O_CREAT, 0644);
+		    int img_fd = open(OUTPUT_IMG_FILE_PATH, O_WRONLY | O_CREAT, 0644);
 		    if (img_fd < 0) {
 		      debug_print("%s: %s\n", strerror(errno), OUTPUT_IMG_FILE_PATH);
 		      continue;
@@ -633,15 +648,6 @@ void pre_process(zip_t *zip) {
 		    char *IMG_URL = NULL;
 		    int len_resource_url, len_img_name, len_img_url;
 		    if (strstr(RESOURCE_URL, "https") != NULL) {
-		      token = strtok(img_name, ".");
-		      char *img_ext = strdup(token);
-		      while (token != NULL) {
-			free(img_ext);
-			img_ext = NULL;
-			img_ext = strdup(token);
-			token = strtok(NULL, ".");
-		      }
-		      free(token);
 		      len_resource_url = XML_Char_len(RESOURCE_URL);
 		      len_img_name = XML_Char_len(img_name);
 		      int len_img_ext = XML_Char_len(img_ext);
@@ -655,6 +661,7 @@ void pre_process(zip_t *zip) {
 		      free(OUTPUT_IMG_FILE_PATH);
 		    }
 		    free(img_name);
+		    free(img_ext);
 		    // http://officeopenxml.com/drwPicInSpread-oneCell.php
 		    // EMUs to pixels: value / 9525 (1 pixel = 9525 EMUs)
 		    size_t height = array_drawing_callbackdata.drawing_callbackdata[i_drawing]->twocellanchor.pic.cy / 9525;
@@ -873,7 +880,7 @@ void pre_process(zip_t *zip) {
 }
 
 void post_process() {
-  //TODO: To handle remove redunant rows, columns, condition formating, create a redundant chunk to fill image in table
+  //TODO: To handle remove redunant rows, columns, condition formating
 }
 
 int main(int argc, char **argv) {
