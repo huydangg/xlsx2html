@@ -317,7 +317,7 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
     int  status = generate_columns(worksheet_callbackdata->array_cols, worksheet_callbackdata->end_col_number, INDEX_CURRENT_SHEET);
     if (status == -1) {
       debug_print("Not found <dimension>\n");
-      goto JUMP;
+      goto fail;
     }
     for (int index_col = 0; index_col < worksheet_callbackdata->array_cols.length; index_col++) {
       free(worksheet_callbackdata->array_cols.cols[index_col]);
@@ -331,7 +331,7 @@ void worksheet_end_element(void *callbackdata, const XML_Char *name) {
   } else if (XML_Char_icmp(name, "drawing") == 0) {
 
   }
-JUMP:
+fail:
   XML_SetElementHandler(xmlparser, worksheet_start_element, NULL);
 }
 
@@ -373,9 +373,7 @@ void col_row_start_element(void *callbackdata, const XML_Char *name, const XML_C
     int len_row_number = 0;
     for (int i = 0; attrs[i]; i+=2) {
       if (XML_Char_icmp(attrs[i], "r") == 0) {
-        if (worksheet_callbackdata->ROW_NUMBER != 0) {
-	  pre_row_number = worksheet_callbackdata->ROW_NUMBER + 1;
-        }
+	pre_row_number = worksheet_callbackdata->ROW_NUMBER + 1;
 	worksheet_callbackdata->ROW_NUMBER = (unsigned short)XML_Char_tol(attrs[i + 1]);
 	len_row_number = snprintf(NULL, 0, "%d", worksheet_callbackdata->ROW_NUMBER);
       } else if (XML_Char_icmp(attrs[i], "ht") == 0) {
