@@ -623,9 +623,9 @@ void pre_process(zip_t *zip) {
 		      continue;
 		    }
 		    index_image++;
-		    int len_output_img_file_path = XML_Char_len(OUTPUT_DIR) + XML_Char_len(img_name) + 1;
+		    int len_output_img_file_path = XML_Char_len(OUTPUT_DIR) + XML_Char_len(img_name) + XML_Char_len(img_ext) + 2;
 		    char *OUTPUT_IMG_FILE_PATH = XML_Char_malloc(len_output_img_file_path + 1);
-		    snprintf(OUTPUT_IMG_FILE_PATH, len_output_img_file_path + 1, "%s/%s", OUTPUT_DIR, img_name);
+		    snprintf(OUTPUT_IMG_FILE_PATH, len_output_img_file_path + 1, "%s/%s.%s", OUTPUT_DIR, img_name, img_ext);
 		    int img_fd = open(OUTPUT_IMG_FILE_PATH, O_WRONLY | O_CREAT, 0644);
 		    if (img_fd < 0) {
 		      debug_print("%s: %s\n", strerror(errno), OUTPUT_IMG_FILE_PATH);
