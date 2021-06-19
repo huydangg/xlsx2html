@@ -1,6 +1,6 @@
 # `XLSXmagic` 
 
-> A tool help to view a XLSX file on Browser.
+> A helpful tool for viewing a XLSX file on Browser.
 
 XLSXmagic renders XLSX files in HTML, utilizing modern Web technologies.
 
