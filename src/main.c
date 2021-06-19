@@ -599,8 +599,7 @@ void pre_process(zip_t *zip) {
 		    char *token = strtok(img_zf_name , "/");
 		    int count = 0;
 		    count++;
-		    while (count <= 2) {
-		      token = strtok(NULL, "/");
+		    while (count <= 2) { token = strtok(NULL, "/");
 		      count++;
 		    }
 		    char *img_name = strdup(token);
@@ -897,8 +896,8 @@ int main(int argc, char **argv) {
     int this_option_optind = optind ? optind : 1;
     int option_index = 0;
     static struct option long_options[] = {
-         {"origin-file-path", required_argument, 0, 0},
-         {"output-dir",  required_argument, 0, 0},
+         {"input", required_argument, 0, 0},
+         {"output",  required_argument, 0, 0},
          {"output-file-name", required_argument, 0, 0},
          {"tmp-dir", required_argument, 0, 0},
          {"url-resource", required_argument, 0, 0},
@@ -916,13 +915,13 @@ int main(int argc, char **argv) {
     switch (c) {
       case 0:
         printf("option %s", long_options[option_index].name);
-	if (strcmp(long_options[option_index].name, "origin-file-path") == 0) {
+	if (strcmp(long_options[option_index].name, "input") == 0) {
 	  if (optarg) {
 	    ORIGIN_FILE_PATH = strdup(optarg);
 	    has_origin_file_path = '1';
             printf(" with arg %s", optarg);
 	  }
-	} else if (strcmp(long_options[option_index].name, "output-dir") == 0) {
+	} else if (strcmp(long_options[option_index].name, "output") == 0) {
 	  if (optarg) {
 	    OUTPUT_DIR = strdup(optarg);
 	    has_output_dir = '1';
@@ -962,13 +961,13 @@ int main(int argc, char **argv) {
       case 'h':
       case '?':
 	printf("%s\n", XLSXMAGIC_FULLNAME);
-	printf("%s%50s\n", "--origin-file-path", "Path to xlsx file to be converted");
-	printf("%s%40s\n", "--output-dir", "Path to ouput dir");
-	printf("%s%58s\n", "--output-file-name", "File index html (exclude .html extension)");
-	printf("%s%42s\n", "--tmp-dir", "Path to temp dir");
-	printf("%s%70s\n", "--url-resource", "Url to resource (image, etc) follow by enviroment");
-	printf("%s%48s\n", "-h, --help", "Print usage information");
-	printf("%s%42s\n", "-v, --version", "Show current version");
+	printf("%s%40s\n", "--input", "Path to xlsx file");
+	printf("%s%46s\n", "--output", "Path to output directory");
+	printf("%s%32s\n", "--output-file-name", "Default (index.html)");
+	printf("%s%42s\n", "--tmp-dir", "Path to temporary dir");
+	printf("%s%64s\n", "--url-resource", "Url to resource (image,etc) follow by enviroment");
+	printf("%s%43s\n", "-h, --help", "Print usage information");
+	printf("%s%37s\n", "-v, --version", "Show current version");
         exit(EXIT_SUCCESS);
       case 'v':
 	printf("%s\n", XLSXMAGIC_FULLNAME);

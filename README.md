@@ -31,19 +31,27 @@ On **Linux** / **macOS** / **Windows**:
 make
 ```
 
+### Important: Save the XLSX file again in LibreOffice before you run this tool to work well.
+
+
 ## Usage:
 
 ```
-./xlsxmagic 
+./xlsxmagic --help
 ```
 
 ## Features
 
+* Many number formats (include datetime, decimal and more).
+* Multi fonts in one cell.
+* Multi sheets.
 * Native HTML text with precise font and location.
-* Flexible output: all-in-one HTML or on demand page loading (needs JavaScript).
-* Supporting links, types, fonts, images and [more...]
+* Supporting links, types, fonts, images, boders and [more...]
 
 ## TODO:
+
+[x] Support Mircosoft Office template
+[x] Multi-thread
 
 
 
