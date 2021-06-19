@@ -53,5 +53,8 @@ make
 - [ ] Support Mircosoft Office template
 - [ ] Multi-thread
 
+## License
 
+[MIT](https://opensource.org/licenses/MIT)
 
+Copyright (c) 2021-present, Huy Dang
