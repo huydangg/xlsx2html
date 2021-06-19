@@ -50,8 +50,8 @@ make
 
 ## TODO:
 
-[x] Support Mircosoft Office template
-[x] Multi-thread
+- [ ] Support Mircosoft Office template
+- [ ] Multi-thread
 
 
 
