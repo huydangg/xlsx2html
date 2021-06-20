@@ -6,6 +6,8 @@ XLSXmagic renders XLSX files in HTML, utilizing modern Web technologies.
 
 XLSXmagic welcomes contribution from everyone.
 
+[DEMO](https://huydangg.github.io/)
+
 ## Getting started
 
 ### Step 1: Install `libzip`
