@@ -16,7 +16,7 @@ On **Linux** / **macOS**:
 
 [How to install libzip](https://github.com/nih-at/libzip/blob/master/INSTALL.md)
 
-On ***Windows***:
+On **Windows**:
 
 ```sh
 Comming soon
@@ -27,11 +27,12 @@ On **Linux** / **macOS** / **Windows**:
 
 [Download JRE](https://www.java.com/en/download/manual.jsp)
 
-**Finally:** Run this command to build
+**Step 3:** Run this command to build
 
  ```sh
 make
 ```
+<br/><br/>
 
 
 
@@ -40,7 +41,7 @@ make
 ```
 ./xlsxmagic --help
 ```
-**&#8674;Important:** Save the XLSX file again in LibreOffice before you run this tool to work well.
+**&#8674;Important:** Save the XLSX file again in LibreOffice before you run this tool to work well.<br/><br/><br/>
 
 ## :rocket: Features
 
@@ -48,12 +49,14 @@ make
 * Multi fonts in one cell.
 * Multi sheets.
 * Native HTML text with precise font and location.
-* Supporting links, types, fonts, images, boders and [more...]
+* Supporting links, types, fonts, images, boders and [more...]<br/><br/><br/>
+
 
 ## :fire: TODO:
 
 - [ ] Support Mircosoft Office template
-- [ ] Multi-thread
+- [ ] Multi-thread<br/><br/><br/>
+
 
 ## License
 
