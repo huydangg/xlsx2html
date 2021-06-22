@@ -1,15 +1,15 @@
 <!-- <p align="center"><a href="https://github.com/nastyox/Rando.js#nastyox"><img src="" alt="" height="60"/></a></p> -->
 <h1 align="center">XLSXmagic</h1>
-<p align="center">The world's easiest, most powerful tool for viewing a XLSX file on Browser.</p>
-<p align="center"><a href="https://huydangg.github.io/">DEMO</a></p>
-<!-- <p align="center">
-	<a href="https://github.com/nastyox/Rando.js#nastyox"><img src="http://randojs.com/images/2.3kb-shield.png" height="20"/></a>
-    <a href="https://twitter.com/intent/tweet?text=Ditch%20all%20that%20convoluted%20%22Math.random()%22%20code.%20Rando.js%20makes%20picking%20a%20number%201-100%20as%20simple%20as%20%22rando(1,%20100)%22,%20and%20it%20can%20do%20way%20more%20just%20as%20easily-%20at%20a%20cryptographically%20strong%20level.&url=https://github.com/nastyox/Rando.js&hashtags=javascript,opensource,js,webdev,developers"><img src="http://randojs.com/images/tweetShield.svg" alt="Tweet" height="20"/></a>
-</p><br/><br/>
+<p align="center"> A high-performance converting tool that helps you view a XLSX file on Browser.</p>
+<p align="center">
+	<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/github/license/huydangg/xlsxmagic?style=flat-square" height="20"/></a>
+   
+</p>
+<p align="center"><a href="https://huydangg.github.io/">DEMO</a></p><br/><br/>
 
-<p align="center"><a href="https://github.com/nastyox/Rando.js#nastyox"><img src="http://randojs.com/images/2.0.0-20fps.gif" width="100%"/></a><a href="#nastyox"><img src="http://randojs.com/images/dropShadow.png" width="100%"/></a></p><br/> -->
+<!-- <p align="center"><a href="https://github.com/nastyox/Rando.js#nastyox"><img src="http://randojs.com/images/2.0.0-20fps.gif" width="100%"/></a><a href="#nastyox"><img src="http://randojs.com/images/dropShadow.png" width="100%"/></a></p><br/> -->
 
-## :zap:  Fast implementation  
+## Fast implementation  
 **Step 1:** Install `libzip`
 
 On **Linux** / **macOS**:
@@ -32,30 +32,30 @@ On **Linux** / **macOS** / **Windows**:
  ```sh
 make
 ```
-<br/><br/>
+<br/>
 
 
 
-## :tada: Usage:
+## Usage:
 
 ```
 ./xlsxmagic --help
 ```
-**&#8674;Important:** Save the XLSX file again in LibreOffice before you run this tool to work well.<br/><br/><br/>
+**&#8674;Important:** Save the XLSX file again in LibreOffice before you run this tool to work well.<br/><br/>
 
-## :rocket: Features
+## Features
 
 * Many number formats (include datetime, decimal and more).
 * Multi fonts in one cell.
 * Multi sheets.
 * Native HTML text with precise font and location.
-* Supporting links, types, fonts, images, boders and [more...]<br/><br/><br/>
+* Supporting links, types, fonts, images, boders and [more...]<br/><br/>
 
 
-## :fire: TODO:
+## TODO:
 
 - [ ] Support Mircosoft Office template
-- [ ] Multi-thread<br/><br/><br/>
+- [ ] Multi-thread<br/><br/>
 
 
 ## License
