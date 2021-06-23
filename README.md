@@ -49,7 +49,7 @@ make
 * Multi fonts in one cell.
 * Multi sheets.
 * Native HTML text with precise font and location.
-* Supporting links, types, fonts, images, boders and [more...]<br/><br/>
+* Supporting links, types, fonts, images, boders, merged cells and [more...]<br/><br/>
 
 
 ## TODO:
