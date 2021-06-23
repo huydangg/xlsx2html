@@ -538,12 +538,12 @@ void pre_process(zip_t *zip) {
 	    snprintf(CHUNK_MC_FILE_NAME, len_chunk_mc_file_name + 1, "chunk_%d_mc", index_sheet);
 	    int len_resource_url, len_chunk_mc_url;
 	    char *CHUNK_MC_URL;
-	    if (strstr(RESOURCE_URL, "https") != NULL) {
+	    if (strstr(RESOURCE_URL, "http") != NULL) {
 	      len_resource_url = XML_Char_len(RESOURCE_URL);
 	      int len_output_file_name = XML_Char_len(OUTPUT_FILE_NAME);
-	      len_chunk_mc_url = len_chunk_mc_file_name + len_resource_url + len_output_file_name + 6;
+	      len_chunk_mc_url = len_chunk_mc_file_name + len_resource_url + len_output_file_name + 8;
 	      CHUNK_MC_URL = XML_Char_malloc(len_chunk_mc_url + 1);
-	      snprintf(CHUNK_MC_URL , len_chunk_mc_url + 1, "%s%s/json/%s", RESOURCE_URL, OUTPUT_FILE_NAME, CHUNK_MC_FILE_NAME);
+	      snprintf(CHUNK_MC_URL , len_chunk_mc_url + 1, "%s/chunks/%s.json", RESOURCE_URL, CHUNK_MC_FILE_NAME);
 	    } else {
 	      len_chunk_mc_url = len_chunk_mc_file_name + len_chunks_dir_path + 6;
 	      CHUNK_MC_URL = XML_Char_malloc(len_chunk_mc_url + 1);
@@ -646,14 +646,14 @@ void pre_process(zip_t *zip) {
 		    zip_fclose(img_zf);
 		    char *IMG_URL = NULL;
 		    int len_resource_url, len_img_name, len_img_url;
-		    if (strstr(RESOURCE_URL, "https") != NULL) {
+		    if (strstr(RESOURCE_URL, "http") != NULL) {
 		      len_resource_url = XML_Char_len(RESOURCE_URL);
 		      len_img_name = XML_Char_len(img_name);
 		      int len_img_ext = XML_Char_len(img_ext);
 		      // 17: /img/%s?format_img=
 		      len_img_url = len_img_name + len_resource_url + len_img_ext + len_output_file_name + 18;
 		      IMG_URL = XML_Char_malloc(len_img_url + 1);
-		      snprintf(IMG_URL, len_img_url + 1, "%s%s/img/%s?format_img=%s", RESOURCE_URL, OUTPUT_FILE_NAME, img_name, img_ext);
+		      snprintf(IMG_URL, len_img_url + 1, "%s/%s.%s", RESOURCE_URL, img_name, img_ext);
 		    } else {
 		      IMG_URL = strdup(OUTPUT_IMG_FILE_PATH);
 		      len_img_url = len_output_img_file_path;
@@ -709,11 +709,11 @@ void pre_process(zip_t *zip) {
 		  snprintf(OUTPUT_CHART_FILE_PATH, len_output_chart_file_path   + 1, "%s/%s/%s.json", OUTPUT_DIR, CHUNKS_DIR_NAME, chart_json_file_name);
 		  char *CHART_URL = NULL;
 		  int len_chart_url, len_resource_url;
-		  if (strstr(RESOURCE_URL, "https") != NULL) {
+		  if (strstr(RESOURCE_URL, "http") != NULL) {
 		    len_resource_url = XML_Char_len(RESOURCE_URL);
-		    len_chart_url = len_output_chart_file_path + len_resource_url + + len_output_file_name + 6;
+		    len_chart_url = len_output_chart_file_path + len_resource_url + + len_output_file_name + 8;
 		    CHART_URL = XML_Char_malloc(len_chart_url + 1);
-		    snprintf(CHART_URL , len_chart_url + 1, "%s%s/json/%s", RESOURCE_URL, OUTPUT_FILE_NAME, chart_json_file_name);
+		    snprintf(CHART_URL , len_chart_url + 1, "%s/chunks/%s.json", RESOURCE_URL, chart_json_file_name);
 		  } else {
 		    CHART_URL = strdup(OUTPUT_CHART_FILE_PATH);
 		    len_chart_url = len_output_chart_file_path;
@@ -805,12 +805,12 @@ void pre_process(zip_t *zip) {
 	    snprintf(CHUNK_HTML_FILE_NAME, len_chunk_html_file_name + 1, "chunk_%d_%d", index_sheet, index_chunk);
 	    int len_resource_url, len_chunk_html_url;
 	    char *CHUNK_HTML_URL;
-	    if (strstr(RESOURCE_URL, "https") != NULL) {
+	    if (strstr(RESOURCE_URL, "http") != NULL) {
 	      len_resource_url = XML_Char_len(RESOURCE_URL);
 	      int len_output_file_name = XML_Char_len(OUTPUT_FILE_NAME);
-	      len_chunk_html_url = len_chunk_html_file_name + len_resource_url + len_output_file_name + 7;
+	      len_chunk_html_url = len_chunk_html_file_name + len_resource_url + len_output_file_name + 9;
 	      CHUNK_HTML_URL = XML_Char_malloc(len_chunk_html_url + 1);
-	      snprintf(CHUNK_HTML_URL , len_chunk_html_url + 1, "%s%s/chunk/%s", RESOURCE_URL, OUTPUT_FILE_NAME, CHUNK_HTML_FILE_NAME);
+	      snprintf(CHUNK_HTML_URL , len_chunk_html_url + 1, "%s/chunks/%s.chunk", RESOURCE_URL, CHUNK_HTML_FILE_NAME);
 	    } else {
 	      len_chunk_html_url = len_chunk_html_file_name + len_chunks_dir_path + 7;
 	      CHUNK_HTML_URL = XML_Char_malloc(len_chunk_html_url + 1);
