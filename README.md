@@ -45,9 +45,9 @@ make
 
 ## Features
 
-* Many number formats (include datetime, decimal and more).
+* Many formats (include datetime, decimal and more).
 * Multi fonts in one cell.
-* Multi sheets.
+* Many charts supported by Google chart.
 * Native HTML text with precise font and location.
 * Supporting links, types, fonts, images, boders, merged cells and [more...]<br/><br/>
 
