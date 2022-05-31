@@ -59,8 +59,10 @@ make
 
 
 # Donation:
-It took me a lot of time to develop Better Onetab and need to pay for the sync server every month. If my work helps you, you can donate it in the following way.
+It took me a lot of time to develop Better Xlsxmagic and need to pay for the server every month. If my work helps you, you can donate it in the following way.
+
 BTC: bc1qyc57wnaf2qmgtr0kvaxhgxlsh9rm78elskxlnn
+
 ETH: 0xf08101E06f70a91D8D6F5E9C30C0C1ec44dD6cf9
 
 ## License
