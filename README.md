@@ -59,7 +59,7 @@ make
 
 
 # Donation:
-It took me a lot of time to develop Better Xlsxmagic and need to pay for the server every month. If my work helps you, you can donate it in the following way.
+It took me a lot of time to develop Xlsxmagic and need to pay for the server every month. If my work helps you, you can donate it in the following way.
 
 BTC: bc1qyc57wnaf2qmgtr0kvaxhgxlsh9rm78elskxlnn
 
