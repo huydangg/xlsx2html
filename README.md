@@ -9,7 +9,7 @@
 
 <!-- <p align="center"><a href="https://github.com/nastyox/Rando.js#nastyox"><img src="http://randojs.com/images/2.0.0-20fps.gif" width="100%"/></a><a href="#nastyox"><img src="http://randojs.com/images/dropShadow.png" width="100%"/></a></p><br/> -->
 
-## Fast implementation  
+## Build from source
 **Step 1:** Install `libzip`
 
 On **Linux** / **macOS**:
