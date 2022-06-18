@@ -3,7 +3,6 @@
 
 #include <private.h>
 
-
 struct NumFMT {
   XML_Char *formatCode;
   XML_Char *numFmtId;
@@ -58,7 +57,6 @@ struct Alignment {
   char isWrapText;
 };
 
-
 struct Xf {
   unsigned short borderId;
   unsigned short fillId;
@@ -76,7 +74,7 @@ struct ArrayXfs {
   unsigned short length;
   struct Xf *Xfs;
 };
-  
+
 extern XML_Parser xmlparser;
 extern struct ArrayNumFMTs array_numfmts;
 extern struct ArrayFonts array_fonts;
@@ -85,29 +83,39 @@ extern struct ArrayBorderCells array_borders;
 extern struct ArrayXfs array_cellStyleXfs;
 extern struct ArrayXfs array_cellXfs;
 
-
-
-void styles_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
-void styles_end_element(void *userData, const XML_Char *name); 
-void numFmt_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void styles_start_element(void *userData, const XML_Char *name,
+                          const XML_Char **attrs);
+void styles_end_element(void *userData, const XML_Char *name);
+void numFmt_main_start_element(void *userData, const XML_Char *name,
+                               const XML_Char **attrs);
 void numFmt_main_end_element(void *userData, const XML_Char *name);
-void font_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void font_main_start_element(void *userData, const XML_Char *name,
+                             const XML_Char **attrs);
 void font_main_end_element(void *userData, const XML_Char *name);
-void font_item_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void font_item_start_element(void *userData, const XML_Char *name,
+                             const XML_Char **attrs);
 void font_item_end_element(void *userData, const XML_Char *name);
-void fill_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
-void fill_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs); 
-void fill_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
-void fill_item_lv1_end_element(void *userData, const XML_Char *name); 
+void fill_main_start_element(void *userData, const XML_Char *name,
+                             const XML_Char **attrs);
+void fill_item_lv1_start_element(void *userData, const XML_Char *name,
+                                 const XML_Char **attrs);
+void fill_item_lv2_start_element(void *userData, const XML_Char *name,
+                                 const XML_Char **attrs);
+void fill_item_lv1_end_element(void *userData, const XML_Char *name);
 void fill_item_lv2_end_element(void *userData, const XML_Char *name);
-void border_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
-void border_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void border_main_start_element(void *userData, const XML_Char *name,
+                               const XML_Char **attrs);
+void border_item_lv1_start_element(void *userData, const XML_Char *name,
+                                   const XML_Char **attrs);
 void border_item_lv1_end_element(void *userData, const XML_Char *name);
-void border_item_lv2_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void border_item_lv2_start_element(void *userData, const XML_Char *name,
+                                   const XML_Char **attrs);
 void border_item_lv2_end_element(void *userData, const XML_Char *name);
-void xf_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void xf_main_start_element(void *userData, const XML_Char *name,
+                           const XML_Char **attrs);
 void xf_main_end_element(void *userData, const XML_Char *name);
-void xf_item_lv1_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void xf_item_lv1_start_element(void *userData, const XML_Char *name,
+                               const XML_Char **attrs);
 void xf_item_lv1_end_element(void *userData, const XML_Char *name);
 
 #endif

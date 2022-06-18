@@ -16,7 +16,8 @@ struct ArrayRelationships {
 
 extern XML_Parser xmlparser;
 
-void rels_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
+void rels_start_element(void *callbackdata, const XML_Char *name,
+                        const XML_Char **attrs);
 void rels_end_element(void *callbackdata, const XML_Char *name);
 
 #endif

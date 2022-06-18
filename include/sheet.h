@@ -16,7 +16,6 @@ struct ArrayCols {
   struct Col **cols;
 };
 
-
 struct ArrayDrawingIds {
   unsigned short length;
   char **drawing_ids;
@@ -47,14 +46,19 @@ struct WorkSheet {
 extern XML_Parser xmlparser;
 struct WorkSheet;
 
-void worksheet_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void worksheet_start_element(void *userData, const XML_Char *name,
+                             const XML_Char **attrs);
 void worksheet_end_element(void *userData, const XML_Char *name);
-void col_row_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void col_row_start_element(void *userData, const XML_Char *name,
+                           const XML_Char **attrs);
 void col_row_end_element(void *userData, const XML_Char *name);
-void cell_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
+void cell_start_element(void *callbackdata, const XML_Char *name,
+                        const XML_Char **attrs);
 void cell_end_element(void *userData, const XML_Char *name);
-void cell_item_start_element(void *callbackdata, const XML_Char *name, const XML_Char **attrs);
+void cell_item_start_element(void *callbackdata, const XML_Char *name,
+                             const XML_Char **attrs);
 void cell_item_end_element(void *callbackdata, const XML_Char *name);
 void worksheet_content_handler(void *callbackdata, const XML_Char *s, int len);
-void _generate_cells(unsigned int, unsigned short, unsigned short, FILE *, unsigned short *);
+void _generate_cells(unsigned int, unsigned short, unsigned short, FILE *,
+                     unsigned short *);
 #endif

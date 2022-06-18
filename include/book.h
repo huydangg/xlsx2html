@@ -24,9 +24,11 @@ struct ArraySheets {
 extern XML_Parser xmlparser;
 extern struct ArraySheets array_sheets;
 
-void workbook_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void workbook_start_element(void *userData, const XML_Char *name,
+                            const XML_Char **attrs);
 void workbook_end_element(void *userData, const XML_Char *name);
-void sheet_main_start_element(void *userData, const XML_Char *name, const XML_Char **attrs);
+void sheet_main_start_element(void *userData, const XML_Char *name,
+                              const XML_Char **attrs);
 void sheet_main_end_element(void *userData, const XML_Char *name);
 
 #endif
