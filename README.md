@@ -9,7 +9,7 @@
 
 <!-- <p align="center"><a href="https://github.com/nastyox/Rando.js#nastyox"><img src="http://randojs.com/images/2.0.0-20fps.gif" width="100%"/></a><a href="#nastyox"><img src="http://randojs.com/images/dropShadow.png" width="100%"/></a></p><br/> -->
 
-## Fast implementation  
+## Build from source
 **Step 1:** Install `libzip`
 
 On **Linux** / **macOS**:
@@ -57,6 +57,13 @@ make
 - [ ] Support Mircosoft Office template
 - [ ] Multi-thread<br/><br/>
 
+
+## Donation:
+It took me a lot of time to develop Xlsxmagic and need to pay for the server every month. If my work helps you, you can donate it in the following way.
+
+BTC: bc1qyc57wnaf2qmgtr0kvaxhgxlsh9rm78elskxlnn
+
+ETH: 0xf08101E06f70a91D8D6F5E9C30C0C1ec44dD6cf9
 
 ## License
 
