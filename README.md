@@ -19,7 +19,7 @@ On **Linux** / **macOS**:
 On **Windows**:
 
 ```sh
-Comming soon
+Coming soon
 ```
 **Step 2:** Install `JRE`
 
