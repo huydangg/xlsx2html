@@ -1,5 +1,5 @@
 <!-- <p align="center"><a href="https://github.com/nastyox/Rando.js#nastyox"><img src="" alt="" height="60"/></a></p> -->
-<h1 align="center">xlsxmagic</h1>
+<h1 align="center">xlsx2html</h1>
 <p align="center"> A high-performance converting tool that helps you view a XLSX file on Browser.</p>
 <p align="center">
 	<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/github/license/huydangg/xlsxmagic?style=flat-square" height="20"/></a>
@@ -57,13 +57,6 @@ make
 - [ ] Support Mircosoft Office template
 - [ ] Multi-thread<br/><br/>
 
-
-## Donation:
-It took me a lot of time to develop Xlsxmagic and need to pay for the server every month. If my work helps you, you can donate it in the following way.
-
-BTC: bc1qyc57wnaf2qmgtr0kvaxhgxlsh9rm78elskxlnn
-
-ETH: 0xf08101E06f70a91D8D6F5E9C30C0C1ec44dD6cf9
 
 ## License
 
