@@ -2,7 +2,7 @@
 SOURCES = lib/whereami.c src/main.c src/style.c src/sheet.c src/book.c src/sharedstring.c src/relationship.c src/drawing.c src/chart.c
 
 # The name of the executable
-EXE = xlsxmagic
+EXE = xlsx2html
 
 MAKE_FILE_DIR = $(shell pwd)
 
