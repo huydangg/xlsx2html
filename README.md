@@ -39,7 +39,7 @@ make
 ## Usage:
 
 ```
-./xlsxmagic --help
+./xlsx2html --help
 ```
 **&#8674;Important:** Save the XLSX file again in LibreOffice before you run this tool to work well.<br/><br/>
 
