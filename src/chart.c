@@ -466,10 +466,11 @@ void chart_barChart_item_end_element(void *callbackdata, const XML_Char *name) {
 }
 
 void chart_content_handler(void *callbackdata, const XML_Char *buf, int len) {
-  struct ChartCallBackData *chart_callbackdata = callbackdata;
-  if ((chart_callbackdata->text =
-           XML_Char_realloc(chart_callbackdata->text,
-                            chart_callbackdata->textlen + len + 1)) == NULL) {
+  struct ChartCallBackData *chart_callbackdata =
+      (struct ChartCallBackData *)callbackdata;
+  if ((chart_callbackdata->text = (char *)XML_Char_realloc(
+           chart_callbackdata->text, chart_callbackdata->textlen + len + 1)) ==
+      NULL) {
     chart_callbackdata->textlen = 0;
   } else {
     memcpy(chart_callbackdata->text + chart_callbackdata->textlen, buf, len);

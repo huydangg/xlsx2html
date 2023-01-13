@@ -6,7 +6,6 @@
 #include <string.h>
 
 struct ArraySheets array_sheets;
-
 XML_Char *insert_substr_to_str_at_pos(XML_Char *des, const XML_Char *substr,
                                       int pos) {
   const XML_Char *_substr = substr;

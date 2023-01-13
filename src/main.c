@@ -117,7 +117,7 @@ int load_workbook(zip_t *zip) {
     int len_zip_sheet_rels_file_name =
         XML_Char_len(array_sheets.sheets[i]->sheetId) + 35;
     char *zip_sheet_rels_file_name =
-        XML_Char_malloc(len_zip_sheet_rels_file_name + 1);
+        (char *)XML_Char_malloc(len_zip_sheet_rels_file_name + 1);
     snprintf(zip_sheet_rels_file_name, len_zip_sheet_rels_file_name + 1,
              "xl/worksheets/_rels/sheet%s.xml.rels",
              array_sheets.sheets[i]->sheetId);
@@ -256,7 +256,7 @@ int load_worksheets(zip_t *zip) {
             }
             int len_zip_drawing_rels = XML_Char_len(token) + 23;
             char *zip_drawing_rels_file_name =
-                XML_Char_malloc(len_zip_drawing_rels + 23 + 1);
+                (char *)XML_Char_malloc(len_zip_drawing_rels + 23 + 1);
             snprintf(zip_drawing_rels_file_name, len_zip_drawing_rels + 1,
                      "xl/drawings/_rels/%s.rels", token);
             int status_drawing_rels =
@@ -292,10 +292,11 @@ int load_worksheets(zip_t *zip) {
                        ->type);
               free(array_sheets.sheets[i]
                        ->array_worksheet_rels.relationships[_tmp_length - 1]);
-              array_sheets.sheets[i]
-                  ->array_worksheet_rels.relationships = XML_Char_realloc(
-                  array_sheets.sheets[i]->array_worksheet_rels.relationships,
-                  (_tmp_length - 1) * sizeof(struct Relationship *));
+              array_sheets.sheets[i]->array_worksheet_rels.relationships =
+                  (struct Relationship **)XML_Char_realloc(
+                      array_sheets.sheets[i]
+                          ->array_worksheet_rels.relationships,
+                      (_tmp_length - 1) * sizeof(struct Relationship *));
             }
             array_sheets.sheets[i]->array_worksheet_rels.length--;
             break;
@@ -335,7 +336,7 @@ int load_worksheets(zip_t *zip) {
             free(array_sheets.sheets[i]
                      ->array_worksheet_rels.relationships[_tmp_length - 1]);
             array_sheets.sheets[i]->array_worksheet_rels.relationships =
-                XML_Char_realloc(
+                (struct Relationship **)XML_Char_realloc(
                     array_sheets.sheets[i]->array_worksheet_rels.relationships,
                     (_tmp_length - 1) * sizeof(struct Relationship *));
           }
@@ -363,13 +364,13 @@ int load_sharedStrings(zip_t *zip) {
       XML_Char_len(OUTPUT_FILE_NAME) +
       XML_Char_len(SHAREDSTRINGS_HTML_FILE_SUFFIX);
   char *SHAREDSTRINGS_HTML_FILE_NAME =
-      XML_Char_malloc(len_sharedStrings_html_file_name + 1);
+      (char *)XML_Char_malloc(len_sharedStrings_html_file_name + 1);
   snprintf(SHAREDSTRINGS_HTML_FILE_NAME, len_sharedStrings_html_file_name + 1,
            "%s%s", OUTPUT_FILE_NAME, SHAREDSTRINGS_HTML_FILE_SUFFIX);
   int len_sharedStrings_file_path =
       XML_Char_len(TEMP_DIR) + 1 + len_sharedStrings_html_file_name;
   char *_SHAREDSTRINGS_HTML_FILE_PATH =
-      XML_Char_malloc(len_sharedStrings_file_path + 1);
+      (char *)XML_Char_malloc(len_sharedStrings_file_path + 1);
   snprintf(_SHAREDSTRINGS_HTML_FILE_PATH, len_sharedStrings_file_path + 1,
            "%s/%s", TEMP_DIR, SHAREDSTRINGS_HTML_FILE_NAME);
   free(SHAREDSTRINGS_HTML_FILE_NAME);
@@ -476,28 +477,29 @@ void destroy_workbook() {
 void pre_process(zip_t *zip) {
   int len_templates_dir_path =
       XML_Char_len(WORKING_DIR) + XML_Char_len(TEMPLATES_DIR_NAME) + 1;
-  char *TEMPLATES_DIR_PATH = XML_Char_malloc(len_templates_dir_path + 1);
+  char *TEMPLATES_DIR_PATH =
+      (char *)XML_Char_malloc(len_templates_dir_path + 1);
   snprintf(TEMPLATES_DIR_PATH, len_templates_dir_path + 1, "%s/%s", WORKING_DIR,
            TEMPLATES_DIR_NAME);
   int len_base_css_path =
       len_templates_dir_path + XML_Char_len(BASE_CSS_FILE_NAME) + 1;
-  char *BASE_CSS_PATH = XML_Char_malloc(len_base_css_path + 1);
+  char *BASE_CSS_PATH = (char *)XML_Char_malloc(len_base_css_path + 1);
   snprintf(BASE_CSS_PATH, len_base_css_path + 1, "%s/%s", TEMPLATES_DIR_PATH,
            BASE_CSS_FILE_NAME);
   int len_base_js_path =
       len_templates_dir_path + XML_Char_len(BASE_JS_FILE_NAME) + 1;
-  char *BASE_JS_PATH = XML_Char_malloc(len_base_js_path + 1);
+  char *BASE_JS_PATH = (char *)XML_Char_malloc(len_base_js_path + 1);
   snprintf(BASE_JS_PATH, len_base_js_path + 1, "%s/%s", TEMPLATES_DIR_PATH,
            BASE_JS_FILE_NAME);
   int len_manifest_path =
       len_templates_dir_path + XML_Char_len(MANIFEST_FILE_NAME) + 1;
-  char *MANIFEST_PATH = XML_Char_malloc(len_manifest_path + 1);
+  char *MANIFEST_PATH = (char *)XML_Char_malloc(len_manifest_path + 1);
   snprintf(MANIFEST_PATH, len_manifest_path + 1, "%s/%s", TEMPLATES_DIR_PATH,
            MANIFEST_FILE_NAME);
   // 5: .html
   int len_index_html_path =
       XML_Char_len(OUTPUT_DIR) + XML_Char_len(OUTPUT_FILE_NAME) + 5 + 1;
-  char *INDEX_HTML_PATH = XML_Char_malloc(len_index_html_path + 1);
+  char *INDEX_HTML_PATH = (char *)XML_Char_malloc(len_index_html_path + 1);
   snprintf(INDEX_HTML_PATH, len_index_html_path + 1, "%s/%s.html", OUTPUT_DIR,
            OUTPUT_FILE_NAME);
   FILE *fmanifest;
@@ -558,7 +560,7 @@ void pre_process(zip_t *zip) {
                     ->array_worksheet_rels.relationships[index_rels]
                     ->target);
             char *zip_drawing_file_name =
-                XML_Char_malloc(len_zip_drawing_file_name + 1);
+                (char *)XML_Char_malloc(len_zip_drawing_file_name + 1);
             snprintf(zip_drawing_file_name, len_zip_drawing_file_name + 1,
                      "xl%s",
                      array_sheets.sheets[index_sheet]
@@ -591,7 +593,8 @@ void pre_process(zip_t *zip) {
             array_sheets.sheets[index_sheet]->num_of_chunks++;
             int LEN_CHUNKS_DIR_PATH = XML_Char_len(OUTPUT_DIR) +
                                       XML_Char_len(CHUNKS_DIR_NAME) + 1 + 1;
-            char *CHUNKS_DIR_PATH = XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
+            char *CHUNKS_DIR_PATH =
+                (char *)XML_Char_malloc(LEN_CHUNKS_DIR_PATH);
             snprintf(CHUNKS_DIR_PATH, LEN_CHUNKS_DIR_PATH, "%s/%s", OUTPUT_DIR,
                      CHUNKS_DIR_NAME);
             // 12: chunk_%d_%d.html
@@ -600,7 +603,8 @@ void pre_process(zip_t *zip) {
                          array_sheets.sheets[index_sheet]->num_of_chunks + 1);
             int len_chunk_file_path =
                 LEN_CHUNKS_DIR_PATH + len_index_sheet + len_num_of_chunks + 13;
-            char *CHUNK_FILE_PATH = XML_Char_malloc(len_chunk_file_path + 1);
+            char *CHUNK_FILE_PATH =
+                (char *)XML_Char_malloc(len_chunk_file_path + 1);
             snprintf(CHUNK_FILE_PATH, len_chunk_file_path + 1,
                      "%s/chunk_%d_%d.chunk", CHUNKS_DIR_PATH, index_sheet,
                      array_sheets.sheets[index_sheet]->num_of_chunks);
@@ -619,7 +623,7 @@ void pre_process(zip_t *zip) {
               int len_row_height_in_px =
                   snprintf(NULL, 0, "%.2f", row_height_in_px);
               int LEN_TR_TAG = 11 + len_row_number;
-              char *TR_TAG = XML_Char_malloc(LEN_TR_TAG);
+              char *TR_TAG = (char *)XML_Char_malloc(LEN_TR_TAG);
               snprintf(TR_TAG, LEN_TR_TAG, "<tr id=\"%d\">",
                        array_sheets.sheets[index_sheet]->max_row);
               fputs(TR_TAG, worksheet_file);
@@ -641,7 +645,7 @@ void pre_process(zip_t *zip) {
               47 + len_index_sheet +
               XML_Char_len(array_sheets.sheets[index_sheet]->name) +
               len_num_of_chunks;
-          char *DIV_TABLE = XML_Char_malloc(len_div_table + 1);
+          char *DIV_TABLE = (char *)XML_Char_malloc(len_div_table + 1);
           snprintf(
               DIV_TABLE, len_div_table + 1,
               "<div id=\"sheet_%d\" name=\"%s\" data-num-of-chunks=\"%d\">",
@@ -652,8 +656,9 @@ void pre_process(zip_t *zip) {
           if (array_sheets.sheets[index_sheet]->hasMergedCells == '1') {
             int len_chunk_mc_file_name = len_index_sheet + 9;
             char *CHUNK_MC_FILE_NAME =
-                XML_Char_malloc(len_chunk_mc_file_name + 1);
+                (char *)XML_Char_malloc(len_chunk_mc_file_name + 1);
             snprintf(CHUNK_MC_FILE_NAME, len_chunk_mc_file_name + 1,
+
                      "chunk_%d_mc", index_sheet);
             int len_resource_url, len_chunk_mc_url;
             char *CHUNK_MC_URL;
@@ -662,18 +667,18 @@ void pre_process(zip_t *zip) {
               int len_output_file_name = XML_Char_len(OUTPUT_FILE_NAME);
               len_chunk_mc_url = len_chunk_mc_file_name + len_resource_url +
                                  len_output_file_name + 8;
-              CHUNK_MC_URL = XML_Char_malloc(len_chunk_mc_url + 1);
+              CHUNK_MC_URL = (char *)XML_Char_malloc(len_chunk_mc_url + 1);
               snprintf(CHUNK_MC_URL, len_chunk_mc_url + 1, "%s/chunks/%s.json",
                        RESOURCE_URL, CHUNK_MC_FILE_NAME);
             } else {
               len_chunk_mc_url =
                   len_chunk_mc_file_name + len_chunks_dir_path + 6;
-              CHUNK_MC_URL = XML_Char_malloc(len_chunk_mc_url + 1);
+              CHUNK_MC_URL = (char *)XML_Char_malloc(len_chunk_mc_url + 1);
               snprintf(CHUNK_MC_URL, len_chunk_mc_url + 1, "%s/%s.json",
                        CHUNKS_DIR_PATH, CHUNK_MC_FILE_NAME);
             }
             int len_div_chunk = len_chunk_mc_file_name + len_chunk_mc_url + 35;
-            char *DIV_CHUNK = XML_Char_malloc(len_div_chunk + 1);
+            char *DIV_CHUNK = (char *)XML_Char_malloc(len_div_chunk + 1);
             snprintf(DIV_CHUNK, len_div_chunk + 1,
                      "<div id=\"%s\" data-chunk-url=\"%s\"></div>",
                      CHUNK_MC_FILE_NAME, CHUNK_MC_URL);
@@ -720,7 +725,7 @@ void pre_process(zip_t *zip) {
                   array_sheets.sheets[index_sheet]
                       ->array_drawing_rels.relationships[i_drawing_rel]
                       ->target);
-              char *_tmp_target = XML_Char_malloc(len_target + 1);
+              char *_tmp_target = (char *)XML_Char_malloc(len_target + 1);
               snprintf(
                   _tmp_target, len_target + 1, "xl%s",
                   array_sheets.sheets[index_sheet]
@@ -773,7 +778,7 @@ void pre_process(zip_t *zip) {
                                                    XML_Char_len(img_name) +
                                                    XML_Char_len(img_ext) + 2;
                     char *OUTPUT_IMG_FILE_PATH =
-                        XML_Char_malloc(len_output_img_file_path + 1);
+                        (char *)XML_Char_malloc(len_output_img_file_path + 1);
                     snprintf(OUTPUT_IMG_FILE_PATH, len_output_img_file_path + 1,
                              "%s/%s.%s", OUTPUT_DIR, img_name, img_ext);
                     int img_fd =
@@ -806,7 +811,7 @@ void pre_process(zip_t *zip) {
                       // 17: /img/%s?format_img=
                       len_img_url = len_img_name + len_resource_url +
                                     len_img_ext + len_output_file_name + 18;
-                      IMG_URL = XML_Char_malloc(len_img_url + 1);
+                      IMG_URL = (char *)XML_Char_malloc(len_img_url + 1);
                       snprintf(IMG_URL, len_img_url + 1, "%s/%s.%s",
                                RESOURCE_URL, img_name, img_ext);
                     } else {
@@ -843,7 +848,7 @@ void pre_process(zip_t *zip) {
                                       len_img_url + len_height + len_width +
                                       len_from_col_name + len_from_row +
                                       len_from_colOff + len_from_rowOff + 141;
-                    char *DIV_IMG = XML_Char_malloc(len_div_img + 1);
+                    char *DIV_IMG = (char *)XML_Char_malloc(len_div_img + 1);
                     snprintf(
                         DIV_IMG, len_div_img + 1,
                         "<div id=\"chunk_%d_%d_img\" data-img-url=\"%s\" "
@@ -873,7 +878,7 @@ void pre_process(zip_t *zip) {
                   int len_chart_json_file_name =
                       len_index_sheet + len_index_graphicframe + 18;
                   char *chart_json_file_name =
-                      XML_Char_malloc(len_chart_json_file_name + 1);
+                      (char *)XML_Char_malloc(len_chart_json_file_name + 1);
                   snprintf(chart_json_file_name, len_chart_json_file_name + 1,
                            "chunk_%d_%d_chart", index_sheet,
                            index_graphicframe);
@@ -881,7 +886,7 @@ void pre_process(zip_t *zip) {
                       XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) +
                       len_chart_json_file_name + 5 + 1;
                   char *OUTPUT_CHART_FILE_PATH =
-                      XML_Char_malloc(len_output_chart_file_path + 1);
+                      (char *)XML_Char_malloc(len_output_chart_file_path + 1);
                   snprintf(OUTPUT_CHART_FILE_PATH,
                            len_output_chart_file_path + 1, "%s/%s/%s.json",
                            OUTPUT_DIR, CHUNKS_DIR_NAME, chart_json_file_name);
@@ -892,7 +897,7 @@ void pre_process(zip_t *zip) {
                     len_chart_url = len_output_chart_file_path +
                                     len_resource_url + +len_output_file_name +
                                     8;
-                    CHART_URL = XML_Char_malloc(len_chart_url + 1);
+                    CHART_URL = (char *)XML_Char_malloc(len_chart_url + 1);
                     snprintf(CHART_URL, len_chart_url + 1, "%s/chunks/%s.json",
                              RESOURCE_URL, chart_json_file_name);
                   } else {
@@ -928,7 +933,7 @@ void pre_process(zip_t *zip) {
                                       len_from_row + len_from_colOff +
                                       len_from_rowOff + len_height + len_width +
                                       145;
-                  char *DIV_CHART = XML_Char_malloc(len_div_chart + 1);
+                  char *DIV_CHART = (char *)XML_Char_malloc(len_div_chart + 1);
                   snprintf(
                       DIV_CHART, len_div_chart + 1,
                       "<div id=\"%s\" data-chart-url=\"%s\" data-name=\"%s\" "
@@ -964,7 +969,7 @@ void pre_process(zip_t *zip) {
                           ->array_drawing_rels.relationships[i_drawing_rel]
                           ->target);
                   char *zip_chart_file_name =
-                      XML_Char_malloc(len_zip_chart_file_name + 1);
+                      (char *)XML_Char_malloc(len_zip_chart_file_name + 1);
                   snprintf(
                       zip_chart_file_name, len_zip_chart_file_name + 1, "xl%s",
                       array_sheets.sheets[index_sheet]
@@ -1040,7 +1045,7 @@ void pre_process(zip_t *zip) {
             int len_chunk_html_file_name =
                 snprintf(NULL, 0, "%d", index_chunk) + len_index_sheet + 7;
             char *CHUNK_HTML_FILE_NAME =
-                XML_Char_malloc(len_chunk_html_file_name + 1);
+                (char *)XML_Char_malloc(len_chunk_html_file_name + 1);
             snprintf(CHUNK_HTML_FILE_NAME, len_chunk_html_file_name + 1,
                      "chunk_%d_%d", index_sheet, index_chunk);
             int len_resource_url, len_chunk_html_url;
@@ -1050,20 +1055,20 @@ void pre_process(zip_t *zip) {
               int len_output_file_name = XML_Char_len(OUTPUT_FILE_NAME);
               len_chunk_html_url = len_chunk_html_file_name + len_resource_url +
                                    len_output_file_name + 9;
-              CHUNK_HTML_URL = XML_Char_malloc(len_chunk_html_url + 1);
+              CHUNK_HTML_URL = (char *)XML_Char_malloc(len_chunk_html_url + 1);
               snprintf(CHUNK_HTML_URL, len_chunk_html_url + 1,
                        "%s/chunks/%s.chunk", RESOURCE_URL,
                        CHUNK_HTML_FILE_NAME);
             } else {
               len_chunk_html_url =
                   len_chunk_html_file_name + len_chunks_dir_path + 7;
-              CHUNK_HTML_URL = XML_Char_malloc(len_chunk_html_url + 1);
+              CHUNK_HTML_URL = (char *)XML_Char_malloc(len_chunk_html_url + 1);
               snprintf(CHUNK_HTML_URL, len_chunk_html_url + 1, "%s/%s.chunk",
                        CHUNKS_DIR_PATH, CHUNK_HTML_FILE_NAME);
             }
             int len_div_chunk =
                 len_chunk_html_file_name + len_chunk_html_url + 35;
-            char *DIV_CHUNK = XML_Char_malloc(len_div_chunk + 1);
+            char *DIV_CHUNK = (char *)XML_Char_malloc(len_div_chunk + 1);
             snprintf(DIV_CHUNK, len_div_chunk + 1,
                      "<div id=\"%s\" data-chunk-url=\"%s\"></div>",
                      CHUNK_HTML_FILE_NAME, CHUNK_HTML_URL);
@@ -1084,7 +1089,8 @@ void pre_process(zip_t *zip) {
           if (index_sheet == 0) {
             int len_button_html =
                 1 + XML_Char_len(array_sheets.sheets[index_sheet]->name) + 87;
-            BUTTON_HTML = XML_Char_realloc(BUTTON_HTML, len_button_html + 1);
+            BUTTON_HTML =
+                (char *)XML_Char_realloc(BUTTON_HTML, len_button_html + 1);
             snprintf(BUTTON_HTML, len_button_html + 1,
                      "<button id=\"btn_%d\" "
                      "style=\"font-weight:bold;\"onclick=\"handleButtonClick("
@@ -1095,7 +1101,8 @@ void pre_process(zip_t *zip) {
             int len_button_html =
                 len_index_sheet +
                 XML_Char_len(array_sheets.sheets[index_sheet]->name) + 62;
-            BUTTON_HTML = XML_Char_realloc(BUTTON_HTML, len_button_html + 1);
+            BUTTON_HTML =
+                (char *)XML_Char_realloc(BUTTON_HTML, len_button_html + 1);
             snprintf(BUTTON_HTML, len_button_html + 1,
                      "<button id=\"btn_%d\" "
                      "onclick=\"handleButtonClick(event)\">%s</button>",
@@ -1256,7 +1263,7 @@ int main(int argc, char **argv) {
     char *OUTPUT_DIR_NAME = "output";
     int len_tmp_output_dir =
         XML_Char_len(WORKING_DIR) + XML_Char_len(OUTPUT_DIR_NAME) + 1;
-    char *_tmp_output_dir = XML_Char_malloc(len_tmp_output_dir + 1);
+    char *_tmp_output_dir = (char *)XML_Char_malloc(len_tmp_output_dir + 1);
     snprintf(_tmp_output_dir, len_tmp_output_dir + 1, "%s/%s", WORKING_DIR,
              OUTPUT_DIR_NAME);
     OUTPUT_DIR = strdup(_tmp_output_dir);
@@ -1286,7 +1293,7 @@ int main(int argc, char **argv) {
   }
   int len_chunks_dir_path =
       XML_Char_len(OUTPUT_DIR) + XML_Char_len(CHUNKS_DIR_NAME) + 1;
-  char *_tmp_chunks_dir_path = XML_Char_malloc(len_chunks_dir_path + 1);
+  char *_tmp_chunks_dir_path = (char *)XML_Char_malloc(len_chunks_dir_path + 1);
   if (_tmp_chunks_dir_path == NULL) {
     debug_print("%s\n", strerror(errno));
   }
