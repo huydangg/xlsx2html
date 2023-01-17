@@ -1,5 +1,5 @@
 # The name of the source files
-SOURCES = lib/whereami.c src/main.c src/style.c src/sheet.c src/book.c src/sharedstring.c src/relationship.c src/drawing.c src/chart.c
+SOURCES = lib/whereami.c src/main.c src/style.c src/sheet.c src/book.c src/sharedstring.c src/relationship.c src/drawing.c src/chart.c src/ssfc.c
 
 # The name of the executable
 EXE = xlsx2html
@@ -59,6 +59,7 @@ src/sharedstring.o: src/sharedstring.c include/sharedstring.h
 src/relationship.o: src/relationship.c include/relationship.h
 src/drawing.o: src/drawing.c include/drawing.h
 src/chart.o: src/chart.c include/chart.h
+src/ssfc.o: src/ssfc.c include/ssfc.h
 include/private.o: include/private.h
 include/const.o: include/const.h
 include/version.o: include/version.h

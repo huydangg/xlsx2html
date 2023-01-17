@@ -7,4 +7,4 @@ output
 ssf-bin/
 .DS_Store
 ssf/target/
-xlsxmagic
+xlsx2html

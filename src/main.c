@@ -1,17 +1,18 @@
+#include "main.h"
+#include "private.h"
+#include "ssfc.h"
+#include "version.h"
+#include "whereami.h" // wai_getExecutablePath()
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <libgen.h>
 #include <limits.h>
-#include <main.h>
-#include <private.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <version.h>
-#include <whereami.h> // wai_getExecutablePath()
 
 XML_Parser xmlparser;
 const char *ORIGIN_FILE_PATH;
@@ -1137,6 +1138,8 @@ void post_process() {
 }
 
 int main(int argc, char **argv) {
+  char *test = "2.6";
+  printf("%s\n", pad0r1(test, 7));
   debug_print("%s\n", XLSXMAGIC_FULLNAME);
   int c;
   int digit_optind = 0;
