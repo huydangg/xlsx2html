@@ -32,13 +32,20 @@ function find_column_name_by_pattern(pattern) {
   }
   return ''
 }
+function outerHTML(node){
+    return node.outerHTML || new XMLSerializer().serializeToString(node);
+}
 function ssfHandler() {
   var _arr = currentTbodyChunkEle.querySelectorAll('.n')
   for (var i = 0; i < _arr.length; i++) {
+		console.log("ARR: " + outerHTML(_arr[i]))
     var formatCode = _arr[i].getAttribute('data-format-code')
     if (formatCode === null || formatCode === '')
       continue
+		console.log("formatCode: " + formatCode)
+		console.log("Number: " + Number(_arr[i].innerHTML))
     _arr[i].innerHTML = window['SSF']['format'](formatCode, Number(_arr[i].innerHTML))
+		console.log("Ssf format: " + _arr[i].innerHTML)
   }
 }
 function readTextFile(file, file_type, callback, callbackfail) {

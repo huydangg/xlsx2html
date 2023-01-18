@@ -63,3 +63,4 @@ src/ssfc.o: src/ssfc.c include/ssfc.h
 include/private.o: include/private.h
 include/const.o: include/const.h
 include/version.o: include/version.h
+lib/uthash.o: lib/uthash.h
