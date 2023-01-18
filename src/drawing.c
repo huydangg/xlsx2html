@@ -1,7 +1,7 @@
-#include <drawing.h>
+#include "drawing.h"
+#include "main.h"
+#include "private.h"
 #include <errno.h>
-#include <main.h>
-#include <private.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

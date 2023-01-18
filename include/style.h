@@ -1,7 +1,7 @@
 #ifndef INCLUDED_STYLE_H
 #define INCLUDED_STYLE_H
 
-#include <private.h>
+#include "private.h"
 
 struct NumFMT {
   XML_Char *formatCode;

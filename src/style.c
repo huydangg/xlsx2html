@@ -1,9 +1,9 @@
+#include "style.h"
+#include "private.h"
 #include <errno.h>
-#include <private.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <style.h>
 
 struct ArrayNumFMTs array_numfmts;
 struct ArrayFonts array_fonts;

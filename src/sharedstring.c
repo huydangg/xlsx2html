@@ -1,6 +1,6 @@
+#include "sharedstring.h"
+#include "private.h"
 #include <errno.h>
-#include <private.h>
-#include <sharedstring.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>

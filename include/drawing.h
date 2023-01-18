@@ -1,8 +1,8 @@
 #ifndef INCLUDED_DRAWING_H
 #define INCLUDED_DRAWING_H
 
+#include "relationship.h"
 #include <expat.h>
-#include <relationship.h>
 #include <zip.h>
 
 struct Offset {

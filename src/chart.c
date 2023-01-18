@@ -1,6 +1,6 @@
-#include <chart.h>
+#include "chart.h"
+#include "private.h"
 #include <errno.h>
-#include <private.h>
 #include <stdio.h>
 #include <string.h>
 

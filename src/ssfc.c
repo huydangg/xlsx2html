@@ -1,4 +1,5 @@
 #include "ssfc.h"
+#include <alloca.h>
 #include <math.h> /* ceil, round */
 #include <stdio.h>
 #include <stdlib.h> /* malloc */

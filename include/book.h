@@ -1,7 +1,7 @@
 #ifndef INCLUDED_BOOK_H
 #define INCLUDED_BOOK_H
 
-#include <relationship.h>
+#include "relationship.h"
 
 struct Sheet {
   XML_Char *name;

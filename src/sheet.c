@@ -1,13 +1,13 @@
-#include <const.h>
+#include "sheet.h"
+#include "const.h"
+#include "private.h"
+#include "sharedstring.h"
+#include "style.h"
 #include <errno.h>
 #include <math.h>
-#include <private.h>
-#include <sharedstring.h>
-#include <sheet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <style.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 

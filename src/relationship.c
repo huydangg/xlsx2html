@@ -1,6 +1,6 @@
+#include "relationship.h"
+#include "private.h"
 #include <errno.h>
-#include <private.h>
-#include <relationship.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

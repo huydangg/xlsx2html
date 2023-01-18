@@ -11,7 +11,7 @@ FILES_CSS = $(MAKE_FILE_DIR)/bin/build_css.sh $(MAKE_FILE_DIR)
 FILES_SSF = $(MAKE_FILE_DIR)/bin/build_ssf.sh $(MAKE_FILE_DIR)
 
 # Flags for compilation (adding warnings are always good)
-CFLAGS = -g -Wall -Iinclude -Ilib
+CFLAGS = -g -Wall -Iinclude -Ilib -std=gnu11
 
 # Flags for linking (none for the moment)
 LDFLAGS =
