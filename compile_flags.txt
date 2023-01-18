@@ -1,5 +1,0 @@
--xc++
--I
-include/
--I
-lib/
