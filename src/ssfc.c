@@ -1,7 +1,7 @@
 #include "ssfc.h"
 #include <alloca.h>
-#include <math.h> /* ceil, round */
-#include <stdbool.h>
+#include <math.h>    /* ceil, round */
+#include <stdbool.h> /* bool */
 #include <stdio.h>
 #include <stdlib.h> /* malloc */
 
@@ -70,6 +70,7 @@ const char *pad0r(const char *v, const size_t d) {
 unsigned short charCodeAt(const char *s, unsigned short index) {
   return (unsigned short)s[index];
 }
+
 bool isgeneral(const char *s, int i) {
   return (int)strlen(s) >= 7 + i && (charCodeAt(s, i) | 32) == 103 &&
          (charCodeAt(s, i + 1) | 32) == 101 &&
@@ -80,13 +81,4 @@ bool isgeneral(const char *s, int i) {
          (charCodeAt(s, i + 6) | 32) == 108;
 }
 
-char days[][2][10] = {{"Sun", "Sunday"},   {"Mon", "Monday"},
-                      {"Tue", "Tuesday"},  {"Wed", "Wednesday"},
-                      {"Thu", "Thursday"}, {"Fri", "Friday"},
-                      {"Sat", "Saturday"}};
-char months[][3][10] = {{"J", "Jan", "January"},   {"F", "Feb", "February"},
-                        {"M", "Mar", "March"},     {"A", "Apr", "April"},
-                        {"M", "May", "May"},       {"J", "Jun", "June"},
-                        {"J", "Jul", "July"},      {"A", "Aug", "August"},
-                        {"S", "Sep", "September"}, {"O", "Oct", "October"},
-                        {"N", "Nov", "November"},  {"D", "Dec", "December"}};
+void init_table() { HASH_ADD_INT }

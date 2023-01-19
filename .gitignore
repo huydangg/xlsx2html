@@ -8,3 +8,4 @@ ssf-bin/
 .DS_Store
 ssf/target/
 xlsx2html
+.cache
